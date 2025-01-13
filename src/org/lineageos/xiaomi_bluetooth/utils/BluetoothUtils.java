@@ -60,6 +60,9 @@ public class BluetoothUtils {
         if (device == null || value == null) {
             return;
         }
+        if (value.toString().length() > BluetoothDevice.METADATA_MAX_LENGTH) {
+            return;
+        }
         if (!update && device.getMetadata(key) != null) {
             return;
         }
