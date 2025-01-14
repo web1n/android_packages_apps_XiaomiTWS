@@ -42,19 +42,6 @@ public class BluetoothUtils {
         return adapter.getRemoteDevice(mac);
     }
 
-    public static boolean isAnyDeviceConnected(@Nullable Context context) {
-        BluetoothAdapter adapter = getBluetoothAdapter(context);
-        if (adapter == null) {
-            return false;
-        }
-
-        for (BluetoothDevice device : adapter.getBondedDevices()) {
-            if (device.isConnected()) return true;
-        }
-
-        return false;
-    }
-
     public static void setDeviceMetadata(
         BluetoothDevice device, int key, Object value, boolean update) {
         if (device == null || value == null) {

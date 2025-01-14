@@ -1,17 +1,20 @@
 package org.lineageos.xiaomi_bluetooth.utils;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.ScanResult;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import org.lineageos.xiaomi_bluetooth.EarbudsConstants;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbud;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 
 import static android.bluetooth.BluetoothDevice.*;
 import static org.lineageos.xiaomi_bluetooth.EarbudsConstants.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,6 +99,30 @@ public class EarbudsUtils {
                     METADATA_UNTETHERED_CASE_CHARGING, earbuds.chargingCase.charging);
             BluetoothUtils.updateDeviceMetadata(device,
                     METADATA_UNTETHERED_CASE_BATTERY, earbuds.chargingCase.battery);
+        }
+    }
+
+    public static boolean isXiaomiMMADevice(BluetoothDevice device) {
+        if (device == null || !device.isConnected()) {
+            return false;
+        }
+
+        BluetoothSocket socket = null;
+        try {
+            socket = device.createInsecureRfcommSocketToServiceRecord(
+                    EarbudsConstants.UUID_XIAOMI_FAST_CONNECT.getUuid());
+            socket.connect();
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        } finally {
+            if (socket != null && socket.isConnected()) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
     }
 
