@@ -15,4 +15,11 @@ public class EarbudsConstants {
 
     public static final int SCAN_REPORT_DELAY = 1000;
 
+
+    public static final byte XIAOMI_MMA_OPCODE_GET_DEVICE_INFO = 0x02;
+    public static final int XIAOMI_MMA_MASK_GET_VERSION = 1;
+    public static final int XIAOMI_MMA_MASK_GET_VID_PID = 3;
+    public static final int XIAOMI_MMA_MASK_GET_UBOOT_VERSION = 6;
+    public static final int XIAOMI_MMA_MASK_GET_BATTERY = 7;
+
 }
