@@ -42,18 +42,8 @@ public class EarbudsUtils {
         }
 
         String macAddress = parseMacAddressFromManufacturerData(manufacturerData);
-        if (macAddress == null) {
-            return null;
-        }
-
-        Earbud right = new Earbud(fastConnectData[12]);
-        Earbud left = new Earbud(fastConnectData[13]);
-        Earbud chargingCase = new Earbud(fastConnectData[14]);
-        if (!right.isValid() && !left.isValid() && !chargingCase.isValid()) {
-            return null;
-        }
-
-        return new Earbuds(macAddress, left, right, chargingCase);
+        return Earbuds.fromBytes(macAddress,
+                fastConnectData[13], fastConnectData[12], fastConnectData[14]);
     }
 
     @Nullable

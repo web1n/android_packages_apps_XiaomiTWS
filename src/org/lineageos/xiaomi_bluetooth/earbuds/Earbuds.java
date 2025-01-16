@@ -1,7 +1,7 @@
 package org.lineageos.xiaomi_bluetooth.earbuds;
 
 import androidx.annotation.NonNull;
-
+import androidx.annotation.Nullable;
 
 public class Earbuds {
 
@@ -33,6 +33,22 @@ public class Earbuds {
                 ", right=" + right +
                 ", case=" + chargingCase +
                 '}';
+    }
+
+    @Nullable
+    public static Earbuds fromBytes(String macAddress, byte leftByte, byte rightByte, byte caseByte) {
+        if (macAddress == null) {
+            return null;
+        }
+
+        Earbud left = new Earbud(leftByte);
+        Earbud right = new Earbud(rightByte);
+        Earbud chargingCase = new Earbud(caseByte);
+        if (!right.isValid() && !left.isValid() && !chargingCase.isValid()) {
+            return null;
+        }
+
+        return new Earbuds(macAddress, left, right, chargingCase);
     }
 
 }
