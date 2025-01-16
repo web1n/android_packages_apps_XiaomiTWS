@@ -19,13 +19,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
+import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils;
 import org.lineageos.xiaomi_bluetooth.utils.EarbudsUtils;
 import org.lineageos.xiaomi_bluetooth.utils.PowerUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -61,6 +68,12 @@ public class EarbudsService extends Service {
                 if (device != null
                         && !bluetoothDeviceRecords.containsKey(device.getAddress())) {
                     runCheckXiaomiMMADevice(device);
+                }
+            } else if (BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED.equals(intent.getAction())) {
+                BluetoothDevice device = intent.getParcelableExtra(
+                        BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
+                if (device != null) {
+                    runUpdateMMADeviceBattery(device);
                 }
             }
 
@@ -115,6 +128,7 @@ public class EarbudsService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
@@ -179,6 +193,39 @@ public class EarbudsService extends Service {
         });
     }
 
+    private void runUpdateMMADeviceBattery(BluetoothDevice device) {
+        if (earbudsExecutor.isShutdown() || earbudsExecutor.isTerminated()) {
+            return;
+        }
+        if (!device.isConnected()) {
+            return;
+        }
+        if (DEBUG) Log.i(TAG, "runUpdateMMADeviceBattery " + device.getName());
+
+        earbudsExecutor.execute(() -> {
+            if (Boolean.FALSE.equals(
+                    bluetoothDeviceRecords.getOrDefault(device.getAddress(), false))) {
+                return;
+            }
+
+            Earbuds earbuds = null;
+            try (MMADevice mma = new MMADevice(device)) {
+                earbuds = executeWithTimeout(() -> {
+                    mma.connect();
+                    return mma.getBatteryInfo();
+                }, 1000);
+            } catch (RuntimeException | TimeoutException ignored) {
+            } catch (IOException e) {
+                Log.e(TAG, "runUpdateMMADeviceBattery: ", e);
+            }
+
+            if (DEBUG) Log.d(TAG, "runUpdateMMADeviceBattery: " + earbuds);
+            if (earbuds != null) {
+                updateEarbudsStatus(earbuds);
+            }
+        });
+    }
+
     private void startOrStopEarbudsScan() {
         if (DEBUG) Log.i(TAG, "startOrStopEarbudsScan");
 
@@ -234,6 +281,22 @@ public class EarbudsService extends Service {
 
         EarbudsUtils.setBluetoothDeviceType(device);
         EarbudsUtils.updateEarbudsStatus(device, earbuds);
+    }
+
+    private synchronized static <T> T executeWithTimeout(Callable<T> task, int timeout_ms) throws TimeoutException {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<T> future = executor.submit(task);
+
+        try {
+            return future.get(timeout_ms, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException | InterruptedException e) {
+            future.cancel(true);
+            throw new TimeoutException();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e.getCause());
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
 }
