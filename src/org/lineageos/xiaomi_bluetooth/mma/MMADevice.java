@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Random;
 
 
 public class MMADevice implements AutoCloseable {
@@ -25,7 +26,7 @@ public class MMADevice implements AutoCloseable {
     private final BluetoothDevice device;
 
     private BluetoothSocket socket;
-    private byte opCodeSN = 0;
+    private Byte opCodeSN;
 
     public MMADevice(@NonNull BluetoothDevice device) {
         this.device = device;
@@ -47,8 +48,11 @@ public class MMADevice implements AutoCloseable {
     }
 
     public byte getNewOpCodeSN() {
-        byte opCodeSN = this.opCodeSN;
-        this.opCodeSN += 1;
+        if (opCodeSN == null) {
+            opCodeSN = (byte) (new Random().nextInt(256) - 128);
+        }
+
+        opCodeSN = (byte) (opCodeSN + 1);
         return opCodeSN;
     }
 
