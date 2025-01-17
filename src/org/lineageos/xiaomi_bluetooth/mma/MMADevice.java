@@ -277,6 +277,28 @@ public class MMADevice implements AutoCloseable {
         return setDeviceConfig(configs);
     }
 
+    public byte getEqualizerMode() throws IOException {
+        if (DEBUG) Log.d(TAG, "getEqualizerMode");
+
+        byte[] eqModeBytes = getDeviceConfig(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, 1);
+        if (eqModeBytes != null) {
+            byte eqMode = eqModeBytes[0];
+            if (DEBUG) Log.d(TAG, "getEqualizerMode " + eqMode);
+
+            if (eqMode <= EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN) {
+                return eqMode;
+            }
+        }
+
+        return EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT;
+    }
+
+    public boolean setEqualizerMode(byte eqMode) throws IOException {
+        if (DEBUG) Log.d(TAG, "setEqualizerMode");
+
+        return setDeviceConfig(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, new byte[]{eqMode});
+    }
+
     @NonNull
     private static byte[] getResponsePacket(@NonNull InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
