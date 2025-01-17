@@ -40,6 +40,7 @@ public class EarbudsFragment extends PreferenceFragment {
 
     static {
         CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, KEY_EQUALIZER_MODE);
+        CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_SN, KEY_SERIAL_NUMBER);
     }
 
     @Override
@@ -83,7 +84,8 @@ public class EarbudsFragment extends PreferenceFragment {
                 configs = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
                     return mma.getDeviceConfig(new int[]{
-                            EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE
+                            EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE,
+                            EarbudsConstants.XIAOMI_MMA_CONFIG_SN
                     });
                 }, 300);
             } catch (RuntimeException | TimeoutException | IOException e) {
@@ -123,6 +125,8 @@ public class EarbudsFragment extends PreferenceFragment {
 
             if (preference instanceof ListPreference) {
                 ((ListPreference) preference).setValue(value);
+            } else {
+                preference.setSummary(valueToSummary(preferenceKey, value));
             }
         });
     }
@@ -160,6 +164,20 @@ public class EarbudsFragment extends PreferenceFragment {
 
             return false;
         });
+    }
+
+    @NonNull
+    private String valueToSummary(@NonNull String preferenceKey, @NonNull String value) {
+        String summary = value;
+
+        if (KEY_SERIAL_NUMBER.equals(preferenceKey)) {
+            try {
+                summary = new String(CommonUtils.hexToBytes(value));
+            } catch (Exception ignored) {
+            }
+        }
+
+        return summary;
     }
 
     private boolean checkConnected() {

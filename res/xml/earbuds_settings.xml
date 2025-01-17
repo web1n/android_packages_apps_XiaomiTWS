@@ -10,4 +10,10 @@
         android:summary="%s"
         android:title="@string/equalizer_mode" />
 
+    <Preference
+        android:key="serial_number"
+        android:selectable="false"
+        android:summary="@string/device_not_connected"
+        android:title="@string/serial_number" />
+
 </PreferenceScreen>
