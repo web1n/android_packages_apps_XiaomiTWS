@@ -184,17 +184,24 @@ public class EarbudsService extends Service {
                 return;
             }
 
-            boolean isMMADevice = false;
+            String softwareVersion = null;
             try (MMADevice mma = new MMADevice(device)) {
-                isMMADevice = executeWithTimeout(() -> {
+                softwareVersion = executeWithTimeout(() -> {
                     mma.connect();
-                    return true;
+                    return mma.getSoftwareVersion();
                 }, 1000);
             } catch (RuntimeException | TimeoutException ignored) {
             } catch (IOException e) {
                 Log.e(TAG, "runUpdateMMADeviceBattery: ", e);
             }
+            boolean isMMADevice = softwareVersion != null;
             if (DEBUG) Log.i(TAG, device.getName() + " isMMADevice " + isMMADevice);
+
+            // set firmware version metadata
+            if (device.isConnected() && softwareVersion != null) {
+                BluetoothUtils.updateDeviceMetadata(device,
+                        BluetoothDevice.METADATA_SOFTWARE_VERSION, softwareVersion);
+            }
 
             bluetoothDeviceRecords.put(device.getAddress(), isMMADevice);
             mainHandler.post(this::startOrStopEarbudsScan);
