@@ -55,6 +55,8 @@ public class EarbudsService extends Service {
         public void onReceive(Context context, Intent intent) {
             if (intent == null || intent.getAction() == null) return;
             if (DEBUG) Log.d(TAG, "device state changed");
+            BluetoothDevice device = intent.getParcelableExtra(
+                    BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
 
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
@@ -63,15 +65,11 @@ public class EarbudsService extends Service {
                     bluetoothDeviceRecords.clear();
                 }
             } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
-                BluetoothDevice device = intent.getParcelableExtra(
-                        BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
                 if (device != null
                         && !bluetoothDeviceRecords.containsKey(device.getAddress())) {
                     runCheckXiaomiMMADevice(device);
                 }
             } else if (BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED.equals(intent.getAction())) {
-                BluetoothDevice device = intent.getParcelableExtra(
-                        BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
                 if (device != null) {
                     runUpdateMMADeviceBattery(device);
                 }
@@ -185,7 +183,17 @@ public class EarbudsService extends Service {
             if (bluetoothDeviceRecords.containsKey(device.getAddress())) {
                 return;
             }
-            boolean isMMADevice = EarbudsUtils.isXiaomiMMADevice(device);
+
+            boolean isMMADevice = false;
+            try (MMADevice mma = new MMADevice(device)) {
+                isMMADevice = executeWithTimeout(() -> {
+                    mma.connect();
+                    return true;
+                }, 1000);
+            } catch (RuntimeException | TimeoutException ignored) {
+            } catch (IOException e) {
+                Log.e(TAG, "runUpdateMMADeviceBattery: ", e);
+            }
             if (DEBUG) Log.i(TAG, device.getName() + " isMMADevice " + isMMADevice);
 
             bluetoothDeviceRecords.put(device.getAddress(), isMMADevice);
