@@ -26,5 +26,10 @@
             </intent-filter>
         </receiver>
 
+        <provider
+            android:name=".BleSliceProvider"
+            android:authorities="org.lineageos.xiaomi_bluetooth.ble-slice"
+            android:exported="false" />
+
     </application>
 </manifest>

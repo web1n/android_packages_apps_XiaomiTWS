@@ -5,6 +5,7 @@ import android.bluetooth.le.ScanResult;
 
 import androidx.annotation.Nullable;
 
+import org.lineageos.xiaomi_bluetooth.BleSliceProvider;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 
 import static android.bluetooth.BluetoothDevice.*;
@@ -66,6 +67,9 @@ public class EarbudsUtils {
                 DEVICE_TYPE_UNTETHERED_HEADSET, false);
         BluetoothUtils.setDeviceMetadata(device,
                 METADATA_IS_UNTETHERED_HEADSET, true, false);
+        BluetoothUtils.setDeviceMetadata(device,
+                METADATA_ENHANCED_SETTINGS_UI_URI,
+                BleSliceProvider.generateSliceUri(device.getAddress()), false);
     }
 
     public static void updateEarbudsStatus(BluetoothDevice device, Earbuds earbuds) {
