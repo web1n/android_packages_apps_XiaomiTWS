@@ -45,4 +45,25 @@ public class CommonUtils {
         return String.join(".", Integer.toHexString(version).split(""));
     }
 
+    @NonNull
+    public static String bytesToHex(@NonNull byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02X", b));
+        }
+        return hexString.toString();
+    }
+
+    @NonNull
+    public static byte[] hexToBytes(@NonNull String hexString) {
+        int len = hexString.length();
+        byte[] bytes = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            int high = Character.digit(hexString.charAt(i), 16) << 4;
+            int low = Character.digit(hexString.charAt(i + 1), 16);
+            bytes[i / 2] = (byte) (high | low);
+        }
+        return bytes;
+    }
+
 }

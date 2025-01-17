@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="config_equalizer_mode_entries">
+        <item>@string/equalizer_mode_default</item>
+        <item>@string/equalizer_mode_vocal_enhance</item>
+        <item>@string/equalizer_mode_bass_boost</item>
+        <item>@string/equalizer_mode_treble_boost</item>
+        <!--<item>@strings/equalizer_mode_harman</item>-->
+    </string-array>
+
+    <string-array name="config_equalizer_mode_values">
+        <item>00</item>
+        <item>01</item>
+        <item>05</item>
+        <item>06</item>
+        <!--<item>14</item>-->
+    </string-array>
+
+</resources>

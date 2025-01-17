@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/earbuds_settings">
+
+    <ListPreference
+        android:defaultValue="00"
+        android:entries="@array/config_equalizer_mode_entries"
+        android:entryValues="@array/config_equalizer_mode_values"
+        android:key="equalizer_mode"
+        android:summary="%s"
+        android:title="@string/equalizer_mode" />
+
+</PreferenceScreen>

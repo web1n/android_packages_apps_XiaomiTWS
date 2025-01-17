@@ -3,4 +3,11 @@
     <string name="app_name">Xiaomi Bluetooth Service</string>
     <string name="firmware_version">Firmware version</string>
     <string name="earbuds_settings">Earbuds settings</string>
+    <string name="device_not_connected">Device not connected</string>
+    <string name="equalizer_mode">Equalizer mode</string>
+    <string name="equalizer_mode_default">Default</string>
+    <string name="equalizer_mode_vocal_enhance">Vocal enhance</string>
+    <string name="equalizer_mode_bass_boost">Bass boost</string>
+    <string name="equalizer_mode_treble_boost">Treble boost</string>
+    <string name="equalizer_mode_harman">Harman</string>
 </resources>
