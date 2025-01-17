@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils;
+import org.lineageos.xiaomi_bluetooth.utils.CommonUtils;
 import org.lineageos.xiaomi_bluetooth.utils.EarbudsUtils;
 import org.lineageos.xiaomi_bluetooth.utils.PowerUtils;
 
@@ -28,10 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
@@ -186,7 +183,7 @@ public class EarbudsService extends Service {
 
             String softwareVersion = null;
             try (MMADevice mma = new MMADevice(device)) {
-                softwareVersion = executeWithTimeout(() -> {
+                softwareVersion = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
                     return mma.getSoftwareVersion();
                 }, 1000);
@@ -225,7 +222,7 @@ public class EarbudsService extends Service {
 
             Earbuds earbuds = null;
             try (MMADevice mma = new MMADevice(device)) {
-                earbuds = executeWithTimeout(() -> {
+                earbuds = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
                     return mma.getBatteryInfo();
                 }, 1000);
@@ -296,22 +293,6 @@ public class EarbudsService extends Service {
 
         EarbudsUtils.setBluetoothDeviceType(device);
         EarbudsUtils.updateEarbudsStatus(device, earbuds);
-    }
-
-    private synchronized static <T> T executeWithTimeout(Callable<T> task, int timeout_ms) throws TimeoutException {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<T> future = executor.submit(task);
-
-        try {
-            return future.get(timeout_ms, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException | InterruptedException e) {
-            future.cancel(true);
-            throw new TimeoutException();
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e.getCause());
-        } finally {
-            executor.shutdownNow();
-        }
     }
 
 }
