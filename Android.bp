@@ -9,6 +9,7 @@ android_app {
     privileged: true,
 
     static_libs: [
+        "SettingsLib",
         "androidx.core_core",
     ],
 

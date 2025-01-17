@@ -10,6 +10,8 @@ import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 import static android.bluetooth.BluetoothDevice.*;
 import static org.lineageos.xiaomi_bluetooth.EarbudsConstants.*;
 
+import static com.android.settingslib.bluetooth.BluetoothUtils.META_INT_ERROR;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,24 +69,27 @@ public class EarbudsUtils {
     }
 
     public static void updateEarbudsStatus(BluetoothDevice device, Earbuds earbuds) {
-        if (earbuds.left != null) {
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_LEFT_CHARGING, earbuds.left.charging);
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_LEFT_BATTERY, earbuds.left.battery);
-        }
-        if (earbuds.right != null) {
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_RIGHT_CHARGING, earbuds.right.charging);
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_RIGHT_BATTERY, earbuds.right.battery);
-        }
-        if (earbuds.chargingCase != null) {
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_CASE_CHARGING, earbuds.chargingCase.charging);
-            BluetoothUtils.updateDeviceMetadata(device,
-                    METADATA_UNTETHERED_CASE_BATTERY, earbuds.chargingCase.battery);
-        }
+        // left
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_LEFT_CHARGING,
+                earbuds.left != null && earbuds.left.charging);
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_LEFT_BATTERY,
+                earbuds.left != null ? earbuds.left.battery : META_INT_ERROR);
+        // right
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_RIGHT_CHARGING,
+                earbuds.right != null && earbuds.right.charging);
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_RIGHT_BATTERY,
+                earbuds.right != null ? earbuds.right.battery : META_INT_ERROR);
+        // case
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_CASE_CHARGING,
+                earbuds.chargingCase != null && earbuds.chargingCase.charging);
+        BluetoothUtils.updateDeviceMetadata(device,
+                METADATA_UNTETHERED_CASE_BATTERY,
+                earbuds.chargingCase != null ? earbuds.chargingCase.battery : META_INT_ERROR);
     }
 
 }
