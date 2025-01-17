@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -297,6 +298,25 @@ public class MMADevice implements AutoCloseable {
         if (DEBUG) Log.d(TAG, "setEqualizerMode");
 
         return setDeviceConfig(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, new byte[]{eqMode});
+    }
+
+    @Nullable
+    public String getDeviceSN() throws IOException {
+        if (DEBUG) Log.d(TAG, "getDeviceSN");
+
+        byte[] snBytes = getDeviceConfig(EarbudsConstants.XIAOMI_MMA_CONFIG_SN, 20);
+        if (snBytes == null) {
+            return null;
+        }
+
+        String snString;
+        try {
+            snString = new String(snBytes, StandardCharsets.US_ASCII);
+        } catch (Exception ignored) {
+            snString = null;
+        }
+        if (DEBUG) Log.d(TAG, "getDeviceSN: " + snString);
+        return snString;
     }
 
     @NonNull

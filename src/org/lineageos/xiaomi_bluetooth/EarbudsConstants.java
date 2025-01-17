@@ -28,6 +28,7 @@ public class EarbudsConstants {
     public static final int XIAOMI_MMA_MASK_GET_BATTERY = 7;
 
     public static final int XIAOMI_MMA_CONFIG_EQUALIZER_MODE = 0x0007;
+    public static final int XIAOMI_MMA_CONFIG_SN = 0x0027;
 
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT = 0x00;
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOCAL_ENHANCE = 0x01;
