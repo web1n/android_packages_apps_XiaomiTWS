@@ -15,11 +15,13 @@ public class MMAResponse {
 
     public final byte opCode;
     public final byte opCodeSN;
+    public final byte status;
     public final byte[] data;
 
-    protected MMAResponse(byte opCode, byte opCodeSN, byte[] data) {
+    protected MMAResponse(byte opCode, byte opCodeSN, byte status, byte[] data) {
         this.opCode = opCode;
         this.opCodeSN = opCodeSN;
+        this.status = status;
         this.data = data;
     }
 
@@ -29,6 +31,7 @@ public class MMAResponse {
         return "MMAResponse{" +
                 "opCode=" + opCode +
                 ", opCodeSN=" + opCodeSN +
+                ", status=" + status +
                 ", data=" + Arrays.toString(data) +
                 '}';
     }
@@ -63,7 +66,7 @@ public class MMAResponse {
         System.arraycopy(packet, 6, data, 0, parameterLength - 2);
 
         if (DEBUG) Log.d(TAG, "fromPacket: opCode " + opCode + " opCodeSN " + opCodeSN);
-        return new MMAResponse(opCode, opCodeSN, data);
+        return new MMAResponse(opCode, opCodeSN, status, data);
     }
 
 }
