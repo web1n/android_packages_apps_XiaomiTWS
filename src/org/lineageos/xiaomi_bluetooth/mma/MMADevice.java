@@ -10,11 +10,18 @@ import androidx.annotation.Nullable;
 
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
+import org.lineageos.xiaomi_bluetooth.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 
@@ -180,6 +187,94 @@ public class MMADevice implements AutoCloseable {
 
         if (DEBUG) Log.d(TAG, "getVidPid: vid: " + vendorId + " pid: " + productId);
         return new Pair<>(vendorId, productId);
+    }
+
+    @NonNull
+    public Map<Integer, byte[]> getDeviceConfig(@NonNull int[] configs) throws IOException {
+        if (DEBUG) Log.d(TAG, "getDeviceConfig");
+
+        byte[] requestData = new byte[configs.length * 2];
+        for (int i = 0; i < configs.length; i++) {
+            requestData[i * 2] = (byte) ((configs[i] >> 8) & 0xFF);
+            requestData[(i * 2) + 1] = (byte) (configs[i] & 0xFF);
+        }
+        if (DEBUG) Log.d(TAG, "getDeviceConfig: " + Arrays.toString(requestData));
+
+        MMARequest request = new MMARequest(
+                EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_CONFIG,
+                getNewOpCodeSN(), requestData, true);
+        MMAResponse response = sendReceive(request);
+
+        Map<Integer, byte[]> configValues = new HashMap<>();
+        if (response == null) {
+            return configValues;
+        }
+
+        ByteBuffer buffer = ByteBuffer.wrap(response.data);
+        while (buffer.remaining() >= 4) {
+            int length = buffer.get();
+            if (length < 2 || length > buffer.remaining()) {
+                break;
+            }
+            int key = ((buffer.get() & 0xFF) << 8) | (buffer.get() & 0xFF);
+            byte[] value = new byte[length - 2];
+            buffer.get(value, 0, value.length);
+
+            if (Arrays.binarySearch(configs, key) == -1) {
+                continue;
+            }
+
+            configValues.put(key, value);
+        }
+
+        return configValues;
+    }
+
+    @Nullable
+    public byte[] getDeviceConfig(int config, int expectedLength) throws IOException {
+        if (DEBUG) Log.d(TAG, "getDeviceConfig");
+
+        Map<Integer, byte[]> configs = getDeviceConfig(new int[]{config});
+        byte[] configBytes = configs.getOrDefault(config, null);
+
+        if (configBytes == null || configBytes.length != expectedLength) {
+            return null;
+        }
+        return configBytes;
+    }
+
+    public boolean setDeviceConfig(@NonNull Map<Integer, byte[]> configs) throws IOException {
+        if (DEBUG) Log.d(TAG, "setDeviceConfig");
+
+        List<Byte> requestDataList = new ArrayList<>();
+        for (Map.Entry<Integer, byte[]> entry : configs.entrySet()) {
+            requestDataList.add((byte) (entry.getValue().length + 2));
+
+            requestDataList.add((byte) ((entry.getKey() >> 8) & 0xFF));
+            requestDataList.add((byte) (entry.getKey() & 0xFF));
+
+            for (byte b : entry.getValue()) requestDataList.add(b);
+        }
+        byte[] requestData = CommonUtils.byteListToArray(requestDataList);
+
+        MMARequest request = new MMARequest(
+                EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_CONFIG,
+                getNewOpCodeSN(), requestData, true);
+        MMAResponse response = sendReceive(request);
+
+        if (response == null) {
+            return false;
+        }
+        return response.status == EarbudsConstants.XIAOMI_MMA_RESPONSE_STATUS_OK;
+    }
+
+    public boolean setDeviceConfig(int config, byte[] value) throws IOException {
+        if (DEBUG) Log.d(TAG, "setDeviceConfig");
+
+        Map<Integer, byte[]> configs = new HashMap<>();
+        configs.put(config, value);
+
+        return setDeviceConfig(configs);
     }
 
     @NonNull
