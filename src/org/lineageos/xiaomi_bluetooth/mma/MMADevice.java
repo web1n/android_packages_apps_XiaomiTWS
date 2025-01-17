@@ -139,7 +139,7 @@ public class MMADevice implements AutoCloseable {
             return null;
         }
 
-        String version = Integer.toHexString(((data[2] & 0xFF) << 8) | (data[3] & 0xFF));
+        String version = CommonUtils.intToVersion(((data[2] & 0xFF) << 8) | (data[3] & 0xFF));
 
         if (DEBUG) Log.d(TAG, "getUBootVersion: " + version);
         return version;
@@ -153,8 +153,8 @@ public class MMADevice implements AutoCloseable {
             return null;
         }
 
-        String primaryVersion = Integer.toHexString(((data[2] & 0xFF) << 8) | (data[3] & 0xFF));
-        String secondaryVersion = Integer.toHexString(((data[4] & 0xFF) << 8) | (data[5] & 0xFF));
+        String primaryVersion = CommonUtils.intToVersion(((data[2] & 0xFF) << 8) | (data[3] & 0xFF));
+        String secondaryVersion = CommonUtils.intToVersion(((data[4] & 0xFF) << 8) | (data[5] & 0xFF));
 
         if (DEBUG) Log.d(TAG, "getSoftwareVersion: primary: " + primaryVersion);
         if (DEBUG) Log.d(TAG, "getSoftwareVersion: secondary: " + secondaryVersion);

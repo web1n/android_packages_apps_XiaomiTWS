@@ -17,4 +17,9 @@ public class CommonUtils {
         return buffer.array();
     }
 
+    @NonNull
+    public static String intToVersion(int version) {
+        return String.join(".", Integer.toHexString(version).split(""));
+    }
+
 }
