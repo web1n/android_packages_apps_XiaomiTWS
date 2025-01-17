@@ -15,6 +15,17 @@
         android:directBootAware="true"
         android:label="@string/app_name">
 
+        <activity
+            android:name=".settings.EarbudsActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="false"
+            android:label="@string/earbuds_settings"
+            android:theme="@style/Theme.SubSettingsBase">
+            <intent-filter>
+                <action android:name="com.android.settings.action.IA_SETTINGS" />
+            </intent-filter>
+        </activity>
+
         <service android:name=".EarbudsService" />
 
         <receiver
