@@ -30,6 +30,7 @@ public class EarbudsFragment extends PreferenceFragment {
     private static final boolean DEBUG = true;
 
     private static final String KEY_EQUALIZER_MODE = "equalizer_mode";
+    private static final String KEY_NOISE_CANCELLATION_MODE = "noise_cancellation_mode";
     private static final String KEY_SERIAL_NUMBER = "serial_number";
 
     private static final Map<Integer, String> CONFIG_KEY_MAP = new HashMap<>();
@@ -40,6 +41,7 @@ public class EarbudsFragment extends PreferenceFragment {
 
     static {
         CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, KEY_EQUALIZER_MODE);
+        CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE, KEY_NOISE_CANCELLATION_MODE);
         CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_SN, KEY_SERIAL_NUMBER);
     }
 

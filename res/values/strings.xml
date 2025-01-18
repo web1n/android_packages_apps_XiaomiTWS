@@ -11,4 +11,8 @@
     <string name="equalizer_mode_bass_boost">Bass boost</string>
     <string name="equalizer_mode_treble_boost">Treble boost</string>
     <string name="equalizer_mode_harman">Harman</string>
+    <string name="noise_cancellation_mode">Noise cancellation mode</string>
+    <string name="noise_cancellation_mode_off">Off</string>
+    <string name="noise_cancellation_mode_on">On</string>
+    <string name="noise_cancellation_mode_transparency">Transparency</string>
 </resources>

@@ -10,6 +10,14 @@
         android:summary="%s"
         android:title="@string/equalizer_mode" />
 
+    <ListPreference
+        android:defaultValue="0000"
+        android:entries="@array/config_noise_cancellation_mode_entries"
+        android:entryValues="@array/config_noise_cancellation_mode_values"
+        android:key="noise_cancellation_mode"
+        android:summary="%s"
+        android:title="@string/noise_cancellation_mode" />
+
     <Preference
         android:key="serial_number"
         android:selectable="false"

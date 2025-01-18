@@ -16,4 +16,16 @@
         <!--<item>14</item>-->
     </string-array>
 
+    <string-array name="config_noise_cancellation_mode_entries">
+        <item>@string/noise_cancellation_mode_off</item>
+        <item>@string/noise_cancellation_mode_on</item>
+        <item>@string/noise_cancellation_mode_transparency</item>
+    </string-array>
+
+    <string-array name="config_noise_cancellation_mode_values">
+        <item>0000</item>
+        <item>0100</item>
+        <item>0200</item>
+    </string-array>
+
 </resources>
