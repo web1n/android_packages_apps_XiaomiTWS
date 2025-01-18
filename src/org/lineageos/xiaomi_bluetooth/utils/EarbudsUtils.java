@@ -1,8 +1,11 @@
 package org.lineageos.xiaomi_bluetooth.utils;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.lineageos.xiaomi_bluetooth.BleSliceProvider;
@@ -21,6 +24,37 @@ public class EarbudsUtils {
 
     public static String TAG = EarbudsUtils.class.getName();
     public static boolean DEBUG = true;
+
+    @Nullable
+    public static Earbuds parseXiaomiATCommand(@NonNull BluetoothDevice device, @NonNull String arg0) {
+        if (arg0.length() < 16 || !arg0.startsWith("FF010201") || !arg0.endsWith("FF")) {
+            return null;
+        }
+        byte[] scanRecordBytes = CommonUtils.hexToBytes(arg0.substring(14, arg0.length() - 2));
+
+        ScanRecord record;
+        try {
+            record = (ScanRecord) ScanRecord.class
+                    .getMethod("parseFromBytes", byte[].class)
+                    .invoke(null, scanRecordBytes);
+        } catch (Exception e) {
+            Log.e(TAG, "parseXiaomiATCommand: ", e);
+            return null;
+        }
+
+        Log.e("TAG", "parseXiaomiATCommand record: " + record);
+        if (record == null) {
+            return null;
+        }
+
+        byte[] fastConnectData = record.getServiceData(UUID_XIAOMI_FAST_CONNECT);
+        if (fastConnectData == null || fastConnectData.length < XIAOMI_MMA_DATA_LENGTH) {
+            return null;
+        }
+
+        return Earbuds.fromBytes(device.getAddress(),
+                fastConnectData[13], fastConnectData[12], fastConnectData[14]);
+    }
 
     @Nullable
     public static Earbuds parseScanResult(ScanResult result) {

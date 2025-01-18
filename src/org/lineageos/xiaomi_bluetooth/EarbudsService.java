@@ -3,6 +3,7 @@ package org.lineageos.xiaomi_bluetooth;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
@@ -70,6 +71,10 @@ public class EarbudsService extends Service {
                 if (device != null) {
                     runUpdateMMADeviceBattery(device);
                 }
+            } else if (BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT.equals(intent.getAction())) {
+                if (device != null) {
+                    runCheckATCommand(device, intent);
+                }
             }
 
             startOrStopEarbudsScan();
@@ -108,6 +113,37 @@ public class EarbudsService extends Service {
         return null;
     }
 
+    private void runCheckATCommand(@NonNull BluetoothDevice device, @NonNull Intent intent) {
+        if (DEBUG) Log.d(TAG, "runCheckATCommand");
+        String cmd = intent.getStringExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD);
+        int type = intent.getIntExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE,
+                BluetoothHeadset.AT_CMD_TYPE_READ);
+        Object[] args = intent.getSerializableExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, Object[].class);
+
+        if (!EarbudsConstants.VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI.equals(cmd)) {
+            if (DEBUG) Log.d(TAG, "runCheckATCommand: cmd not xiaomi: " + cmd);
+            return;
+        } else if (type != BluetoothHeadset.AT_CMD_TYPE_SET) {
+            if (DEBUG) Log.d(TAG, "runCheckATCommand: type not AT_CMD_TYPE_SET " + type);
+            return;
+        } else if (args == null || args.length != 1 || !(args[0] instanceof String)) {
+            if (DEBUG) Log.d(TAG, "runCheckATCommand: args not valid");
+            return;
+        }
+
+        Earbuds earbuds = EarbudsUtils.parseXiaomiATCommand(device, (String) args[0]);
+        if (DEBUG) Log.d(TAG, "runCheckATCommand: " + args[0] + " " + earbuds);
+
+        if (earbuds != null) {
+            bluetoothDeviceRecords.put(device.getAddress(), true);
+
+            updateEarbudsStatus(earbuds);
+        }
+    }
+
     private void startBluetoothStateListening() {
         if (DEBUG) Log.d(TAG, "startBluetoothStateListening");
 
@@ -127,6 +163,11 @@ public class EarbudsService extends Service {
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
+
+        // Xiaomi AT event
+        filter.addAction(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
+        filter.addCategory(BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
+                + "." + EarbudsConstants.MANUFACTURER_ID_XIAOMI);
 
         if (DEBUG) Log.d(TAG, "registering bluetooth state receiver");
         registerReceiver(bluetoothStateReceiver, filter);
