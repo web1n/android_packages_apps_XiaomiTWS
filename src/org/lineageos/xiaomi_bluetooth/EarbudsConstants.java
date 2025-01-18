@@ -28,6 +28,7 @@ public class EarbudsConstants {
     public static final int XIAOMI_MMA_MASK_GET_BATTERY = 7;
 
     public static final int XIAOMI_MMA_CONFIG_EQUALIZER_MODE = 0x0007;
+    public static final int XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE = 0x000B;
     public static final int XIAOMI_MMA_CONFIG_SN = 0x0027;
 
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT = 0x00;
@@ -35,5 +36,9 @@ public class EarbudsConstants {
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_BASS_BOOST = 0x05;
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_TREBLE_BOOST = 0x06;
     public static final byte XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN = 0x14;
+
+    public static final byte XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF = 0x00;
+    public static final byte XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON = 0x01;
+    public static final byte XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY = 0x02;
 
 }

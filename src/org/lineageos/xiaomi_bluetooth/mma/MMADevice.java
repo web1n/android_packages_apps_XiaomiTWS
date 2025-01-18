@@ -319,6 +319,30 @@ public class MMADevice implements AutoCloseable {
         return snString;
     }
 
+    public byte getNoiseCancellationMode() throws IOException {
+        if (DEBUG) Log.d(TAG, "getNoiseCancellationMode");
+
+        byte[] noiseCancellationModeBytes = getDeviceConfig(
+                EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE, 2);
+        if (noiseCancellationModeBytes != null) {
+            byte noiseCancellationMode = noiseCancellationModeBytes[0];
+            if (DEBUG) Log.d(TAG, "getNoiseCancellationMode " + noiseCancellationMode);
+
+            if (noiseCancellationMode <= EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY) {
+                return noiseCancellationMode;
+            }
+        }
+
+        return EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF;
+    }
+
+    public boolean setNoiseCancellationMode(byte mode) throws IOException {
+        if (DEBUG) Log.d(TAG, "setNoiseCancellationMode");
+
+        return setDeviceConfig(
+                EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE, new byte[]{mode, 0x00});
+    }
+
     @NonNull
     private static byte[] getResponsePacket(@NonNull InputStream inputStream) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
