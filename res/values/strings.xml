@@ -4,6 +4,7 @@
     <string name="firmware_version">Firmware version</string>
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>
+    <string name="feature_not_supported">Feature not supported</string>
     <string name="serial_number">Serial number</string>
     <string name="equalizer_mode">Equalizer mode</string>
     <string name="equalizer_mode_default">Default</string>

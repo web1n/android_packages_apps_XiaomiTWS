@@ -99,6 +99,10 @@ public class EarbudsFragment extends PreferenceFragment {
                 configs.forEach((key, value) ->
                         CONFIG_VALUE_MAP.put(key, CommonUtils.bytesToHex(value)));
             }
+
+            // put default value
+            CONFIG_KEY_MAP.keySet().forEach(key -> CONFIG_VALUE_MAP.putIfAbsent(key, "FF"));
+
             if (getActivity() != null) {
                 getActivity().runOnUiThread(this::updatePreferenceValue);
             }
@@ -123,7 +127,11 @@ public class EarbudsFragment extends PreferenceFragment {
             }
 
             // FF is not supported
-            preference.setEnabled(!"FF".equals(value));
+            if ("FF".equals(value)) {
+                preference.setSelectable(false);
+                preference.setSummary(R.string.feature_not_supported);
+                return;
+            }
 
             if (preference instanceof ListPreference) {
                 ((ListPreference) preference).setValue(value);
