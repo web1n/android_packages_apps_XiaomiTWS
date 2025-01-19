@@ -64,7 +64,9 @@ public class EarbudsFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.earbuds_settings);
 
         ListPreference equalizerPreference = (ListPreference) findPreference(KEY_EQUALIZER_MODE);
+        ListPreference noiseCancellationPreference = (ListPreference) findPreference(KEY_NOISE_CANCELLATION_MODE);
         bindLayout(equalizerPreference);
+        bindLayout(noiseCancellationPreference);
     }
 
     @Override
