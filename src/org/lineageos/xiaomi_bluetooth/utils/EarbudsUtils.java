@@ -3,12 +3,14 @@ package org.lineageos.xiaomi_bluetooth.utils;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.lineageos.xiaomi_bluetooth.BleSliceProvider;
+import org.lineageos.xiaomi_bluetooth.EarbudsIconProvider;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 
 import static android.bluetooth.BluetoothDevice.*;
@@ -95,10 +97,15 @@ public class EarbudsUtils {
         return String.join(":", hexList);
     }
 
-    public static void setBluetoothDeviceType(BluetoothDevice device) {
+    private static void setEarbudsMetadata(@NonNull BluetoothDevice device) {
+        if (!device.isConnected()) {
+            if (DEBUG) Log.d(TAG, "device not connected " + device);
+            return;
+        }
+
+        // set device type
         BluetoothUtils.setDeviceMetadata(device,
-                METADATA_DEVICE_TYPE,
-                DEVICE_TYPE_UNTETHERED_HEADSET, false);
+                METADATA_DEVICE_TYPE, DEVICE_TYPE_UNTETHERED_HEADSET, false);
         BluetoothUtils.setDeviceMetadata(device,
                 METADATA_IS_UNTETHERED_HEADSET, true, false);
         BluetoothUtils.setDeviceMetadata(device,
@@ -106,7 +113,51 @@ public class EarbudsUtils {
                 BleSliceProvider.generateSliceUri(device.getAddress()), false);
     }
 
-    public static void updateEarbudsStatus(BluetoothDevice device, Earbuds earbuds) {
+    public static void setEarbudsModelData(@NonNull Context context,
+                                           @NonNull BluetoothDevice device,
+                                           int vendorId, int productId,
+                                           @NonNull String softwareVersion) {
+        if (!device.isConnected()) {
+            if (DEBUG) Log.d(TAG, "device not connected " + device);
+            return;
+        }
+        setEarbudsMetadata(device);
+
+        // set software version
+        BluetoothUtils.updateDeviceMetadata(device,
+                BluetoothDevice.METADATA_SOFTWARE_VERSION, softwareVersion);
+
+        // set icon
+        // left
+        String leftIcon = EarbudsIconProvider.generateIconUri(
+                context, vendorId, productId, EarbudsIconProvider.TYPE_LEFT);
+        BluetoothUtils.setDeviceMetadata(device,
+                BluetoothDevice.METADATA_UNTETHERED_LEFT_ICON, leftIcon, false);
+        // right
+        String rightIcon = EarbudsIconProvider.generateIconUri(
+                context, vendorId, productId, EarbudsIconProvider.TYPE_RIGHT);
+        BluetoothUtils.setDeviceMetadata(device,
+                BluetoothDevice.METADATA_UNTETHERED_RIGHT_ICON, rightIcon, false);
+        // case
+        String caseIcon = EarbudsIconProvider.generateIconUri(
+                context, vendorId, productId, EarbudsIconProvider.TYPE_CASE);
+        BluetoothUtils.setDeviceMetadata(device,
+                BluetoothDevice.METADATA_UNTETHERED_CASE_ICON, caseIcon, false);
+        BluetoothUtils.setDeviceMetadata(device,
+                BluetoothDevice.METADATA_MAIN_ICON, caseIcon, false);
+    }
+
+    public static void updateEarbudsStatus(@NonNull Earbuds earbuds) {
+        if (!earbuds.isValid()) return;
+        if (DEBUG) Log.d(TAG, "updateEarbudsStatus " + earbuds);
+
+        BluetoothDevice device = BluetoothUtils.getBluetoothDevice(earbuds.macAddress);
+        if (device == null || !device.isConnected()) {
+            if (DEBUG) Log.d(TAG, "device is null or not connected " + device);
+            return;
+        }
+        setEarbudsMetadata(device);
+
         // left
         BluetoothUtils.updateDeviceMetadata(device,
                 METADATA_UNTETHERED_LEFT_CHARGING,

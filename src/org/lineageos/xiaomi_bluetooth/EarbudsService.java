@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,7 +85,7 @@ public class EarbudsService extends Service {
     private final EarbudsScanCallback EarbudsScanCallback = new EarbudsScanCallback() {
         @Override
         public void onEarbudsScanResult(@NonNull Earbuds earbuds) {
-            updateEarbudsStatus(earbuds);
+            EarbudsUtils.updateEarbudsStatus(earbuds);
         }
     };
 
@@ -138,7 +139,7 @@ public class EarbudsService extends Service {
         if (DEBUG) Log.d(TAG, "runCheckATCommand: " + args[0] + " " + earbuds);
 
         if (earbuds != null) {
-            updateEarbudsStatus(earbuds);
+            EarbudsUtils.updateEarbudsStatus(earbuds);
         }
     }
 
@@ -220,23 +221,25 @@ public class EarbudsService extends Service {
                 return;
             }
 
+            Pair<Integer, Integer> vidPid = null;
             String softwareVersion = null;
             try (MMADevice mma = new MMADevice(device)) {
-                softwareVersion = CommonUtils.executeWithTimeout(() -> {
+                vidPid = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
-                    return mma.getSoftwareVersion();
+                    return mma.getVidPid();
                 }, 1000);
+                softwareVersion = CommonUtils.executeWithTimeout(mma::getSoftwareVersion, 1000);
             } catch (RuntimeException | TimeoutException ignored) {
             } catch (IOException e) {
-                Log.e(TAG, "runUpdateMMADeviceBattery: ", e);
+                Log.e(TAG, "runCheckXiaomiMMADevice: ", e);
             }
-            boolean isMMADevice = softwareVersion != null;
+            boolean isMMADevice = vidPid != null && softwareVersion != null;
             if (DEBUG) Log.i(TAG, device.getName() + " isMMADevice " + isMMADevice);
 
-            // set firmware version metadata
-            if (device.isConnected() && softwareVersion != null) {
-                BluetoothUtils.updateDeviceMetadata(device,
-                        BluetoothDevice.METADATA_SOFTWARE_VERSION, softwareVersion);
+            // set metadata
+            if (device.isConnected() && isMMADevice) {
+                EarbudsUtils.setEarbudsModelData(getApplication(),
+                        device, vidPid.first, vidPid.second, softwareVersion);
             }
 
             bluetoothDeviceRecords.put(device.getAddress(), isMMADevice);
@@ -272,7 +275,7 @@ public class EarbudsService extends Service {
 
             if (DEBUG) Log.d(TAG, "runUpdateMMADeviceBattery: " + earbuds);
             if (earbuds != null) {
-                updateEarbudsStatus(earbuds);
+                EarbudsUtils.updateEarbudsStatus(earbuds);
             }
         });
     }
@@ -317,21 +320,6 @@ public class EarbudsService extends Service {
             }
             scanner.stopScan(EarbudsScanCallback);
         }
-    }
-
-    private void updateEarbudsStatus(Earbuds earbuds) {
-        if (!earbuds.isValid()) return;
-        if (DEBUG) Log.d(TAG, "updateEarbudsStatus " + earbuds);
-
-        BluetoothDevice device =
-                BluetoothUtils.getBluetoothDevice(earbuds.macAddress);
-        if (device == null || !device.isConnected()) {
-            if (DEBUG) Log.d(TAG, "device is null or not connected " + earbuds.macAddress);
-            return;
-        }
-
-        EarbudsUtils.setBluetoothDeviceType(device);
-        EarbudsUtils.updateEarbudsStatus(device, earbuds);
     }
 
 }
