@@ -138,8 +138,6 @@ public class EarbudsService extends Service {
         if (DEBUG) Log.d(TAG, "runCheckATCommand: " + args[0] + " " + earbuds);
 
         if (earbuds != null) {
-            bluetoothDeviceRecords.put(device.getAddress(), true);
-
             updateEarbudsStatus(earbuds);
         }
     }
