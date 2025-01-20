@@ -39,8 +39,8 @@ import java.util.concurrent.Executors;
 
 public class EarbudsService extends Service {
 
-    public static String TAG = EarbudsService.class.getName();
-    public static boolean DEBUG = true;
+    public static final String TAG = EarbudsService.class.getName();
+    public static final boolean DEBUG = true;
 
     private final ExecutorService earbudsExecutor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());

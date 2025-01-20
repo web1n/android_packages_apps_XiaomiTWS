@@ -22,8 +22,8 @@ import java.util.List;
 
 public class EarbudsUtils {
 
-    public static String TAG = EarbudsUtils.class.getName();
-    public static boolean DEBUG = true;
+    public static final String TAG = EarbudsUtils.class.getName();
+    public static final boolean DEBUG = true;
 
     @Nullable
     public static Earbuds parseXiaomiATCommand(@NonNull BluetoothDevice device, @NonNull String arg0) {

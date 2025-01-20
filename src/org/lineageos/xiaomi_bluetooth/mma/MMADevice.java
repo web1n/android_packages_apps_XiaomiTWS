@@ -28,8 +28,8 @@ import java.util.Random;
 
 public class MMADevice implements AutoCloseable {
 
-    public static String TAG = MMADevice.class.getName();
-    public static boolean DEBUG = true;
+    public static final String TAG = MMADevice.class.getName();
+    public static final boolean DEBUG = true;
 
     private final BluetoothDevice device;
 

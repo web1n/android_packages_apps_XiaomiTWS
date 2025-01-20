@@ -11,8 +11,8 @@ import androidx.annotation.Nullable;
 
 public class BluetoothUtils {
 
-    public static String TAG = BluetoothUtils.class.getName();
-    public static boolean DEBUG = true;
+    public static final String TAG = BluetoothUtils.class.getName();
+    public static final boolean DEBUG = true;
 
     @Nullable
     public static BluetoothAdapter getBluetoothAdapter(@Nullable Context context) {
