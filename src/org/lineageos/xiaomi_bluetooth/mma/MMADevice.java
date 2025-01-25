@@ -1,5 +1,6 @@
 package org.lineageos.xiaomi_bluetooth.mma;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
@@ -379,6 +380,9 @@ public class MMADevice implements AutoCloseable {
         if (!device.isConnected()) {
             throw new IOException("device not connected");
         }
+
+        // cancel discovery before connect
+        BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
         BluetoothSocket socket;
         try {
