@@ -53,7 +53,7 @@ public class EarbudsService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent == null || intent.getAction() == null) return;
-            if (DEBUG) Log.d(TAG, "device state changed");
+            if (DEBUG) Log.d(TAG, "device state changed " + intent.getAction());
             BluetoothDevice device = intent.getParcelableExtra(
                     BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
 
@@ -63,8 +63,10 @@ public class EarbudsService extends Service {
                     if (DEBUG) Log.i(TAG, "clear all device");
                     bluetoothDeviceRecords.clear();
                 }
-            } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())) {
+            } else if (BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED.equals(intent.getAction())) {
+                int state = intent.getIntExtra(BluetoothHeadset.EXTRA_STATE, BluetoothHeadset.STATE_DISCONNECTED);
                 if (device != null
+                        && state == BluetoothHeadset.STATE_CONNECTED
                         && !bluetoothDeviceRecords.containsKey(device.getAddress())) {
                     runCheckXiaomiMMADevice(device);
                 }
@@ -76,9 +78,12 @@ public class EarbudsService extends Service {
                 if (device != null) {
                     runCheckATCommand(device, intent);
                 }
+            } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(intent.getAction())
+                    || BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(intent.getAction())
+                    || Intent.ACTION_SCREEN_ON.equals(intent.getAction())
+                    || Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                startOrStopEarbudsScan();
             }
-
-            startOrStopEarbudsScan();
         }
     };
 
@@ -160,6 +165,7 @@ public class EarbudsService extends Service {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         filter.addAction(BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
 
