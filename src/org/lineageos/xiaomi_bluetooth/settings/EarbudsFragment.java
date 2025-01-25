@@ -34,7 +34,7 @@ public class EarbudsFragment extends PreferenceFragment {
     private static final String KEY_SERIAL_NUMBER = "serial_number";
 
     private static final Map<Integer, String> CONFIG_KEY_MAP = new HashMap<>();
-    private final Map<Integer, String> CONFIG_VALUE_MAP = new HashMap<>();
+    private final Map<Integer, String> configValues = new HashMap<>();
 
     private ExecutorService earbudsExecutor;
     private BluetoothDevice device;
@@ -99,48 +99,64 @@ public class EarbudsFragment extends PreferenceFragment {
 
             if (configs != null) {
                 configs.forEach((key, value) ->
-                        CONFIG_VALUE_MAP.put(key, CommonUtils.bytesToHex(value)));
+                        configValues.put(key, CommonUtils.bytesToHex(value)));
             }
 
             // put default value
-            CONFIG_KEY_MAP.keySet().forEach(key -> CONFIG_VALUE_MAP.putIfAbsent(key, "FF"));
+            CONFIG_KEY_MAP.keySet().forEach(key -> configValues.putIfAbsent(key, "FF"));
 
             if (getActivity() != null) {
-                getActivity().runOnUiThread(this::updatePreferenceValue);
+                getActivity().runOnUiThread(this::updatePreferenceValues);
             }
         });
     }
 
-    private void updatePreferenceValue() {
-        if (DEBUG) Log.d(TAG, "updatePreferenceValue");
+    private void updatePreferenceValues() {
+        if (DEBUG) Log.d(TAG, "updatePreferenceValues");
         if (getContext() == null || !isResumed()) {
             return;
         }
 
-        CONFIG_VALUE_MAP.forEach((key, value) -> {
+        configValues.forEach((key, value) -> {
             String preferenceKey = CONFIG_KEY_MAP.getOrDefault(key, null);
-            if (DEBUG) Log.d(TAG, "updatePreferenceValue: " + preferenceKey + " " + value);
-            if (preferenceKey == null) {
-                return;
-            }
-            Preference preference = findPreference(preferenceKey);
-            if (preference == null) {
-                return;
-            }
+            if (DEBUG) Log.d(TAG, "updatePreferenceValues: " + preferenceKey + " " + value);
 
-            // FF is not supported
-            if ("FF".equals(value)) {
-                preference.setSelectable(false);
-                preference.setSummary(R.string.feature_not_supported);
-                return;
-            }
-
-            if (preference instanceof ListPreference) {
-                ((ListPreference) preference).setValue(value);
-            } else {
-                preference.setSummary(valueToSummary(preferenceKey, value));
+            if (preferenceKey != null) {
+                Preference preference = findPreference(preferenceKey);
+                if (preference != null) {
+                    updatePreference(preference, value);
+                }
             }
         });
+    }
+
+    private void updatePreference(Preference preference, String value) {
+        if ("FF".equals(value)) {
+            preference.setSelectable(false);
+            preference.setSummary(R.string.feature_not_supported);
+            return;
+        }
+
+        if (preference instanceof ListPreference) {
+            ((ListPreference) preference).setValue(value);
+        } else {
+            preference.setSummary(valueToSummary(preference.getKey(), value));
+        }
+    }
+
+    private boolean saveConfig(int configKey, String value) {
+        byte[] bytesValue = CommonUtils.hexToBytes(value);
+
+        try (MMADevice mma = new MMADevice(device)) {
+            return CommonUtils.executeWithTimeout(() -> {
+                mma.connect();
+                return mma.setDeviceConfig(configKey, bytesValue);
+            }, 300);
+        } catch (RuntimeException | TimeoutException | IOException e) {
+            showToast("Error saving config: " + e.getMessage());
+            Log.e(TAG, "Error saving device config", e);
+            return false;
+        }
     }
 
     private void bindLayout(@NonNull ListPreference preference) {
@@ -155,23 +171,11 @@ public class EarbudsFragment extends PreferenceFragment {
             }
 
             earbudsExecutor.execute(() -> {
-                boolean saved = false;
-                try (MMADevice mma = new MMADevice(device)) {
-                    byte[] value = CommonUtils.hexToBytes((String) newValue);
-
-                    saved = CommonUtils.executeWithTimeout(() -> {
-                        mma.connect();
-                        return mma.setDeviceConfig(configKey, value);
-                    }, 300);
-                } catch (RuntimeException | TimeoutException | IOException e) {
-                    showToast(e.toString());
-                    Log.e(TAG, "onPreferenceChanged: ", e);
+                boolean isSaved = saveConfig(configKey, (String) newValue);
+                if (isSaved) {
+                    configValues.put(configKey, (String) newValue);
+                    getActivity().runOnUiThread(this::updatePreferenceValues);
                 }
-
-                if (saved) {
-                    CONFIG_VALUE_MAP.put(configKey, (String) newValue);
-                }
-                getActivity().runOnUiThread(this::updatePreferenceValue);
             });
 
             return false;
