@@ -11,9 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 
@@ -31,9 +29,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,9 +41,9 @@ public class EarbudsService extends Service {
     public static final String TAG = EarbudsService.class.getName();
     public static final boolean DEBUG = true;
 
-    private final ExecutorService earbudsExecutor = Executors.newSingleThreadExecutor();
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static final int MMA_DEVICE_CHECK_TIMEOUT_MS = 1000;
 
+    private final ExecutorService earbudsExecutor = Executors.newSingleThreadExecutor();
     private final Map<String, Boolean> bluetoothDeviceRecords = new ConcurrentHashMap<>();
     private final AtomicBoolean isEarbudsScanning = new AtomicBoolean();
 
@@ -60,7 +58,7 @@ public class EarbudsService extends Service {
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 if (state == BluetoothAdapter.STATE_OFF) {
-                    if (DEBUG) Log.i(TAG, "clear all device");
+                    if (DEBUG) Log.d(TAG, "clear all device");
                     bluetoothDeviceRecords.clear();
                 }
             } else if (BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED.equals(intent.getAction())) {
@@ -68,11 +66,12 @@ public class EarbudsService extends Service {
                 if (device != null
                         && state == BluetoothHeadset.STATE_CONNECTED
                         && !bluetoothDeviceRecords.containsKey(device.getAddress())) {
-                    runCheckXiaomiMMADevice(device);
+                    runCheckEarbudsStatus(device, true);
                 }
             } else if (BluetoothDevice.ACTION_BATTERY_LEVEL_CHANGED.equals(intent.getAction())) {
-                if (device != null) {
-                    runUpdateMMADeviceBattery(device);
+                if (device != null && Boolean.TRUE
+                        .equals(bluetoothDeviceRecords.getOrDefault(device.getAddress(), false))) {
+                    runCheckEarbudsStatus(device, false);
                 }
             } else if (BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT.equals(intent.getAction())) {
                 if (device != null) {
@@ -87,7 +86,7 @@ public class EarbudsService extends Service {
         }
     };
 
-    private final EarbudsScanCallback EarbudsScanCallback = new EarbudsScanCallback() {
+    private final EarbudsScanCallback earbudsScanCallback = new EarbudsScanCallback() {
         @Override
         public void onEarbudsScanResult(@NonNull Earbuds earbuds) {
             EarbudsUtils.updateEarbudsStatus(earbuds);
@@ -151,14 +150,8 @@ public class EarbudsService extends Service {
     private void startBluetoothStateListening() {
         if (DEBUG) Log.d(TAG, "startBluetoothStateListening");
 
-        BluetoothAdapter adapter = BluetoothUtils.getBluetoothAdapter(this);
-        if (adapter != null && adapter.isEnabled()) {
-            adapter.getBondedDevices().forEach(device -> {
-                if (!device.isConnected()) return;
-
-                runCheckXiaomiMMADevice(device);
-            });
-        }
+        BluetoothUtils.getConnectedHeadsetA2DPDevices().forEach(
+                device -> runCheckEarbudsStatus(device, true));
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
@@ -184,113 +177,73 @@ public class EarbudsService extends Service {
         unregisterReceiver(bluetoothStateReceiver);
     }
 
-    private boolean shouldStartScan() {
-        if (!PowerUtils.isInteractive(this)) {
-            return false;
-        }
-
-        boolean mmaDeviceConnected = isXiaomiMMADeviceConnected();
-        if (DEBUG) Log.i(TAG, "isXiaomiMMADeviceConnected " + mmaDeviceConnected);
-
-        return mmaDeviceConnected;
-    }
-
-    private boolean isXiaomiMMADeviceConnected() {
-        BluetoothAdapter adapter = BluetoothUtils.getBluetoothAdapter(this);
-        if (adapter == null) {
-            return false;
-        }
-
-        for (BluetoothDevice device : adapter.getBondedDevices()) {
-            if (!device.isConnected()) continue;
-
-            if (Boolean.TRUE.equals(
-                    bluetoothDeviceRecords.getOrDefault(device.getAddress(), false))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void runCheckXiaomiMMADevice(BluetoothDevice device) {
+    private void runCheckEarbudsStatus(@NonNull BluetoothDevice device, boolean firstCheck) {
         if (earbudsExecutor.isShutdown() || earbudsExecutor.isTerminated()) {
             return;
         }
-        if (!device.isConnected()) {
+        if (!BluetoothUtils.isConnectedHeadsetA2DPDevice(device)) {
+            if (DEBUG) Log.d(TAG, "runCheckEarbudsStatus: " + device + " not headset a2dp device");
             return;
         }
-        if (DEBUG) Log.i(TAG, "runCheckXiaomiMMADevice " + device.getName());
+        if (DEBUG) Log.d(TAG, "runCheckEarbudsStatus " + device.getName());
 
         earbudsExecutor.execute(() -> {
-            if (bluetoothDeviceRecords.containsKey(device.getAddress())) {
-                return;
+            boolean status = false;
+            try {
+                status = CommonUtils.executeWithTimeout(
+                        () -> checkEarbudsStatus(device, firstCheck), MMA_DEVICE_CHECK_TIMEOUT_MS);
+            } catch (RuntimeException | TimeoutException e) {
+                Log.e(TAG, "runCheckEarbudsStatus: ", e);
             }
+            if (DEBUG) Log.d(TAG, "runCheckEarbudsStatus: " + status);
 
-            Pair<Integer, Integer> vidPid = null;
-            String softwareVersion = null;
-            try (MMADevice mma = new MMADevice(device)) {
-                vidPid = CommonUtils.executeWithTimeout(() -> {
-                    mma.connect();
-                    return mma.getVidPid();
-                }, 1000);
-                softwareVersion = CommonUtils.executeWithTimeout(mma::getSoftwareVersion, 1000);
-            } catch (RuntimeException | TimeoutException ignored) {
-            } catch (IOException e) {
-                Log.e(TAG, "runCheckXiaomiMMADevice: ", e);
+            if (firstCheck) {
+                bluetoothDeviceRecords.put(device.getAddress(), status);
+                startOrStopEarbudsScan();
             }
-            boolean isMMADevice = vidPid != null && softwareVersion != null;
-            if (DEBUG) Log.i(TAG, device.getName() + " isMMADevice " + isMMADevice);
-
-            // set metadata
-            if (device.isConnected() && isMMADevice) {
-                EarbudsUtils.setEarbudsModelData(getApplication(),
-                        device, vidPid.first, vidPid.second, softwareVersion);
-            }
-
-            bluetoothDeviceRecords.put(device.getAddress(), isMMADevice);
-            mainHandler.post(this::startOrStopEarbudsScan);
         });
     }
 
-    private void runUpdateMMADeviceBattery(BluetoothDevice device) {
-        if (earbudsExecutor.isShutdown() || earbudsExecutor.isTerminated()) {
-            return;
+    private boolean checkEarbudsStatus(@NonNull BluetoothDevice device,
+                                       boolean firstCheck) throws IOException {
+        if (DEBUG) Log.d(TAG, "checkEarbudsStatus " + firstCheck);
+        if (!BluetoothUtils.isConnectedHeadsetA2DPDevice(device)) {
+            return false;
         }
-        if (!device.isConnected()) {
-            return;
+
+        try (MMADevice mma = new MMADevice(device)) {
+            mma.connect();
+
+            if (firstCheck) {
+                Pair<Integer, Integer> vidPid = mma.getVidPid();
+                String softwareVersion = mma.getSoftwareVersion();
+
+                if (vidPid != null && softwareVersion != null) {
+                    // set metadata
+                    EarbudsUtils.setEarbudsModelData(getApplication(),
+                            device, vidPid.first, vidPid.second, softwareVersion);
+                    return true;
+                }
+            } else {
+                Earbuds earbuds = mma.getBatteryInfo();
+
+                if (earbuds != null) {
+                    // update earbuds battery
+                    EarbudsUtils.updateEarbudsStatus(earbuds);
+                    return true;
+                }
+            }
+
+            return false;
         }
-        if (DEBUG) Log.i(TAG, "runUpdateMMADeviceBattery " + device.getName());
-
-        earbudsExecutor.execute(() -> {
-            if (Boolean.FALSE.equals(
-                    bluetoothDeviceRecords.getOrDefault(device.getAddress(), false))) {
-                return;
-            }
-
-            Earbuds earbuds = null;
-            try (MMADevice mma = new MMADevice(device)) {
-                earbuds = CommonUtils.executeWithTimeout(() -> {
-                    mma.connect();
-                    return mma.getBatteryInfo();
-                }, 1000);
-            } catch (RuntimeException | TimeoutException ignored) {
-            } catch (IOException e) {
-                Log.e(TAG, "runUpdateMMADeviceBattery: ", e);
-            }
-
-            if (DEBUG) Log.d(TAG, "runUpdateMMADeviceBattery: " + earbuds);
-            if (earbuds != null) {
-                EarbudsUtils.updateEarbudsStatus(earbuds);
-            }
-        });
     }
 
     private void startOrStopEarbudsScan() {
-        if (DEBUG) Log.i(TAG, "startOrStopEarbudsScan");
+        if (DEBUG) Log.d(TAG, "startOrStopEarbudsScan");
 
-        boolean shouldStartScan = shouldStartScan();
-        if (DEBUG) Log.i(TAG, "shouldStartScan " + shouldStartScan);
+        boolean shouldStartScan = PowerUtils.isInteractive(this)
+                && bluetoothDeviceRecords.containsValue(true);
+        if (DEBUG) Log.d(TAG, "shouldStartScan " + shouldStartScan);
         if (shouldStartScan) {
             startEarbudsScan();
         } else {
@@ -312,7 +265,7 @@ public class EarbudsService extends Service {
             if (scanner == null) {
                 return;
             }
-            scanner.startScan(filters, settings, EarbudsScanCallback);
+            scanner.startScan(filters, settings, earbudsScanCallback);
         }
     }
 
@@ -324,7 +277,7 @@ public class EarbudsService extends Service {
             if (scanner == null) {
                 return;
             }
-            scanner.stopScan(EarbudsScanCallback);
+            scanner.stopScan(earbudsScanCallback);
         }
     }
 
