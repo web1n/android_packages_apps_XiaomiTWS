@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小米蓝牙服务</string>
+    <string name="firmware_version">固件版本</string>
+    <string name="earbuds_settings">耳机设置</string>
+    <string name="device_not_connected">设备未连接</string>
+    <string name="feature_not_supported">功能不支持</string>
+    <string name="serial_number">序列号</string>
+    <string name="equalizer_mode">均衡器模式</string>
+    <string name="equalizer_mode_default">默认</string>
+    <string name="equalizer_mode_vocal_enhance">人声增强</string>
+    <string name="equalizer_mode_bass_boost">低音增强</string>
+    <string name="equalizer_mode_treble_boost">高音增强</string>
+    <string name="equalizer_mode_harman">哈曼模式</string>
+    <string name="noise_cancellation_mode">降噪模式</string>
+    <string name="noise_cancellation_mode_off">关闭</string>
+    <string name="noise_cancellation_mode_on">开启</string>
+    <string name="noise_cancellation_mode_transparency">通透模式</string>
+</resources>
