@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:persistent="false"
     android:title="@string/earbuds_settings">
 
     <ListPreference
-        android:defaultValue="00"
-        android:entries="@array/config_equalizer_mode_entries"
-        android:entryValues="@array/config_equalizer_mode_values"
         android:key="equalizer_mode"
-        android:summary="%s"
-        android:title="@string/equalizer_mode" />
+        android:title="@string/equalizer_mode"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.EqualizerModeController" />
 
     <ListPreference
-        android:defaultValue="0000"
-        android:entries="@array/config_noise_cancellation_mode_entries"
-        android:entryValues="@array/config_noise_cancellation_mode_values"
         android:key="noise_cancellation_mode"
-        android:summary="%s"
-        android:title="@string/noise_cancellation_mode" />
+        android:title="@string/noise_cancellation_mode"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationModeController" />
 
     <Preference
         android:key="serial_number"
-        android:selectable="false"
         android:summary="@string/device_not_connected"
-        android:title="@string/serial_number" />
+        android:title="@string/serial_number"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.SerialNumberController" />
 
 </PreferenceScreen>
