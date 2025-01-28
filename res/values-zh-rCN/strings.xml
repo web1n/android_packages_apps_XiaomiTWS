@@ -11,6 +11,7 @@
     <string name="equalizer_mode_vocal_enhance">人声增强</string>
     <string name="equalizer_mode_bass_boost">低音增强</string>
     <string name="equalizer_mode_treble_boost">高音增强</string>
+    <string name="equalizer_mode_volume_boost">响度增强</string>
     <string name="equalizer_mode_harman">哈曼模式</string>
     <string name="noise_cancellation_mode">降噪模式</string>
     <string name="noise_cancellation_mode_off">关闭</string>
