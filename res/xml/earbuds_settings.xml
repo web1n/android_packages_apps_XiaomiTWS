@@ -14,6 +14,11 @@
         android:title="@string/noise_cancellation_mode"
         app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationModeController" />
 
+    <SwitchPreference
+        android:key="find_earbuds"
+        android:title="@string/find_earbuds"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.FindEarbudsController" />
+
     <Preference
         android:key="serial_number"
         android:summary="@string/device_not_connected"
