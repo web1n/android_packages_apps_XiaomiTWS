@@ -32,7 +32,7 @@ public class EarbudsActivity extends CollapsingToolbarBaseActivity {
             bundle.putParcelable(BluetoothDevice.EXTRA_DEVICE, device);
             fragment.setArguments(bundle);
 
-            getFragmentManager().beginTransaction().replace(
+            getSupportFragmentManager().beginTransaction().replace(
                     com.android.settingslib.collapsingtoolbar.R.id.content_frame,
                     fragment, TAG_EARBUDS).commit();
         }

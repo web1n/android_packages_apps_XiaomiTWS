@@ -3,77 +3,86 @@ package org.lineageos.xiaomi_bluetooth.settings;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.ListPreference;
-import androidx.preference.PreferenceFragment;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.Preference;
 
-import org.lineageos.xiaomi_bluetooth.EarbudsConstants;
 import org.lineageos.xiaomi_bluetooth.R;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
+import org.lineageos.xiaomi_bluetooth.settings.configs.ConfigController;
 import org.lineageos.xiaomi_bluetooth.utils.CommonUtils;
+import org.lineageos.xiaomi_bluetooth.utils.PreferenceUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 
-public class EarbudsFragment extends PreferenceFragment {
+public class EarbudsFragment extends PreferenceFragmentCompat {
 
     private static final String TAG = EarbudsFragment.class.getName();
     private static final boolean DEBUG = true;
 
-    private static final String KEY_EQUALIZER_MODE = "equalizer_mode";
-    private static final String KEY_NOISE_CANCELLATION_MODE = "noise_cancellation_mode";
-    private static final String KEY_SERIAL_NUMBER = "serial_number";
+    private static final int PREFERENCE_XML_RES_ID = R.xml.earbuds_settings;
+    private static final int MMA_DEVICE_CHECK_TIMEOUT_MS = 2000;
 
-    private static final Map<Integer, String> CONFIG_KEY_MAP = new HashMap<>();
-    private final Map<Integer, String> configValues = new HashMap<>();
-
+    private final Set<ConfigController> configControllers = new HashSet<>();
     private ExecutorService earbudsExecutor;
     private BluetoothDevice device;
-
-    static {
-        CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, KEY_EQUALIZER_MODE);
-        CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE, KEY_NOISE_CANCELLATION_MODE);
-        CONFIG_KEY_MAP.put(EarbudsConstants.XIAOMI_MMA_CONFIG_SN, KEY_SERIAL_NUMBER);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bundle args = getArguments();
-        if (args != null) {
-            device = args.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
-        }
-        if (DEBUG) Log.d(TAG, "onCreate: device: " + device);
-
-        earbudsExecutor = Executors.newSingleThreadExecutor();
-        reloadConfig();
+        initializeArguments();
+        initializeExecutor();
     }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        addPreferencesFromResource(R.xml.earbuds_settings);
+        addPreferencesFromResource(PREFERENCE_XML_RES_ID);
+    }
 
-        ListPreference equalizerPreference = (ListPreference) findPreference(KEY_EQUALIZER_MODE);
-        ListPreference noiseCancellationPreference = (ListPreference) findPreference(KEY_NOISE_CANCELLATION_MODE);
-        bindLayout(equalizerPreference);
-        bindLayout(noiseCancellationPreference);
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        bindPreferenceControllers();
+        reloadConfig();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if (earbudsExecutor != null) {
+        shutdownExecutor();
+        unbindPreferenceControllers();
+    }
+
+    private void initializeArguments() {
+        Bundle args = getArguments();
+        if (args != null) {
+            device = args.getParcelable(BluetoothDevice.EXTRA_DEVICE);
+        }
+        if (DEBUG) Log.d(TAG, "Initialized with device: " + device);
+    }
+
+    private void initializeExecutor() {
+        earbudsExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    private void shutdownExecutor() {
+        if (earbudsExecutor != null && !earbudsExecutor.isShutdown()) {
             earbudsExecutor.shutdownNow();
         }
     }
@@ -82,118 +91,162 @@ public class EarbudsFragment extends PreferenceFragment {
         if (DEBUG) Log.d(TAG, "reloadConfig");
         if (!checkConnected()) return;
 
-        earbudsExecutor.execute(() -> {
-            Map<Integer, byte[]> configs = null;
+        final int[] configIds = configControllers.stream()
+                .mapToInt(ConfigController::getConfigId)
+                .filter(id -> id != ConfigController.CONFIG_ID_INVALID)
+                .distinct().toArray();
+        if (DEBUG) Log.d(TAG, "reloadConfig: ids: " + Arrays.toString(configIds));
+
+        executeBackgroundTask(() -> {
             try (MMADevice mma = new MMADevice(device)) {
-                configs = CommonUtils.executeWithTimeout(() -> {
+                boolean success = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
-                    return mma.getDeviceConfig(new int[]{
-                            EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE,
-                            EarbudsConstants.XIAOMI_MMA_CONFIG_SN
-                    });
-                }, 300);
-            } catch (RuntimeException | TimeoutException | IOException e) {
-                showToast(e.toString());
-                Log.e(TAG, "reloadConfig: ", e);
-            }
 
-            if (configs != null) {
-                configs.forEach((key, value) ->
-                        configValues.put(key, CommonUtils.bytesToHex(value)));
-            }
+                    Pair<Integer, Integer> vidPid = mma.getVidPid();
+                    Map<Integer, byte[]> configs = mma.getDeviceConfig(configIds);
+                    if (vidPid != null && configs != null) {
+                        processConfigData(configs, vidPid.first, vidPid.second);
+                        return true;
+                    }
+                    return false;
+                }, MMA_DEVICE_CHECK_TIMEOUT_MS);
 
-            // put default value
-            CONFIG_KEY_MAP.keySet().forEach(key -> configValues.putIfAbsent(key, "FF"));
-
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(this::updatePreferenceValues);
-            }
-        });
-    }
-
-    private void updatePreferenceValues() {
-        if (DEBUG) Log.d(TAG, "updatePreferenceValues");
-        if (getContext() == null || !isResumed()) {
-            return;
-        }
-
-        configValues.forEach((key, value) -> {
-            String preferenceKey = CONFIG_KEY_MAP.getOrDefault(key, null);
-            if (DEBUG) Log.d(TAG, "updatePreferenceValues: " + preferenceKey + " " + value);
-
-            if (preferenceKey != null) {
-                Preference preference = findPreference(preferenceKey);
-                if (preference != null) {
-                    updatePreference(preference, value);
+                if (success) {
+                    updateUI(this::refreshPreferences);
                 }
+            } catch (IOException | TimeoutException e) {
+                handleError("Config reload failed", e);
             }
         });
     }
 
-    private void updatePreference(Preference preference, String value) {
-        if ("FF".equals(value)) {
-            preference.setSelectable(false);
-            preference.setSummary(R.string.feature_not_supported);
+    private void processConfigData(Map<Integer, byte[]> configs, int vid, int pid) {
+        if (DEBUG) Log.d(TAG, "processConfigData");
+
+        for (ConfigController controller : configControllers) {
+            byte[] config = configs != null ? configs.get(controller.getConfigId()) : null;
+
+            controller.setVendorData(vid, pid);
+            controller.setConfigValue(config);
+        }
+    }
+
+    private void bindPreferenceControllers() {
+        if (DEBUG) Log.d(TAG, "bindPreferenceControllers");
+
+        Set<ConfigController> controllers =
+                PreferenceUtils.createAllControllers(requireContext(), PREFERENCE_XML_RES_ID);
+        controllers.forEach(this::bindControllerToPreference);
+        configControllers.addAll(controllers);
+    }
+
+    private void bindControllerToPreference(@NonNull ConfigController controller) {
+        Preference preference = findPreference(controller.preferenceKey);
+        if (preference == null) {
             return;
         }
 
-        if (preference instanceof ListPreference) {
-            ((ListPreference) preference).setValue(value);
-        } else {
-            preference.setSummary(valueToSummary(preference.getKey(), value));
-        }
+        controller.displayPreference(preference);
+        setupPreferenceListener(preference);
     }
 
-    private boolean saveConfig(int configKey, String value) {
-        byte[] bytesValue = CommonUtils.hexToBytes(value);
+    private void unbindPreferenceControllers() {
+        if (DEBUG) Log.d(TAG, "unbindPreferenceControllers");
 
-        try (MMADevice mma = new MMADevice(device)) {
-            return CommonUtils.executeWithTimeout(() -> {
-                mma.connect();
-                return mma.setDeviceConfig(configKey, bytesValue);
-            }, 300);
-        } catch (RuntimeException | TimeoutException | IOException e) {
-            showToast("Error saving config: " + e.getMessage());
-            Log.e(TAG, "Error saving device config", e);
-            return false;
-        }
+        configControllers.forEach(controller -> {
+            Preference preference = findPreference(controller.preferenceKey);
+            if (preference == null) {
+                return;
+            }
+
+            preference.setOnPreferenceChangeListener(null);
+            preference.setOnPreferenceClickListener(null);
+        });
+        configControllers.clear();
     }
 
-    private void bindLayout(@NonNull ListPreference preference) {
-        if (DEBUG) Log.d(TAG, "bindLayout: " + preference.getKey());
-
-        preference.setPersistent(false);
-        preference.setOnPreferenceChangeListener((preference1, newValue) -> {
-            final Integer configKey = preferenceKeyToConfigKey(preference1.getKey());
-            if (DEBUG) Log.d(TAG, "onPreferenceChanged: " + preference1.getKey() + " " + configKey);
-            if (configKey == null || !checkConnected()) {
+    private void setupPreferenceListener(@NonNull Preference preference) {
+        preference.setOnPreferenceChangeListener((p, newValue) -> {
+            ConfigController controller = findController(preference);
+            if (controller == null) {
                 return false;
             }
 
-            earbudsExecutor.execute(() -> {
-                boolean isSaved = saveConfig(configKey, (String) newValue);
-                if (isSaved) {
-                    configValues.put(configKey, (String) newValue);
-                    getActivity().runOnUiThread(this::updatePreferenceValues);
-                }
-            });
+            if (controller instanceof Preference.OnPreferenceChangeListener listener) {
+                return listener.onPreferenceChange(p, newValue);
+            }
 
+            if (checkConnected()) {
+                executeBackgroundTask(() -> handlePreferenceChange(controller, p, newValue));
+            }
+            return false;
+        });
+
+        preference.setOnPreferenceClickListener(p -> {
+            ConfigController controller = findController(p);
+            if (controller == null) {
+                return false;
+            }
+
+            if (controller instanceof Preference.OnPreferenceClickListener listener) {
+                return listener.onPreferenceClick(p);
+            }
             return false;
         });
     }
 
-    @NonNull
-    private String valueToSummary(@NonNull String preferenceKey, @NonNull String value) {
-        String summary = value;
+    private void handlePreferenceChange(@NonNull ConfigController controller,
+                                        @NonNull Preference preference,
+                                        @NonNull Object newValue) {
+        try (MMADevice mma = new MMADevice(device)) {
+            boolean success = CommonUtils.executeWithTimeout(() -> {
+                mma.connect();
+                return controller.saveConfig(mma, newValue);
+            }, MMA_DEVICE_CHECK_TIMEOUT_MS);
 
-        if (KEY_SERIAL_NUMBER.equals(preferenceKey)) {
-            try {
-                summary = new String(CommonUtils.hexToBytes(value));
-            } catch (Exception ignored) {
+            if (success) {
+                updateUI(() -> controller.updateState(preference));
             }
+        } catch (RuntimeException | IOException | TimeoutException e) {
+            handleError("Save config failed", e);
+        }
+    }
+
+    private void executeBackgroundTask(@NonNull Runnable task) {
+        if (earbudsExecutor == null || earbudsExecutor.isShutdown()) {
+            return;
         }
 
-        return summary;
+        earbudsExecutor.execute(task);
+    }
+
+    private void updateUI(@NonNull Runnable action) {
+        requireActivity().runOnUiThread(() -> {
+            if (getActivity() == null || getActivity().isFinishing()) {
+                return;
+            }
+
+            action.run();
+        });
+    }
+
+    private void refreshPreferences() {
+        configControllers.forEach(controller -> {
+            Preference preference = findPreference(controller.preferenceKey);
+            if (preference != null) controller.updateState(preference);
+        });
+    }
+
+    @Nullable
+    private ConfigController findController(@NonNull Preference preference) {
+        ConfigController controller = configControllers.stream()
+                .filter(c -> c.preferenceKey.equals(preference.getKey()))
+                .findFirst().orElse(null);
+
+        if (controller == null) {
+            Log.w(TAG, "Unknown controller for: " + preference.getKey());
+        }
+        return controller;
     }
 
     private boolean checkConnected() {
@@ -204,34 +257,15 @@ public class EarbudsFragment extends PreferenceFragment {
         return true;
     }
 
-    private void showToast(@Nullable String content) {
+    private void showToast(@NonNull String content) {
         if (DEBUG) Log.d(TAG, "showToast: " + content);
-        if (content == null || getActivity() == null) {
-            return;
-        }
 
-        getActivity().runOnUiThread(() -> {
-            if (getActivity() == null || !isResumed()) {
-                return;
-            }
-
-            Toast.makeText(getActivity(), content, Toast.LENGTH_SHORT).show();
-        });
+        updateUI(() -> Toast.makeText(getActivity(), content, Toast.LENGTH_SHORT).show());
     }
 
-    @Nullable
-    private Integer preferenceKeyToConfigKey(@Nullable String key) {
-        if (key == null) {
-            return null;
-        }
-
-        for (Map.Entry<Integer, String> kv : CONFIG_KEY_MAP.entrySet()) {
-            if (key.equals(kv.getValue())) {
-                return kv.getKey();
-            }
-        }
-
-        return null;
+    private void handleError(@NonNull String message, @NonNull Exception e) {
+        Log.e(TAG, message, e);
+        showToast(message + ": " + e);
     }
 
 }
