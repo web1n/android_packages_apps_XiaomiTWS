@@ -5,7 +5,13 @@
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>
     <string name="feature_not_supported">Feature not supported</string>
+
+    <string name="general">General</string>
+    <string name="gestures">Gestures</string>
+    <string name="advanced">Advanced</string>
+
     <string name="serial_number">Serial number</string>
+
     <string name="equalizer_mode">Equalizer mode</string>
     <string name="equalizer_mode_default">Default</string>
     <string name="equalizer_mode_vocal_enhance">Vocal enhance</string>
@@ -13,13 +19,16 @@
     <string name="equalizer_mode_treble_boost">Treble boost</string>
     <string name="equalizer_mode_volume_boost">Volume boost</string>
     <string name="equalizer_mode_harman">Harman</string>
+
     <string name="noise_cancellation_mode">Noise cancellation mode</string>
     <string name="noise_cancellation_mode_off">Off</string>
     <string name="noise_cancellation_mode_on">On</string>
     <string name="noise_cancellation_mode_transparency">Transparency</string>
+
     <string name="find_earbuds">Find Earbuds</string>
     <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>
     <string name="find_earbuds_on">The earbuds are playing a sound</string>
+
     <string name="single_click_left">Single Click Left Ear</string>
     <string name="single_click_right">Single Click Right Ear</string>
     <string name="double_click_left">Double Click Left Ear</string>
@@ -37,4 +46,6 @@
     <string name="function_volume_down">Volume Down</string>
     <string name="function_noise_control">Switch Noise Control</string>
     <string name="function_screenshot">Screenshot</string>
+
+    <string name="footer_tips">Earbuds may not support certain functions</string>
 </resources>
