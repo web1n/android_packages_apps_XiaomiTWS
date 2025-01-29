@@ -14,6 +14,46 @@
         android:title="@string/noise_cancellation_mode"
         app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationModeController" />
 
+    <ListPreference
+        android:key="single_click_left"
+        android:title="@string/single_click_left"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="single_click_right"
+        android:title="@string/single_click_right"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="double_click_left"
+        android:title="@string/double_click_left"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="double_click_right"
+        android:title="@string/double_click_right"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="treble_click_left"
+        android:title="@string/treble_click_left"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="treble_click_right"
+        android:title="@string/treble_click_right"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="long_press_left"
+        android:title="@string/long_press_left"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
+    <ListPreference
+        android:key="long_press_right"
+        android:title="@string/long_press_right"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
+
     <SwitchPreference
         android:key="find_earbuds"
         android:title="@string/find_earbuds"

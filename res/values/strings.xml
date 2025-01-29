@@ -20,4 +20,21 @@
     <string name="find_earbuds">Find Earbuds</string>
     <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>
     <string name="find_earbuds_on">The earbuds are playing a sound</string>
+    <string name="single_click_left">Single Click Left Ear</string>
+    <string name="single_click_right">Single Click Right Ear</string>
+    <string name="double_click_left">Double Click Left Ear</string>
+    <string name="double_click_right">Double Click Right Ear</string>
+    <string name="treble_click_left">Triple Click Left Ear</string>
+    <string name="treble_click_right">Triple Click Right Ear</string>
+    <string name="long_press_left">Long Press Left Ear</string>
+    <string name="long_press_right">Long Press Right Ear</string>
+    <string name="function_disabled">Disabled</string>
+    <string name="function_voice_assistant">Voice Assistant</string>
+    <string name="function_play_pause">Play/Pause</string>
+    <string name="function_previous_track">Previous Track</string>
+    <string name="function_next_track">Next Track</string>
+    <string name="function_volume_up">Volume Up</string>
+    <string name="function_volume_down">Volume Down</string>
+    <string name="function_noise_control">Switch Noise Control</string>
+    <string name="function_screenshot">Screenshot</string>
 </resources>

@@ -20,4 +20,21 @@
     <string name="find_earbuds">查找耳机</string>
     <string name="find_earbuds_off">点击查找，耳机会播放声音（请确保耳机不在耳朵内）</string>
     <string name="find_earbuds_on">耳机正在播放声音</string>
+    <string name="single_click_left">单击左耳</string>
+    <string name="single_click_right">单击右耳</string>
+    <string name="double_click_left">双击左耳</string>
+    <string name="double_click_right">双击右耳</string>
+    <string name="treble_click_left">三击左耳</string>
+    <string name="treble_click_right">三击右耳</string>
+    <string name="long_press_left">长按左耳</string>
+    <string name="long_press_right">长按右耳</string>
+    <string name="function_disabled">禁用</string>
+    <string name="function_voice_assistant">语音助手</string>
+    <string name="function_play_pause">播放/暂停</string>
+    <string name="function_previous_track">上一曲</string>
+    <string name="function_next_track">下一曲</string>
+    <string name="function_volume_up">音量增加</string>
+    <string name="function_volume_down">音量减少</string>
+    <string name="function_noise_control">切换噪音控制</string>
+    <string name="function_screenshot">截屏</string>
 </resources>
