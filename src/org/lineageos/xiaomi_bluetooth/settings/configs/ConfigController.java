@@ -123,7 +123,7 @@ public abstract class ConfigController {
     private void updateSummary(@NonNull Preference preference) {
         String summary = isAvailable()
                 ? getSummary()
-                : context.getString(R.string.feature_not_supported);
+                : null;
 
         if (summary != null) {
             preference.setSummary(summary);
@@ -131,7 +131,7 @@ public abstract class ConfigController {
     }
 
     private void updateVisible(@NonNull Preference preference) {
-        preference.setSelectable(isAvailable());
+        preference.setVisible(isAvailable());
     }
 
     public boolean saveConfig(@NonNull MMADevice device, @NonNull Object value) throws IOException {

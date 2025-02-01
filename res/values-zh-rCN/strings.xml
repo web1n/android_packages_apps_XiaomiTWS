@@ -4,7 +4,6 @@
     <string name="firmware_version">固件版本</string>
     <string name="earbuds_settings">耳机设置</string>
     <string name="device_not_connected">设备未连接</string>
-    <string name="feature_not_supported">功能不支持</string>
 
     <string name="general">常规</string>
     <string name="gestures">手势</string>
