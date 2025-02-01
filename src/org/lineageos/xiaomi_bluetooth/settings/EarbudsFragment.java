@@ -1,6 +1,10 @@
 package org.lineageos.xiaomi_bluetooth.settings;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -32,8 +36,26 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
     private static final String TAG = EarbudsFragment.class.getName();
     private static final boolean DEBUG = true;
 
+    public static final String ACTION_RELOAD_CONFIG =
+            "org.lineageos.xiaomi_bluetooth.action.RELOAD_CONFIG";
+
     private static final int PREFERENCE_XML_RES_ID = R.xml.earbuds_settings;
     private static final int MMA_DEVICE_CHECK_TIMEOUT_MS = 2000;
+
+    private final BroadcastReceiver actionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null || intent.getAction() == null) {
+                return;
+            }
+
+            if (intent.getAction().equals(ACTION_RELOAD_CONFIG)) {
+                reloadConfig();
+            } else {
+                if (DEBUG) Log.w(TAG, "unknown action " + intent.getAction());
+            }
+        }
+    };
 
     private final Set<ConfigController> configControllers = new HashSet<>();
     private ExecutorService earbudsExecutor;
@@ -45,6 +67,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
 
         initializeArguments();
         initializeExecutor();
+        registerActionReceiver();
     }
 
     @Override
@@ -64,6 +87,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
     public void onDestroy() {
         super.onDestroy();
 
+        unregisterActionReceiver();
         shutdownExecutor();
         unbindPreferenceControllers();
     }
@@ -84,6 +108,17 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
         if (earbudsExecutor != null && !earbudsExecutor.isShutdown()) {
             earbudsExecutor.shutdownNow();
         }
+    }
+
+    private void registerActionReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_RELOAD_CONFIG);
+
+        requireContext().registerReceiver(actionReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+    }
+
+    private void unregisterActionReceiver() {
+        requireContext().unregisterReceiver(actionReceiver);
     }
 
     private void reloadConfig() {
