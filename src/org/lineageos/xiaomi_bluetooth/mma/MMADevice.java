@@ -233,15 +233,18 @@ public class MMADevice implements AutoCloseable {
     }
 
     @Nullable
-    public byte[] getDeviceConfig(int config, int expectedLength) throws IOException {
+    public byte[] getDeviceConfig(int config, Integer expectedLength) throws IOException {
         if (DEBUG) Log.d(TAG, "getDeviceConfig");
 
         Map<Integer, byte[]> configs = getDeviceConfig(new int[]{config});
         byte[] configBytes = configs.getOrDefault(config, null);
 
-        if (configBytes == null || configBytes.length != expectedLength) {
+        if (configBytes != null
+                && expectedLength != null
+                && configBytes.length != expectedLength) {
             return null;
         }
+
         return configBytes;
     }
 
