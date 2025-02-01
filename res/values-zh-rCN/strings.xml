@@ -5,6 +5,9 @@
     <string name="earbuds_settings">耳机设置</string>
     <string name="device_not_connected">设备未连接</string>
 
+    <string name="configuration_unavailable">无法获取耳机配置</string>
+    <string name="reconnect_device">重新连接</string>
+
     <string name="general">常规</string>
     <string name="gestures">手势</string>
     <string name="advanced">高级</string>

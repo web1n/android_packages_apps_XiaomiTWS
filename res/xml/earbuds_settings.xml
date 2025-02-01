@@ -4,6 +4,11 @@
     android:persistent="false"
     android:title="@string/earbuds_settings">
 
+    <com.android.settingslib.widget.BannerMessagePreference
+        android:key="reload_config"
+        android:title="@string/configuration_unavailable"
+        app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ReloadConfigController" />
+
     <PreferenceCategory
         android:key="general"
         android:title="@string/general">

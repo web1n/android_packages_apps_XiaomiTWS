@@ -5,6 +5,9 @@
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>
 
+    <string name="configuration_unavailable">Unable to obtain earbuds configuration</string>
+    <string name="reconnect_device">Reconnect device</string>
+
     <string name="general">General</string>
     <string name="gestures">Gestures</string>
     <string name="advanced">Advanced</string>
