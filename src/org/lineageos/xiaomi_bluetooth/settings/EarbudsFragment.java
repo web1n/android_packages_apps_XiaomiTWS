@@ -21,7 +21,6 @@ import org.lineageos.xiaomi_bluetooth.utils.PreferenceUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -103,12 +102,16 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
                     mma.connect();
 
                     Pair<Integer, Integer> vidPid = mma.getVidPid();
-                    Map<Integer, byte[]> configs = mma.getDeviceConfig(configIds);
-                    if (vidPid != null && configs != null) {
-                        processConfigData(configs, vidPid.first, vidPid.second);
-                        return true;
+                    if (vidPid == null) {
+                        return false;
                     }
-                    return false;
+
+                    for (int configId : configIds) {
+                        byte[] value = mma.getDeviceConfig(configId, null);
+                        processConfigValue(configId, value, vidPid.first, vidPid.second);
+                    }
+
+                    return true;
                 }, MMA_DEVICE_CHECK_TIMEOUT_MS);
 
                 if (success) {
@@ -120,15 +123,15 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
         });
     }
 
-    private void processConfigData(Map<Integer, byte[]> configs, int vid, int pid) {
-        if (DEBUG) Log.d(TAG, "processConfigData");
+    private void processConfigValue(int configId, @Nullable byte[] value, int vid, int pid) {
+        if (DEBUG) Log.d(TAG, "processConfigValue: " + configId + " " + Arrays.toString(value));
 
-        for (ConfigController controller : configControllers) {
-            byte[] config = configs != null ? configs.get(controller.getConfigId()) : null;
-
-            controller.setVendorData(vid, pid);
-            controller.setConfigValue(config);
-        }
+        configControllers.stream()
+                .filter(controller -> controller.getConfigId() == configId)
+                .forEach(controller -> {
+                    controller.setVendorData(vid, pid);
+                    controller.setConfigValue(value);
+                });
     }
 
     private void bindPreferenceControllers() {
