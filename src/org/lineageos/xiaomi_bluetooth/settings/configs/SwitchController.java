@@ -59,7 +59,7 @@ public abstract class SwitchController extends ConfigController {
     }
 
     @Override
-    public boolean saveConfig(MMADevice device, Object value) throws IOException {
+    public boolean saveConfig(@NonNull MMADevice device, @NonNull Object value) throws IOException {
         if (value instanceof Boolean enable) {
             value = enable
                     ? getEnabledState().configValue

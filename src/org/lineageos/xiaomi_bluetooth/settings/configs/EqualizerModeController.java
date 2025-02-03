@@ -84,7 +84,8 @@ public class EqualizerModeController extends ListController {
     @NonNull
     @Override
     protected List<ConfigState> getConfigStates() {
-        Set<Integer> supportedModes = DEVICE_SUPPORTED_STATES.get((getVid() << 16) | getPid());
+        int vidPid = (getVid() == null ? 0 : getVid()) << 16 | (getPid() == null ? 0 : getPid());
+        Set<Integer> supportedModes = DEVICE_SUPPORTED_STATES.get(vidPid);
         if (DEBUG) {
             Log.d(TAG, String.format("Supported modes: %s",
                     supportedModes == null ? "null" : Arrays.toString(supportedModes.toArray())));

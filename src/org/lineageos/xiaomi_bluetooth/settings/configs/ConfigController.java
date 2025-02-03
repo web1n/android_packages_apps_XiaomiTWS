@@ -37,9 +37,10 @@ public abstract class ConfigController {
     }
 
     @NonNull
-    public final String preferenceKey;
-
     protected final Context context;
+    @NonNull
+    public final String preferenceKey;
+    @Nullable
     private Integer vid, pid;
     private byte[] configValue;
 
@@ -57,16 +58,18 @@ public abstract class ConfigController {
         this.pid = pid;
     }
 
+    @Nullable
     public Integer getVid() {
         return vid;
     }
 
+    @Nullable
     public Integer getPid() {
         return pid;
     }
 
-    public final void setConfigValue(@NonNull byte[] configValue) {
-        if (!isValidValue(configValue)) {
+    public final void setConfigValue(@Nullable byte[] configValue) {
+        if (configValue == null || !isValidValue(configValue)) {
             configValue = new byte[]{VALUE_FEATURE_NOT_SUPPORTED};
         }
 
@@ -92,20 +95,12 @@ public abstract class ConfigController {
                 && configValue[0] == VALUE_FEATURE_NOT_SUPPORTED;
     }
 
-    public void displayPreference(@Nullable Preference preference) {
-        if (preference == null) {
-            return;
-        }
-
+    public void displayPreference(@NonNull Preference preference) {
         preference.setPersistent(false);
         updateState(preference);
     }
 
     public void updateState(@NonNull Preference preference) {
-        if (preference == null) {
-            return;
-        }
-
         updateValue(preference);
         updateSummary(preference);
         updateVisible(preference);

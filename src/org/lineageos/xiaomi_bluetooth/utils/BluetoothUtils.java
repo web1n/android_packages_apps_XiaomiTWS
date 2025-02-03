@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -25,7 +26,8 @@ public class BluetoothUtils {
         if (context == null) {
             return null;
         }
-        return context.getSystemService(BluetoothManager.class).getAdapter();
+        return Objects.requireNonNull(context.getSystemService(BluetoothManager.class))
+                .getAdapter();
     }
 
     @Nullable

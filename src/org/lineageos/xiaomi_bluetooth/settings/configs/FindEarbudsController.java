@@ -71,7 +71,10 @@ public class FindEarbudsController extends SwitchController {
 
     @Override
     protected boolean isEnabled() {
-        return isAvailable() && getConfigValue().length > 0 && getConfigValue()[0] == ENABLE_FLAG;
+        return isAvailable()
+                && getConfigValue() != null
+                && getConfigValue().length > 0
+                && getConfigValue()[0] == ENABLE_FLAG;
     }
 
     @NonNull

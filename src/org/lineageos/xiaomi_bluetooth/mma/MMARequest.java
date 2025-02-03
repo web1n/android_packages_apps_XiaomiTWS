@@ -12,10 +12,11 @@ public class MMARequest {
 
     public final byte opCode;
     public final byte opCodeSN;
+    @NonNull
     public final byte[] data;
     public final boolean needReceive;
 
-    public MMARequest(byte opCode, byte opCodeSN, byte[] data, boolean needReceive) {
+    public MMARequest(byte opCode, byte opCodeSN, @NonNull byte[] data, boolean needReceive) {
         this.opCode = opCode;
         this.opCodeSN = opCodeSN;
         this.data = data;

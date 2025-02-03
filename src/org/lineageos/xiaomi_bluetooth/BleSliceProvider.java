@@ -33,7 +33,7 @@ public class BleSliceProvider extends SliceProvider {
     }
 
     @Override
-    public Slice onBindSlice(Uri sliceUri) {
+    public Slice onBindSlice(@NonNull Uri sliceUri) {
         if (DEBUG) Log.d(TAG, "onBindSlice: " + sliceUri);
         BluetoothDevice device = getBluetoothDevice(sliceUri);
         if (getContext() == null || device == null) {
@@ -89,15 +89,11 @@ public class BleSliceProvider extends SliceProvider {
                 .setSubtitle(firmwareVersion);
     }
 
-    @Nullable
+    @NonNull
     private SliceAction createSliceAction(@NonNull PendingIntent pendingIntent, int iconResId) {
-        if (getContext() == null) {
-            return null;
-        }
-
         return SliceAction.create(pendingIntent,
-                IconCompat.createWithResource(getContext(), iconResId),
-                ListBuilder.ICON_IMAGE, getContext().getString(R.string.app_name));
+                IconCompat.createWithResource(requireContext(), iconResId),
+                ListBuilder.ICON_IMAGE, requireContext().getString(R.string.app_name));
     }
 
     @Nullable

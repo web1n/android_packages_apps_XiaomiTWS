@@ -16,9 +16,10 @@ public class MMAResponse {
     public final byte opCode;
     public final byte opCodeSN;
     public final byte status;
+    @NonNull
     public final byte[] data;
 
-    protected MMAResponse(byte opCode, byte opCodeSN, byte status, byte[] data) {
+    protected MMAResponse(byte opCode, byte opCodeSN, byte status, @NonNull byte[] data) {
         this.opCode = opCode;
         this.opCodeSN = opCodeSN;
         this.status = status;
@@ -37,7 +38,7 @@ public class MMAResponse {
     }
 
     @Nullable
-    public static MMAResponse fromPacket(byte[] packet) {
+    public static MMAResponse fromPacket(@Nullable byte[] packet) {
         if (packet == null || packet.length < 6) {
             if (DEBUG) Log.d(TAG, "fromPacket: packet length < 6");
             return null;

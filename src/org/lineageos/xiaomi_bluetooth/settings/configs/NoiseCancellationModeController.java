@@ -18,7 +18,8 @@ public class NoiseCancellationModeController extends ListController {
             new ConfigState(new byte[]{0x02, 0x00}, R.string.noise_cancellation_mode_transparency)
     );
 
-    public NoiseCancellationModeController(@NonNull Context context, @NonNull String preferenceKey) {
+    public NoiseCancellationModeController(@NonNull Context context,
+                                           @NonNull String preferenceKey) {
         super(context, preferenceKey);
     }
 

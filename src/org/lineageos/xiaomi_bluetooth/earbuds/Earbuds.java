@@ -5,14 +5,17 @@ import androidx.annotation.Nullable;
 
 public class Earbuds {
 
+    @NonNull
     public final String macAddress;
-
+    @Nullable
     public final Earbud left;
+    @Nullable
     public final Earbud right;
+    @Nullable
     public final Earbud chargingCase;
 
-    public Earbuds(String macAddress,
-                   Earbud left, Earbud right, Earbud chargingCase) {
+    public Earbuds(@NonNull String macAddress,
+                   @NonNull Earbud left, @NonNull Earbud right, @NonNull Earbud chargingCase) {
         this.macAddress = macAddress;
 
         this.left = left.isValid() ? left : null;
@@ -36,11 +39,8 @@ public class Earbuds {
     }
 
     @Nullable
-    public static Earbuds fromBytes(String macAddress, byte leftByte, byte rightByte, byte caseByte) {
-        if (macAddress == null) {
-            return null;
-        }
-
+    public static Earbuds fromBytes(@NonNull String macAddress,
+                                    byte leftByte, byte rightByte, byte caseByte) {
         Earbud left = new Earbud(leftByte);
         Earbud right = new Earbud(rightByte);
         Earbud chargingCase = new Earbud(caseByte);

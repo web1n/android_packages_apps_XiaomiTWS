@@ -3,19 +3,22 @@ package org.lineageos.xiaomi_bluetooth.utils;
 import android.content.Context;
 import android.os.PowerManager;
 
+import androidx.annotation.Nullable;
+
+import java.util.Objects;
+
 
 public class PowerUtils {
 
     private static final String TAG = PowerUtils.class.getSimpleName();
     private static final boolean DEBUG = true;
 
-
-    public static boolean isInteractive(Context context) {
+    public static boolean isInteractive(@Nullable Context context) {
         if (context == null) {
             return false;
         }
 
-        return context.getSystemService(PowerManager.class).isInteractive();
+        return Objects.requireNonNull(context.getSystemService(PowerManager.class)).isInteractive();
     }
 
 }

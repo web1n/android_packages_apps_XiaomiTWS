@@ -25,6 +25,7 @@ import org.lineageos.xiaomi_bluetooth.utils.PreferenceUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -288,7 +289,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
     }
 
     private boolean checkConnected() {
-        if (device == null || !device.isConnected()) {
+        if (!Objects.requireNonNull(device).isConnected()) {
             showToast(getString(R.string.device_not_connected));
             return false;
         }

@@ -56,11 +56,13 @@ public class ButtonController extends ListController {
     }
 
     private static final class ButtonConfig {
+        @NonNull
         private final Type type;
+        @NonNull
         private final Position position;
         private byte value;
 
-        private ButtonConfig(Type type, Position position, byte value) {
+        private ButtonConfig(@NonNull Type type, @NonNull Position position, byte value) {
             this.type = type;
             this.position = position;
             this.value = value;
@@ -122,7 +124,9 @@ public class ButtonController extends ListController {
             new ConfigState(new byte[]{0x09}, R.string.function_screenshot)
     );
 
+    @NonNull
     private final Type type;
+    @NonNull
     private final Position position;
 
     public ButtonController(@NonNull Context context, @NonNull String preferenceKey) {
@@ -195,7 +199,7 @@ public class ButtonController extends ListController {
     }
 
     @Override
-    public boolean saveConfig(MMADevice device, Object value) throws IOException {
+    public boolean saveConfig(@NonNull MMADevice device, @NonNull Object value) throws IOException {
         if (!(value instanceof String strValue)) {
             Log.w(TAG, "Unknown config value type");
             return false;

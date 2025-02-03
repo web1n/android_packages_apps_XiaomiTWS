@@ -59,7 +59,7 @@ public class EarbudsUtils {
     }
 
     @Nullable
-    public static Earbuds parseScanResult(ScanResult result) {
+    public static Earbuds parseScanResult(@Nullable ScanResult result) {
         if (result == null || result.getScanRecord() == null) {
             return null;
         }
@@ -76,12 +76,16 @@ public class EarbudsUtils {
         }
 
         String macAddress = parseMacAddressFromManufacturerData(manufacturerData);
+        if (macAddress == null) {
+            return null;
+        }
+
         return Earbuds.fromBytes(macAddress,
                 fastConnectData[13], fastConnectData[12], fastConnectData[14]);
     }
 
     @Nullable
-    private static String parseMacAddressFromManufacturerData(byte[] obj) {
+    private static String parseMacAddressFromManufacturerData(@NonNull byte[] obj) {
         boolean macAddressEncrypted = (obj[7] & 1) != 0;
         int offset = !macAddressEncrypted ? 11 : 18;
 
