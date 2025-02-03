@@ -38,8 +38,8 @@ import java.util.concurrent.Executors;
 
 public class EarbudsService extends Service {
 
-    public static final String TAG = EarbudsService.class.getName();
-    public static final boolean DEBUG = true;
+    private static final String TAG = EarbudsService.class.getSimpleName();
+    private static final boolean DEBUG = true;
 
     private static final int MMA_DEVICE_CHECK_TIMEOUT_MS = 1000;
 

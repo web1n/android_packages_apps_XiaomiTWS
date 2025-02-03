@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 
 public class EarbudsFragment extends PreferenceFragmentCompat {
 
-    private static final String TAG = EarbudsFragment.class.getName();
+    private static final String TAG = EarbudsFragment.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     public static final String ACTION_RELOAD_CONFIG =

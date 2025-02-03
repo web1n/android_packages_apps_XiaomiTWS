@@ -6,8 +6,8 @@ import android.os.PowerManager;
 
 public class PowerUtils {
 
-    public static final String TAG = PowerUtils.class.getName();
-    public static final boolean DEBUG = true;
+    private static final String TAG = PowerUtils.class.getSimpleName();
+    private static final boolean DEBUG = true;
 
 
     public static boolean isInteractive(Context context) {

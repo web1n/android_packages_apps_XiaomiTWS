@@ -20,8 +20,8 @@ import java.util.Objects;
 
 public class EarbudsIconProvider extends ContentProvider {
 
-    public static final String TAG = EarbudsIconProvider.class.getName();
-    public static final boolean DEBUG = true;
+    private static final String TAG = EarbudsIconProvider.class.getSimpleName();
+    private static final boolean DEBUG = true;
 
     private static final String AUTHORITY_ICONS = "org.lineageos.xiaomi_bluetooth_icons";
 

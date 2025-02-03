@@ -24,7 +24,7 @@ import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils;
 
 public class BleSliceProvider extends SliceProvider {
 
-    private static final String TAG = BleSliceProvider.class.getName();
+    private static final String TAG = BleSliceProvider.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     @Override

@@ -15,8 +15,8 @@ import java.io.IOException;
 
 public class FindEarbudsController extends SwitchController {
 
+    private static final String TAG = FindEarbudsController.class.getSimpleName();
     private static final boolean DEBUG = true;
-    private static final String TAG = FindEarbudsController.class.getName();
 
     private static final byte LEFT_EARBUD_FLAG = 0x01;
     private static final byte RIGHT_EARBUD_FLAG = 0x02;

@@ -16,7 +16,7 @@ import org.lineageos.xiaomi_bluetooth.R;
 
 public class ReloadConfigController extends ConfigController {
 
-    private static final String TAG = ReloadConfigController.class.getName();
+    private static final String TAG = ReloadConfigController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     public ReloadConfigController(@NonNull Context context, @NonNull String preferenceKey) {

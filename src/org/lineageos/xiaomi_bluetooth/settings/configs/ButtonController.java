@@ -23,7 +23,7 @@ import java.util.List;
 
 public class ButtonController extends ListController {
 
-    private static final String TAG = ButtonController.class.getName();
+    private static final String TAG = ButtonController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     private static final byte VALUE_NOT_MODIFIED = -1;

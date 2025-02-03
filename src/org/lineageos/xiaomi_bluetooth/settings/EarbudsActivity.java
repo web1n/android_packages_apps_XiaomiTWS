@@ -9,7 +9,7 @@ import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
 
 public class EarbudsActivity extends CollapsingToolbarBaseActivity {
 
-    private static final String TAG = EarbudsActivity.class.getName();
+    private static final String TAG = EarbudsActivity.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     private static final String TAG_EARBUDS = "earbuds";

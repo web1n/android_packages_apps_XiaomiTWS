@@ -7,8 +7,8 @@ import java.util.Arrays;
 
 public class MMARequest {
 
-//    public static final String TAG = MMARequest.class.getName();
-//    public static final boolean DEBUG = true;
+//    private static final String TAG = MMARequest.class.getSimpleName();
+//    private static final boolean DEBUG = true;
 
     public final byte opCode;
     public final byte opCodeSN;

@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public abstract class SwitchController extends ConfigController {
 
-    private static final String TAG = SwitchController.class.getName();
+    private static final String TAG = SwitchController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     public SwitchController(@NonNull Context context, @NonNull String preferenceKey) {

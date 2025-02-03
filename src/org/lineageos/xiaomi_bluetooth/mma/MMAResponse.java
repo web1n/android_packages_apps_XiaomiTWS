@@ -10,8 +10,8 @@ import java.util.Arrays;
 
 public class MMAResponse {
 
-    public static final String TAG = MMAResponse.class.getName();
-    public static final boolean DEBUG = true;
+    private static final String TAG = MMAResponse.class.getSimpleName();
+    private static final boolean DEBUG = true;
 
     public final byte opCode;
     public final byte opCodeSN;

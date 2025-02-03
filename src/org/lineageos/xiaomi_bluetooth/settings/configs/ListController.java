@@ -17,7 +17,7 @@ import java.util.List;
 
 public abstract class ListController extends ConfigController {
 
-    private static final String TAG = ListController.class.getName();
+    private static final String TAG = ListController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     private boolean isModesUpdated = false;

@@ -8,8 +8,8 @@ import android.util.Log;
 
 public class BootCompletedReceiver extends BroadcastReceiver {
 
-    public static final String TAG = BootCompletedReceiver.class.getName();
-    public static final boolean DEBUG = true;
+    private static final String TAG = BootCompletedReceiver.class.getSimpleName();
+    private static final boolean DEBUG = true;
 
     @Override
     public void onReceive(Context context, Intent intent) {

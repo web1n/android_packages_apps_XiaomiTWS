@@ -17,7 +17,7 @@ import static org.lineageos.xiaomi_bluetooth.EarbudsConstants.*;
 
 public class EqualizerModeController extends ListController {
 
-    private static final String TAG = EqualizerModeController.class.getName();
+    private static final String TAG = EqualizerModeController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     private static final Map<Integer, Set<Integer>> DEVICE_SUPPORTED_STATES = Map.ofEntries(

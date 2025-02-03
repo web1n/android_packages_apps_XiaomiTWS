@@ -18,12 +18,11 @@ import java.util.Arrays;
 
 public abstract class ConfigController {
 
-    private static final String TAG = ConfigController.class.getName();
+    private static final String TAG = ConfigController.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     public static final int CONFIG_ID_INVALID = 0x01;
     protected static final byte VALUE_FEATURE_NOT_SUPPORTED = -1;
-
 
     protected static class ConfigState {
         @NonNull
