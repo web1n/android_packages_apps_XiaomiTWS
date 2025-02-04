@@ -28,6 +28,7 @@ android_app {
     manifest: "AndroidManifestIcons.xml",
 
     asset_dirs: ["asset-xiaomi"],
+    resource_dirs: [],
     srcs: ["src/org/lineageos/xiaomi_bluetooth/EarbudsIconProvider.java"],
     certificate: "platform",
     platform_apis: true,
