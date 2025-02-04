@@ -13,12 +13,12 @@
         android:key="general"
         android:title="@string/general">
 
-        <ListPreference
+        <DropDownPreference
             android:key="equalizer_mode"
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.EqualizerModeController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationModeController" />
@@ -28,42 +28,42 @@
         android:key="gestures"
         android:title="@string/gestures">
 
-        <ListPreference
+        <DropDownPreference
             android:key="single_click_left"
             android:title="@string/single_click_left"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="single_click_right"
             android:title="@string/single_click_right"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="double_click_left"
             android:title="@string/double_click_left"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="double_click_right"
             android:title="@string/double_click_right"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="treble_click_left"
             android:title="@string/treble_click_left"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="treble_click_right"
             android:title="@string/treble_click_right"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="long_press_left"
             android:title="@string/long_press_left"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
 
-        <ListPreference
+        <DropDownPreference
             android:key="long_press_right"
             android:title="@string/long_press_right"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.ButtonController" />
