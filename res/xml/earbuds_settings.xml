@@ -26,7 +26,8 @@
 
     <PreferenceCategory
         android:key="gestures"
-        android:title="@string/gestures">
+        android:title="@string/gestures"
+        app:initialExpandedChildrenCount="2">
 
         <DropDownPreference
             android:key="single_click_left"
@@ -83,7 +84,8 @@
             android:key="serial_number"
             android:summary="@string/device_not_connected"
             android:title="@string/serial_number"
-            app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.SerialNumberController" />
+            app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.SerialNumberController"
+            app:enableCopying="true" />
 
     </PreferenceCategory>
 
