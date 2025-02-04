@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.lineageos.xiaomi_bluetooth.R;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
@@ -96,7 +96,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
     private void initializeArguments() {
         Bundle args = getArguments();
         if (args != null) {
-            device = args.getParcelable(BluetoothDevice.EXTRA_DEVICE);
+            device = args.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
         }
         if (DEBUG) Log.d(TAG, "Initialized with device: " + device);
     }
