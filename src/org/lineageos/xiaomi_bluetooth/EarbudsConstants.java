@@ -6,8 +6,18 @@ import android.os.ParcelUuid;
 public class EarbudsConstants {
 
     public static final int MANUFACTURER_ID_XIAOMI = 0x038F;
+
     public static final ParcelUuid UUID_XIAOMI_FAST_CONNECT
             = ParcelUuid.fromString("0000FD2D-0000-1000-8000-00805f9b34fb");
+    public static final ParcelUuid UUID_XIAOMI_XIAOAI =
+            ParcelUuid.fromString("00001101-0000-1000-8000-008584d01810");
+    public static final ParcelUuid UUID_SPP =
+            ParcelUuid.fromString("00001101-0000-1000-8000-00805f9b34fb");
+
+    public static final ParcelUuid[] XIAOMI_UUIDS = new ParcelUuid[]{
+            UUID_XIAOMI_FAST_CONNECT, UUID_XIAOMI_XIAOAI, UUID_SPP
+    };
+
     public static final int XIAOMI_MMA_DATA_LENGTH = 22;
 
     public static final String VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI = "+XIAOMI";

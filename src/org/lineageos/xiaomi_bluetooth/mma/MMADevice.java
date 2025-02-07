@@ -1,13 +1,16 @@
 package org.lineageos.xiaomi_bluetooth.mma;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
 
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
@@ -375,7 +378,10 @@ public class MMADevice implements AutoCloseable {
         }
     }
 
-    @SuppressWarnings("all")
+    @RequiresPermission(allOf = {
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT
+    })
     public void connect() throws IOException {
         if (DEBUG) Log.d(TAG, "connect");
         if (isConnected()) return;
@@ -387,15 +393,31 @@ public class MMADevice implements AutoCloseable {
         // cancel discovery before connect
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 
-        BluetoothSocket socket;
-        try {
-            this.socket = socket = device.createInsecureRfcommSocketToServiceRecord(
-                    EarbudsConstants.UUID_XIAOMI_FAST_CONNECT.getUuid());
-            socket.connect();
-        } catch (IOException e) {
-            Log.e(TAG, "connect: ", e);
-            throw e;
+        connectSocket();
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private void connectSocket() throws IOException {
+        for (ParcelUuid uuid : EarbudsConstants.XIAOMI_UUIDS) {
+            if (DEBUG) Log.d(TAG, "createSocket: try connect uuid: " + uuid);
+
+            BluetoothSocket socket = null;
+            try {
+                socket = device.createInsecureRfcommSocketToServiceRecord(uuid.getUuid());
+                socket.connect();
+
+                this.socket = socket;
+                return;
+            } catch (IOException e) {
+                try {
+                    if (socket != null) socket.close();
+                } catch (Exception ignored) {
+                }
+                Log.e(TAG, "failed to connect uuid: " + uuid, e);
+            }
         }
+
+        throw new IOException("Failed to connect to any UUID");
     }
 
     public void close() throws IOException {
