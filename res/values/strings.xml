@@ -26,6 +26,8 @@
     <string name="noise_cancellation_mode_off">Off</string>
     <string name="noise_cancellation_mode_on">On</string>
     <string name="noise_cancellation_mode_transparency">Transparency</string>
+    <string name="noise_cancellation_mode_left">Left Button Control</string>
+    <string name="noise_cancellation_mode_right">Right Button Control</string>
 
     <string name="find_earbuds">Find Earbuds</string>
     <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>

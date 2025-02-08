@@ -26,6 +26,8 @@
     <string name="noise_cancellation_mode_off">关闭</string>
     <string name="noise_cancellation_mode_on">开启</string>
     <string name="noise_cancellation_mode_transparency">通透模式</string>
+    <string name="noise_cancellation_mode_left">左耳按键降噪控制</string>
+    <string name="noise_cancellation_mode_right">右耳按键降噪控制</string>
 
     <string name="find_earbuds">查找耳机</string>
     <string name="find_earbuds_off">点击查找，耳机会播放声音（请确保耳机不在耳朵内）</string>

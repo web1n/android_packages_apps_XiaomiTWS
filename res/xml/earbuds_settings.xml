@@ -18,10 +18,27 @@
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.EqualizerModeController" />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="noise_cancellation_mode"
+        android:title="@string/noise_cancellation_mode">
+
         <DropDownPreference
-            android:key="noise_cancellation_mode"
+            android:key="switch_noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode"
             app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationModeController" />
+
+        <MultiSelectListPreference
+            android:key="left_noise_cancellation_mode"
+            android:title="@string/noise_cancellation_mode_left"
+            app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationListController" />
+
+        <MultiSelectListPreference
+            android:key="right_noise_cancellation_mode"
+            android:title="@string/noise_cancellation_mode_right"
+            app:controller="org.lineageos.xiaomi_bluetooth.settings.configs.NoiseCancellationListController" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
