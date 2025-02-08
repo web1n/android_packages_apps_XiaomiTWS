@@ -68,6 +68,11 @@ public class EarbudsIconProvider extends ContentProvider {
     @Override
     public AssetFileDescriptor openAssetFile(Uri uri, String mode) throws FileNotFoundException {
         if (DEBUG) Log.d(TAG, "openAssetFile: " + uri + " " + mode);
+
+        // check calling permission
+        requireContext().enforceCallingUriPermission(
+                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION, null);
+
         String type = uri.getLastPathSegment();
         if (!(TYPE_CASE.equals(type) || TYPE_LEFT.equals(type) || TYPE_RIGHT.equals(type))) {
             throw new FileNotFoundException("type not valid");
