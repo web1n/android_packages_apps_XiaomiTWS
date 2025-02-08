@@ -212,7 +212,8 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
             }
 
             if (controller instanceof Preference.OnPreferenceChangeListener listener) {
-                return listener.onPreferenceChange(p, newValue);
+                boolean update = listener.onPreferenceChange(p, newValue);
+                if (!update) return false;
             }
 
             if (checkConnected()) {
