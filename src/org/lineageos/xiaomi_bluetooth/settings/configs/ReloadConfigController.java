@@ -34,8 +34,11 @@ public class ReloadConfigController extends ConfigController {
     }
 
     @Override
-    public boolean isAvailable() {
-        return !super.isAvailable();
+    public Available isAvailable() {
+        return switch (super.isAvailable()) {
+            case AVAILABLE -> Available.UNAVAILABLE;
+            case UNAVAILABLE, UNKNOWN -> Available.AVAILABLE;
+        };
     }
 
     @Override

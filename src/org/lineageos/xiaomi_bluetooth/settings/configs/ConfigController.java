@@ -24,6 +24,12 @@ public abstract class ConfigController {
     public static final int CONFIG_ID_INVALID = 0x01;
     protected static final byte VALUE_FEATURE_NOT_SUPPORTED = -1;
 
+    public enum Available {
+        AVAILABLE,
+        UNAVAILABLE,
+        UNKNOWN
+    }
+
     protected static class ConfigState {
         @NonNull
         final byte[] configValue;
@@ -85,8 +91,14 @@ public abstract class ConfigController {
         return value != null && value.length == getExpectedConfigLength();
     }
 
-    public boolean isAvailable() {
-        return isValidValue(configValue) && !isNotSupported();
+    public Available isAvailable() {
+        if (configValue == null) {
+            return Available.UNKNOWN;
+        }
+
+        return isValidValue(configValue) && !isNotSupported()
+                ? Available.AVAILABLE
+                : Available.UNAVAILABLE;
     }
 
     protected final boolean isNotSupported() {
@@ -115,7 +127,7 @@ public abstract class ConfigController {
     }
 
     private void updateSummary(@NonNull Preference preference) {
-        String summary = isAvailable()
+        String summary = isAvailable() == Available.AVAILABLE
                 ? getSummary()
                 : null;
 
@@ -125,7 +137,10 @@ public abstract class ConfigController {
     }
 
     private void updateVisible(@NonNull Preference preference) {
-        preference.setVisible(isAvailable());
+        Available available = isAvailable();
+
+        preference.setVisible(available != Available.UNAVAILABLE);
+        preference.setSelectable(available == Available.AVAILABLE);
     }
 
     public boolean saveConfig(@NonNull MMADevice device, @NonNull Object value) throws IOException {

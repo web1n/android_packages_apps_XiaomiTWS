@@ -50,8 +50,14 @@ public abstract class ListController extends ConfigController {
     }
 
     @Override
-    public boolean isAvailable() {
-        return super.isAvailable() && !getConfigStates().isEmpty();
+    public Available isAvailable() {
+        return switch (super.isAvailable()) {
+            case AVAILABLE -> !getConfigStates().isEmpty()
+                    ? Available.AVAILABLE
+                    : Available.UNAVAILABLE;
+            case UNAVAILABLE -> Available.UNAVAILABLE;
+            case UNKNOWN -> Available.UNKNOWN;
+        };
     }
 
     @Override
@@ -63,7 +69,7 @@ public abstract class ListController extends ConfigController {
     }
 
     private void updateSupportedModes(@NonNull ListPreference preference) {
-        if (!isAvailable() || isModesUpdated) {
+        if (isAvailable() != Available.AVAILABLE || isModesUpdated) {
             return;
         }
         isModesUpdated = true;
