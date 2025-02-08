@@ -19,13 +19,28 @@
         <activity
             android:name=".settings.EarbudsActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="false"
-            android:label="@string/earbuds_settings"
+            android:exported="true"
+            android:label="@string/xiaomi_earbuds"
             android:theme="@style/Theme.SubSettingsBase">
             <intent-filter>
                 <action android:name="com.android.settings.action.IA_SETTINGS" />
             </intent-filter>
+
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.device" />
         </activity>
+
+        <activity-alias
+            android:name=".settings.EarbudsInfoActivity"
+            android:exported="true"
+            android:label="@string/earbuds_settings"
+            android:targetActivity=".settings.EarbudsActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_bluetooth.action.EARBUDS_INFO" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
 
         <service
             android:name=".EarbudsService"

@@ -1,6 +1,6 @@
 package org.lineageos.xiaomi_bluetooth.settings.configs;
 
-import static org.lineageos.xiaomi_bluetooth.settings.EarbudsFragment.ACTION_RELOAD_CONFIG;
+import static org.lineageos.xiaomi_bluetooth.settings.EarbudsInfoFragment.ACTION_RELOAD_CONFIG;
 
 import android.content.Context;
 import android.content.Intent;

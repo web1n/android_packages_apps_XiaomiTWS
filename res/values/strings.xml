@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Xiaomi Bluetooth Service</string>
+    <string name="xiaomi_earbuds">Xiaomi Earbuds</string>
     <string name="firmware_version">Firmware version</string>
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>
+    <string name="device_connecting">Connecting</string>
+    <string name="not_xiaomi_earbuds">Not Xiaomi Earbuds</string>
 
     <string name="configuration_unavailable">Unable to obtain earbuds configuration</string>
     <string name="reconnect_device">Reconnect device</string>

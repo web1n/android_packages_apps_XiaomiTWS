@@ -1,5 +1,6 @@
 package org.lineageos.xiaomi_bluetooth.settings;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -32,11 +33,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
 
-public class EarbudsFragment extends PreferenceFragmentCompat {
+public class EarbudsInfoFragment extends PreferenceFragmentCompat {
 
-    private static final String TAG = EarbudsFragment.class.getSimpleName();
+    private static final String TAG = EarbudsInfoFragment.class.getSimpleName();
     private static final boolean DEBUG = true;
 
+    public static final String ACTION_EARBUDS_INFO =
+            "org.lineageos.xiaomi_bluetooth.action.EARBUDS_INFO";
     public static final String ACTION_RELOAD_CONFIG =
             "org.lineageos.xiaomi_bluetooth.action.RELOAD_CONFIG";
 
@@ -66,7 +69,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        initializeArguments();
+        initializeDevice();
         initializeExecutor();
         registerActionReceiver();
     }
@@ -81,6 +84,12 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
         super.onViewCreated(view, savedInstanceState);
 
         bindPreferenceControllers();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
         reloadConfig();
     }
 
@@ -93,11 +102,19 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
         unbindPreferenceControllers();
     }
 
-    private void initializeArguments() {
-        Bundle args = getArguments();
-        if (args != null) {
-            device = args.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
+    @SuppressLint("MissingPermission")
+    private void initializeDevice() {
+        Intent intent = requireActivity().getIntent();
+        if (intent != null) {
+            device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
         }
+
+        if (device == null) {
+            requireActivity().destroy();
+            return;
+        }
+
+        requireActivity().setTitle(device.getName());
         if (DEBUG) Log.d(TAG, "Initialized with device: " + device);
     }
 
@@ -134,6 +151,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
 
         executeBackgroundTask(() -> {
             try (MMADevice mma = new MMADevice(device)) {
+                @SuppressLint("MissingPermission")
                 boolean success = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
 
@@ -239,6 +257,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
                                         @NonNull Preference preference,
                                         @NonNull Object newValue) {
         try (MMADevice mma = new MMADevice(device)) {
+            @SuppressLint("MissingPermission")
             boolean success = CommonUtils.executeWithTimeout(() -> {
                 mma.connect();
                 return controller.saveConfig(mma, newValue);
@@ -289,6 +308,7 @@ public class EarbudsFragment extends PreferenceFragmentCompat {
         return controller;
     }
 
+    @SuppressLint("MissingPermission")
     private boolean checkConnected() {
         if (!Objects.requireNonNull(device).isConnected()) {
             showToast(getString(R.string.device_not_connected));
