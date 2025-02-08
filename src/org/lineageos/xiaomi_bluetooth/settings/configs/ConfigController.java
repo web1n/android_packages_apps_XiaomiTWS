@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceGroup;
 
 import org.lineageos.xiaomi_bluetooth.R;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
@@ -141,6 +142,29 @@ public abstract class ConfigController {
 
         preference.setVisible(available != Available.UNAVAILABLE);
         preference.setSelectable(available == Available.AVAILABLE);
+
+        updateParentVisibility(preference);
+    }
+
+    private static void updateParentVisibility(@NonNull Preference preference) {
+        PreferenceGroup parent = preference.getParent();
+        if (parent == null) {
+            return;
+        }
+
+        if (preference.isVisible()) {
+            parent.setVisible(true);
+        } else {
+            boolean hasVisibleChildren = false;
+            for (int i = 0; i < parent.getPreferenceCount(); i++) {
+                Preference p = parent.getPreference(i);
+                if (p.isVisible()) {
+                    hasVisibleChildren = true;
+                    break;
+                }
+            }
+            parent.setVisible(hasVisibleChildren);
+        }
     }
 
     public boolean saveConfig(@NonNull MMADevice device, @NonNull Object value) throws IOException {
