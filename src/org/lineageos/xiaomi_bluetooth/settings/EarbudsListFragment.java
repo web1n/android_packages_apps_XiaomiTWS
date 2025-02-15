@@ -11,6 +11,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.util.Pair;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,12 +47,14 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
     }
 
     private ExecutorService earbudsExecutor;
+    private ActivityResultLauncher<String[]> permissionRequestLauncher;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         initializeExecutor();
+        initializePermissionHandler();
     }
 
     @Override
@@ -83,21 +86,25 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
         }
     }
 
+    private void initializePermissionHandler() {
+        permissionRequestLauncher = registerForActivityResult(new RequestMultiplePermissions(),
+                result -> {
+                    boolean allGranted = !result.containsValue(false);
+
+                    if (allGranted) {
+                        reloadDevices();
+                    } else {
+                        openAppSettings();
+                    }
+                });
+    }
+
     private boolean checkPermissions() {
         String[] missingPermissions = CommonUtils.getMissingRuntimePermissions(requireContext());
         if (missingPermissions.length == 0) return true;
         if (DEBUG) Log.d(TAG, "Missing permissions: " + Arrays.toString(missingPermissions));
 
-        registerForActivityResult(new RequestMultiplePermissions(), result -> {
-            boolean allGranted = !result.containsValue(false);
-
-            if (allGranted) {
-                reloadDevices();
-            } else {
-                openAppSettings();
-            }
-        }).launch(missingPermissions);
-
+        permissionRequestLauncher.launch(missingPermissions);
         return false;
     }
 
