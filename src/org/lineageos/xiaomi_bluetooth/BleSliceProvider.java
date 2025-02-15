@@ -12,11 +12,9 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.slice.Slice;
 import androidx.slice.SliceProvider;
-import androidx.slice.builders.SliceAction;
 import androidx.slice.builders.ListBuilder;
+import androidx.slice.builders.SliceAction;
 
-import org.lineageos.xiaomi_bluetooth.R;
-import org.lineageos.xiaomi_bluetooth.settings.EarbudsActivity;
 import org.lineageos.xiaomi_bluetooth.settings.EarbudsInfoFragment;
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils;
 
@@ -60,9 +58,10 @@ public class BleSliceProvider extends SliceProvider {
             return null;
         }
 
-        Intent intent = new Intent(getContext(), EarbudsActivity.class);
-        intent.setAction(EarbudsInfoFragment.ACTION_EARBUDS_INFO);
+        Intent intent = new Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+        intent.setPackage(requireContext().getPackageName());
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 getContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
