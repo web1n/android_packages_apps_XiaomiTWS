@@ -19,18 +19,4 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
-
-    required : ["XiaomiBluetoothIcons"],
-}
-
-android_app {
-    name : "XiaomiBluetoothIcons",
-    manifest: "AndroidManifestIcons.xml",
-
-    asset_dirs: ["asset-xiaomi"],
-    resource_dirs: [],
-    srcs: ["src/org/lineageos/xiaomi_bluetooth/EarbudsIconProvider.java"],
-    certificate: "platform",
-    platform_apis: true,
-    system_ext_specific: true,
 }

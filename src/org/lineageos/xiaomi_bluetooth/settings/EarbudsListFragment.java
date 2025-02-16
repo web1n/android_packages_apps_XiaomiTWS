@@ -3,13 +3,10 @@ package org.lineageos.xiaomi_bluetooth.settings;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.graphics.ImageDecoder;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.util.Pair;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
@@ -18,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import org.lineageos.xiaomi_bluetooth.EarbudsIconProvider;
 import org.lineageos.xiaomi_bluetooth.R;
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
@@ -37,14 +33,6 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
     private static final boolean DEBUG = true;
 
     private static final int MMA_DEVICE_CHECK_TIMEOUT_MS = 2000;
-
-    private record EarbudsInfo(int vendorId, int productId, Earbuds earbuds) {
-        private EarbudsInfo(int vendorId, int productId, @NonNull Earbuds earbuds) {
-            this.vendorId = vendorId;
-            this.productId = productId;
-            this.earbuds = earbuds;
-        }
-    }
 
     private ExecutorService earbudsExecutor;
     private ActivityResultLauncher<String[]> permissionRequestLauncher;
@@ -131,16 +119,10 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
         executeBackgroundTask(() -> {
             try (MMADevice mma = new MMADevice(device)) {
                 @SuppressLint("MissingPermission")
-                EarbudsInfo info = CommonUtils.executeWithTimeout(() -> {
+                Earbuds info = CommonUtils.executeWithTimeout(() -> {
                     mma.connect();
 
-                    Pair<Integer, Integer> vidPid = mma.getVidPid();
-                    Earbuds battery = mma.getBatteryInfo();
-
-                    if (vidPid != null && battery != null) {
-                        return new EarbudsInfo(vidPid.first, vidPid.second, battery);
-                    }
-                    return null;
+                    return mma.getBatteryInfo();
                 }, MMA_DEVICE_CHECK_TIMEOUT_MS);
 
                 updateUI(() -> updateEarbudsPreference(device, info));
@@ -189,39 +171,22 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
         earbudsPreference.setSummary(R.string.device_connecting);
         earbudsPreference.setIntent(infoIntent);
         earbudsPreference.setSelectable(false);
-        earbudsPreference.setIconSpaceReserved(true);
+        earbudsPreference.setIconSpaceReserved(false);
     }
 
     private void updateEarbudsPreference(@NonNull BluetoothDevice device,
-                                         @Nullable EarbudsInfo info) {
+                                         @Nullable Earbuds earbuds) {
         if (DEBUG) Log.d(TAG, "Updating preference for device: " + device);
 
         Preference earbudsPreference = findPreference(device.getAddress());
         if (earbudsPreference == null) return;
 
-        if (info != null) {
+        if (earbuds != null) {
             earbudsPreference.setSelectable(true);
-            earbudsPreference.setSummary(info.earbuds.toString());
-            earbudsPreference.setIcon(getIconForModel(info.vendorId, info.productId));
+            earbudsPreference.setSummary(earbuds.toString());
         } else {
             earbudsPreference.setSummary(R.string.not_xiaomi_earbuds);
         }
-    }
-
-    @Nullable
-    private Drawable getIconForModel(int vendorId, int productId) {
-        ImageDecoder.Source source = ImageDecoder.createSource(
-                requireContext().getContentResolver(),
-                Uri.parse(EarbudsIconProvider.generateIconUri(
-                        requireContext(), vendorId, productId, EarbudsIconProvider.TYPE_CASE))
-        );
-
-        try {
-            return ImageDecoder.decodeDrawable(source);
-        } catch (Exception e) {
-            Log.e(TAG, "getIconForModel: ", e);
-        }
-        return null;
     }
 
 }
