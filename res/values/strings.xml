@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">Xiaomi Bluetooth Service</string>
     <string name="xiaomi_earbuds">Xiaomi Earbuds</string>
-    <string name="firmware_version">Firmware version</string>
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>
     <string name="device_connecting">Connecting</string>

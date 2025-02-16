@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">小米蓝牙服务</string>
     <string name="xiaomi_earbuds">小米耳机</string>
-    <string name="firmware_version">固件版本</string>
     <string name="earbuds_settings">耳机设置</string>
     <string name="device_not_connected">设备未连接</string>
     <string name="device_connecting">正在连接</string>
