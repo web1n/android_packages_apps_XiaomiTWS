@@ -4,11 +4,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,23 +19,10 @@ public class BluetoothUtils {
     private static final String TAG = BluetoothUtils.class.getSimpleName();
     private static final boolean DEBUG = true;
 
-    @Nullable
-    public static BluetoothAdapter getBluetoothAdapter(@Nullable Context context) {
-        if (context == null) {
-            return null;
-        }
+    @NonNull
+    public static BluetoothAdapter getBluetoothAdapter(@NonNull Context context) {
         return Objects.requireNonNull(context.getSystemService(BluetoothManager.class))
                 .getAdapter();
-    }
-
-    @Nullable
-    public static BluetoothLeScanner getScanner(@Nullable Context context) {
-        BluetoothAdapter adapter = getBluetoothAdapter(context);
-        if (adapter == null) {
-            return null;
-        }
-
-        return adapter.getBluetoothLeScanner();
     }
 
     @NonNull
@@ -55,8 +40,8 @@ public class BluetoothUtils {
         return bondedDevices.stream().filter(BluetoothUtils::isConnectedHeadsetA2DPDevice).toList();
     }
 
-    public static boolean isConnectedHeadsetA2DPDevice(@Nullable BluetoothDevice device) {
-        if (device == null || !device.isConnected()) {
+    public static boolean isConnectedHeadsetA2DPDevice(@NonNull BluetoothDevice device) {
+        if (!device.isConnected()) {
             return false;
         }
 
@@ -69,34 +54,19 @@ public class BluetoothUtils {
                 bluetoothClass.doesClassMatch(BluetoothClass.PROFILE_HEADSET);
     }
 
-    @Nullable
-    public static BluetoothDevice getBluetoothDevice(String mac) {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        if (mac == null || adapter == null || !adapter.isEnabled()) {
-            return null;
-        }
-
-        return adapter.getRemoteDevice(mac);
+    @NonNull
+    public static BluetoothDevice getBluetoothDevice(@NonNull String mac) {
+        return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac);
     }
 
-    public static void setDeviceMetadata(
-            BluetoothDevice device, int key, Object value, boolean update) {
-        if (device == null || value == null) {
-            return;
-        }
-        if (value.toString().length() > BluetoothDevice.METADATA_MAX_LENGTH) {
-            return;
-        }
-        if (!update && device.getMetadata(key) != null) {
+    public static void updateDeviceMetadata(@NonNull BluetoothDevice device, int key,
+                                            @NonNull Object value) {
+        String valueStr = value.toString();
+        if (valueStr.length() > BluetoothDevice.METADATA_MAX_LENGTH) {
             return;
         }
 
-        device.setMetadata(key, value.toString().getBytes());
-    }
-
-    public static void updateDeviceMetadata(
-            BluetoothDevice device, int key, Object value) {
-        setDeviceMetadata(device, key, value, true);
+        device.setMetadata(key, valueStr.getBytes());
     }
 
 }

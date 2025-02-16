@@ -2,10 +2,11 @@ package org.lineageos.xiaomi_bluetooth.earbuds;
 
 import androidx.annotation.NonNull;
 
-import static org.lineageos.xiaomi_bluetooth.EarbudsConstants.*;
-
 
 public class Earbud {
+
+    private static final int EARBUDS_CHARGING_BIT_MASK = 0x80;
+    private static final int EARBUDS_BATTERY_LEVEL_MASK = 0x7F;
 
     public final boolean charging;
     public final int battery;
