@@ -25,6 +25,15 @@ public class ATUtils {
     private static final String COMMAND_START = "FF010201";
     private static final String COMMAND_END = "FF";
 
+    @SuppressWarnings({"PrivateApi", "JavaReflectionMemberAccess"})
+    public static void checkIfSupportXiaomiATCommand() {
+        try {
+            BluetoothHeadset.class.getDeclaredField("VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI");
+        } catch (NoSuchFieldException e) {
+            Log.e(TAG, "ROM dose not support +XIAOMI AT command");
+        }
+    }
+
     public static void sendATCommand(@NonNull BluetoothHeadset bluetoothHeadset,
                                      @NonNull BluetoothDevice device,
                                      int type, @NonNull String value) {

@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.UserHandle;
 import android.util.Log;
 
+import org.lineageos.xiaomi_bluetooth.utils.ATUtils;
+
 public class BootCompletedReceiver extends BroadcastReceiver {
 
     private static final String TAG = BootCompletedReceiver.class.getSimpleName();
@@ -17,6 +19,8 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             return;
         }
         if (DEBUG) Log.d(TAG, "boot completed");
+
+        ATUtils.checkIfSupportXiaomiATCommand();
 
         context.startServiceAsUser(
                 new Intent(context, EarbudsService.class), UserHandle.CURRENT);
