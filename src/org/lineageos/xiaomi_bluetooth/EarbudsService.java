@@ -104,25 +104,7 @@ public class EarbudsService extends Service {
     }
 
     private void handleATCommand(@NonNull BluetoothDevice device, @NonNull Intent intent) {
-        String cmd = intent.getStringExtra(
-                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD);
-        int type = intent.getIntExtra(
-                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE,
-                BluetoothHeadset.AT_CMD_TYPE_READ);
-        Object[] args = intent.getSerializableExtra(
-                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, Object[].class);
-
-        if (!ATUtils.VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI.equals(cmd)
-                || type != BluetoothHeadset.AT_CMD_TYPE_SET) {
-            if (DEBUG) Log.d(TAG, "handleATCommand: Invalid AT command received: " + cmd);
-        }
-        if (args == null || args.length != 1 || !(args[0] instanceof String)) {
-            ATUtils.sendUpdateATCommand(bluetoothHeadset, device);
-            return;
-        }
-
-        Earbuds earbuds = ATUtils.parseATFastConnectCommand(device, (String) args[0]);
-        if (DEBUG) Log.d(TAG, "handleATCommand: Parsed AT command: " + args[0] + " -> " + earbuds);
+        Earbuds earbuds = ATUtils.parseATCommandIntent(intent);
 
         if (earbuds != null) {
             EarbudsUtils.updateEarbudsStatus(earbuds);

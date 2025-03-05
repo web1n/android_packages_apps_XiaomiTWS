@@ -6,10 +6,12 @@ import static org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_DATA_LE
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.le.ScanRecord;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.IntentCompat;
 
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 
@@ -82,6 +84,35 @@ public class ATUtils {
 
         return Earbuds.fromBytes(device.getAddress(),
                 fastConnectData[13], fastConnectData[12], fastConnectData[14]);
+    }
+
+    @Nullable
+    public static Earbuds parseATCommandIntent(@NonNull Intent intent) {
+        BluetoothDevice device = IntentCompat.getParcelableExtra(
+                intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
+        if (device == null) {
+            return null;
+        }
+
+        String cmd = intent.getStringExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD);
+        int type = intent.getIntExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE,
+                BluetoothHeadset.AT_CMD_TYPE_READ);
+        Object[] args = intent.getSerializableExtra(
+                BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, Object[].class);
+
+        if (!ATUtils.VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI.equals(cmd)
+                || type != BluetoothHeadset.AT_CMD_TYPE_SET) {
+            if (DEBUG) Log.d(TAG, "handleATCommand: Invalid AT command received: " + cmd);
+        }
+        if (args == null || args.length != 1 || !(args[0] instanceof String)) {
+            return null;
+        }
+
+        Earbuds earbuds = ATUtils.parseATFastConnectCommand(device, (String) args[0]);
+        if (DEBUG) Log.d(TAG, "handleATCommand: Parsed AT command: " + args[0] + " -> " + earbuds);
+        return earbuds;
     }
 
 }
