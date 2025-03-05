@@ -1,7 +1,10 @@
 android_app {
     name: "XiaomiBluetooth",
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt"
+    ],
     resource_dirs: ["res"],
     certificate: "platform",
     platform_apis: true,
