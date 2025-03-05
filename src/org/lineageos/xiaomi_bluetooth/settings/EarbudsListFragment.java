@@ -20,6 +20,7 @@ import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds;
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice;
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils;
 import org.lineageos.xiaomi_bluetooth.utils.CommonUtils;
+import org.lineageos.xiaomi_bluetooth.utils.PermissionUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +89,7 @@ public class EarbudsListFragment extends PreferenceFragmentCompat {
     }
 
     private boolean checkPermissions() {
-        String[] missingPermissions = CommonUtils.getMissingRuntimePermissions(requireContext());
+        String[] missingPermissions = PermissionUtils.getMissingRuntimePermissions(requireContext());
         if (missingPermissions.length == 0) return true;
         if (DEBUG) Log.d(TAG, "Missing permissions: " + Arrays.toString(missingPermissions));
 

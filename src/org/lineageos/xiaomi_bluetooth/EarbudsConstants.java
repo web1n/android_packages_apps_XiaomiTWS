@@ -1,15 +1,9 @@
 package org.lineageos.xiaomi_bluetooth;
 
-import android.Manifest;
 import android.os.ParcelUuid;
 
 
 public class EarbudsConstants {
-
-    public static final String[] REQUIRED_RUNTIME_PERMISSIONS = new String[]{
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
-    };
 
     public static final ParcelUuid UUID_XIAOMI_FAST_CONNECT
             = ParcelUuid.fromString("0000FD2D-0000-1000-8000-00805f9b34fb");

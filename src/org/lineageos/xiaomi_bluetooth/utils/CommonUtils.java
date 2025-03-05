@@ -1,14 +1,8 @@
 package org.lineageos.xiaomi_bluetooth.utils;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
-
 import androidx.annotation.NonNull;
 
-import org.lineageos.xiaomi_bluetooth.EarbudsConstants;
-
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -72,14 +66,6 @@ public class CommonUtils {
             bytes[i / 2] = (byte) (high | low);
         }
         return bytes;
-    }
-
-    @NonNull
-    public static String[] getMissingRuntimePermissions(@NonNull Context context) {
-        return Arrays.stream(EarbudsConstants.REQUIRED_RUNTIME_PERMISSIONS)
-                .filter(permission -> context.checkSelfPermission(permission)
-                        != PackageManager.PERMISSION_GRANTED)
-                .toArray(String[]::new);
     }
 
 }
