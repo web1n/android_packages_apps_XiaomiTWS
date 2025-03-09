@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings
+package org.lineageos.xiaomi_bluetooth.fragments
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -16,7 +16,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import org.lineageos.xiaomi_bluetooth.R
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice
-import org.lineageos.xiaomi_bluetooth.settings.configs.ConfigController
+import org.lineageos.xiaomi_bluetooth.configs.ConfigController
 import org.lineageos.xiaomi_bluetooth.utils.CommonUtils.executeWithTimeout
 import org.lineageos.xiaomi_bluetooth.utils.PreferenceUtils.createAllControllers
 import java.util.concurrent.ExecutorService

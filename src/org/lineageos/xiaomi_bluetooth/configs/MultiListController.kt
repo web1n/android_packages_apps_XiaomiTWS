@@ -1,23 +1,24 @@
-package org.lineageos.xiaomi_bluetooth.settings.configs
+package org.lineageos.xiaomi_bluetooth.configs
 
 import android.content.Context
 import android.util.Log
-import androidx.preference.ListPreference
+import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice
 import org.lineageos.xiaomi_bluetooth.utils.ByteUtils.hexToBytes
 import org.lineageos.xiaomi_bluetooth.utils.ByteUtils.toHexString
 
-abstract class ListController(context: Context, preferenceKey: String) :
+abstract class MultiListController(context: Context, preferenceKey: String) :
     ConfigController(context, preferenceKey) {
 
     private var isModesUpdated = false
 
     protected abstract val configStates: Set<ConfigState>
-    protected abstract val defaultState: ConfigState
+    protected abstract val checkedStates: Set<ConfigState>
 
     override fun updateState(preference: Preference) {
-        updateSupportedModes(preference as ListPreference)
+        updateSupportedModes(preference as MultiSelectListPreference)
+
         super.updateState(preference)
     }
 
@@ -35,23 +36,26 @@ abstract class ListController(context: Context, preferenceKey: String) :
 
     override val summary: String?
         get() = configValue?.let {
-            context.getString(
-                configStates.first { state -> state.configValue.contentEquals(configValue) }.summaryResId
-            )
+            checkedStates.joinToString { state ->
+                context.getString(state.summaryResId)
+            }
         }
 
     override fun updateValue(preference: Preference) {
-        configValue?.run {
-            (preference as ListPreference).value = toHexString()
-        }
+        if (DEBUG) Log.d(TAG, "updateValue: $preferenceKey")
+
+        checkedStates
+            .map { state -> state.configValue.toHexString() }.toSet()
+            .let { (preference as MultiSelectListPreference).values = it }
     }
 
-    private fun updateSupportedModes(preference: ListPreference) {
+    private fun updateSupportedModes(preference: MultiSelectListPreference) {
         if (isAvailable != Available.AVAILABLE || isModesUpdated) {
             return
         }
         isModesUpdated = true
 
+        val configStates = configStates
         val entryValues = configStates
             .map { state -> state.configValue.toHexString() }
             .toTypedArray()
@@ -75,7 +79,7 @@ abstract class ListController(context: Context, preferenceKey: String) :
     }
 
     companion object {
-        private val TAG = ListController::class.java.simpleName
+        private val TAG = MultiListController::class.java.simpleName
         private const val DEBUG = true
     }
 }

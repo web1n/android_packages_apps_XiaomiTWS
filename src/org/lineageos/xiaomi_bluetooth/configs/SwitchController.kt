@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings.configs
+package org.lineageos.xiaomi_bluetooth.configs
 
 import android.content.Context
 import androidx.preference.Preference

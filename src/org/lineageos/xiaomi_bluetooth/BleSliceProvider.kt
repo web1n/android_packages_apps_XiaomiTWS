@@ -12,7 +12,7 @@ import androidx.slice.Slice
 import androidx.slice.SliceProvider
 import androidx.slice.builders.ListBuilder
 import androidx.slice.builders.SliceAction
-import org.lineageos.xiaomi_bluetooth.settings.EarbudsInfoFragment
+import org.lineageos.xiaomi_bluetooth.fragments.EarbudsInfoFragment
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils
 
 class BleSliceProvider : SliceProvider() {

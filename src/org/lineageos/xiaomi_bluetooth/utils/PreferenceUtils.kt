@@ -2,7 +2,7 @@ package org.lineageos.xiaomi_bluetooth.utils
 
 import android.content.Context
 import androidx.annotation.XmlRes
-import org.lineageos.xiaomi_bluetooth.settings.configs.ConfigController
+import org.lineageos.xiaomi_bluetooth.configs.ConfigController
 import org.xmlpull.v1.XmlPullParser
 
 object PreferenceUtils {

@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings.configs
+package org.lineageos.xiaomi_bluetooth.configs
 
 import android.content.Context
 import android.content.Intent
@@ -6,7 +6,7 @@ import androidx.preference.Preference
 import com.android.settingslib.widget.BannerMessagePreference
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_SN
 import org.lineageos.xiaomi_bluetooth.R
-import org.lineageos.xiaomi_bluetooth.settings.EarbudsInfoFragment
+import org.lineageos.xiaomi_bluetooth.fragments.EarbudsInfoFragment
 
 class ReloadConfigController(
     context: Context,

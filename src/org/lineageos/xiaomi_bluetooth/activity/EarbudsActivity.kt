@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings
+package org.lineageos.xiaomi_bluetooth.activity
 
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
 import com.android.settingslib.collapsingtoolbar.R
+import org.lineageos.xiaomi_bluetooth.fragments.EarbudsInfoFragment
+import org.lineageos.xiaomi_bluetooth.fragments.EarbudsListFragment
 
 class EarbudsActivity : CollapsingToolbarBaseActivity() {
 
@@ -40,7 +42,7 @@ class EarbudsActivity : CollapsingToolbarBaseActivity() {
         private const val DEBUG = true
 
         private val FRAGMENTS = mapOf<String, Class<out Fragment>>(
-            "org.lineageos.xiaomi_bluetooth.settings.EarbudsInfoActivity" to EarbudsInfoFragment::class.java
+            "org.lineageos.xiaomi_bluetooth.activity.EarbudsInfoActivity" to EarbudsInfoFragment::class.java
         )
 
         private const val TAG_EARBUDS = "earbuds"

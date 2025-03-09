@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings.configs
+package org.lineageos.xiaomi_bluetooth.configs
 
 import android.content.Context
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_FIND_EARBUDS

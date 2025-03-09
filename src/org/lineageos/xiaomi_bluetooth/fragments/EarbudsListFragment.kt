@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_bluetooth.settings
+package org.lineageos.xiaomi_bluetooth.fragments
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
