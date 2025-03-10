@@ -285,6 +285,7 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
             setDeviceConfig(
                 EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE,
                 byteArrayOf(value, 0x00),
+                false
             )
         }
 

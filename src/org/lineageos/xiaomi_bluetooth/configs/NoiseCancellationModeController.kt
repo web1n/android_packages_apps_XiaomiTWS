@@ -14,6 +14,7 @@ class NoiseCancellationModeController(
 
     override val configId = XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
     override val expectedConfigLength = 2
+    override val configNeedReceive = false
 
     override val configStates = setOf(
         ConfigState(

@@ -35,6 +35,7 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
 
     abstract val configId: Int
     abstract val expectedConfigLength: Int
+    open val configNeedReceive = true
 
     fun setVendorData(vid: Int, pid: Int) {
         this.vid = vid
@@ -101,7 +102,7 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
             return true
         }
 
-        return device.setDeviceConfig(configId, value).also {
+        return device.setDeviceConfig(configId, value, configNeedReceive).also {
             if (DEBUG) Log.d(
                 TAG,
                 "Config save ${if (it) "successful" else "failed"} " +
