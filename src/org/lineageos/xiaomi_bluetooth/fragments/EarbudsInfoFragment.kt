@@ -114,7 +114,6 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
     @SuppressLint("MissingPermission")
     private fun reloadConfig() {
         if (DEBUG) Log.d(TAG, "reloadConfig")
-        if (!checkConnected()) return
 
         val configIds = configControllers
             .map { it.configId }
@@ -201,9 +200,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
                         if (!update) return@let
                     }
 
-                    if (checkConnected()) {
-                        executeBackgroundTask { handlePreferenceChange(controller, p, newValue) }
-                    }
+                    executeBackgroundTask { handlePreferenceChange(controller, p, newValue) }
                 }
 
                 false
@@ -229,11 +226,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         runCatching {
             executeWithTimeout(MMA_DEVICE_CHECK_TIMEOUT_MS) {
                 MMADevice(device).use {
-                    it.apply {
-                        connect()
-                    }.run {
-                        controller.saveConfig(it, newValue)
-                    }
+                    controller.saveConfig(it, newValue)
                 }
             }
         }.onSuccess {
@@ -277,16 +270,6 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
             Log.w(TAG, "Unknown controller for: ${preference.key}")
         }
         return controller
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun checkConnected(): Boolean {
-        return if (device.isConnected) {
-            true
-        } else {
-            showToast(getString(R.string.device_not_connected))
-            false
-        }
     }
 
     private fun showToast(content: String) {

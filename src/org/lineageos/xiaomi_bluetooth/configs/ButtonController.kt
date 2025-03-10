@@ -1,7 +1,9 @@
 package org.lineageos.xiaomi_bluetooth.configs
 
+import android.Manifest
 import android.content.Context
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED
@@ -132,6 +134,7 @@ class ButtonController(
         (preference as ListPreference).value = buttonConfig.toString()
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun saveConfig(device: MMADevice, value: Any): Boolean {
         require(value is String) {
             "Invalid value type: ${value.javaClass.simpleName}"

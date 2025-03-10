@@ -1,6 +1,8 @@
 package org.lineageos.xiaomi_bluetooth.configs
 
+import android.Manifest
 import android.content.Context
+import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_FIND_EARBUDS
 import org.lineageos.xiaomi_bluetooth.R
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice
@@ -17,9 +19,17 @@ class FindEarbudsController(context: Context, preferenceKey: String) :
     override val isEnabled
         get() = configValue?.get(0) == ENABLE_FLAG
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun saveConfig(device: MMADevice, value: Any): Boolean {
         require(value is Boolean) {
             "Invalid value type: ${value.javaClass.simpleName}"
+        }
+        check(device.isDeviceConnected) {
+            "Earbuds not connected"
+        }
+
+        if (!device.isConnected) {
+            device.connect()
         }
 
         val earbuds = device.batteryInfo

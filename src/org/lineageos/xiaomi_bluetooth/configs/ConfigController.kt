@@ -1,7 +1,9 @@
 package org.lineageos.xiaomi_bluetooth.configs
 
+import android.Manifest
 import android.content.Context
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
 import androidx.preference.Preference
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice
@@ -92,6 +94,7 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
         updateParentVisibility(preference)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     open fun saveConfig(device: MMADevice, value: Any): Boolean {
         require(value is ByteArray) {
             "Invalid value type: ${value.javaClass.simpleName}"
@@ -100,6 +103,10 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
         if (value.contentEquals(configValue)) {
             if (DEBUG) Log.d(TAG, "saveConfig: config not change")
             return true
+        }
+
+        if (!device.isConnected) {
+            device.connect()
         }
 
         return device.setDeviceConfig(configId, value, configNeedReceive).also {

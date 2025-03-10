@@ -1,7 +1,9 @@
 package org.lineageos.xiaomi_bluetooth.configs
 
+import android.Manifest
 import android.content.Context
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.preference.Preference
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_LIST
 import org.lineageos.xiaomi_bluetooth.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF
@@ -65,6 +67,7 @@ class NoiseCancellationListController(
         return (o as Set<*>).size >= 2
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun saveConfig(device: MMADevice, value: Any): Boolean {
         if (DEBUG) Log.d(TAG, "saveConfig: $value")
 

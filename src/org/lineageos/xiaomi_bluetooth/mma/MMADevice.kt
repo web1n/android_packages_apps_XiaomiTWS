@@ -22,6 +22,9 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
     private var socket: BluetoothSocket? = null
     private var opCodeSN: Byte? = null
 
+    val isDeviceConnected: Boolean
+        get() = device.isConnected
+
     val isConnected: Boolean
         get() = socket?.isConnected == true
 
@@ -296,9 +299,9 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
         if (DEBUG) Log.d(TAG, "connect")
         if (isConnected) return
 
-        if (!device.isConnected) {
-            throw IOException("device not connected")
-        }
+//        if (!device.isConnected) {
+//            throw IOException("device not connected")
+//        }
 
         // cancel discovery before connect
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery()

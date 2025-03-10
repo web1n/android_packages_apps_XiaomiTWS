@@ -1,7 +1,9 @@
 package org.lineageos.xiaomi_bluetooth.configs
 
+import android.Manifest
 import android.content.Context
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import org.lineageos.xiaomi_bluetooth.mma.MMADevice
@@ -74,6 +76,7 @@ abstract class MultiListController(context: Context, preferenceKey: String) :
         preference.entries = entries
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun saveConfig(device: MMADevice, value: Any): Boolean {
         return super.saveConfig(device, if (value is String) value.hexToBytes() else value)
     }
