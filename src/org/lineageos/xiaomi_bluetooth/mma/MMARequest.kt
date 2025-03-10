@@ -7,7 +7,7 @@ data class MMARequest(
     val opCode: Byte,
     val opCodeSN: Byte,
     val data: ByteArray,
-    private val needReceive: Boolean = true
+    val needReceive: Boolean = true
 ) {
 
     fun toBytes() = ByteArray(5 + data.size + 4).apply {

@@ -70,10 +70,14 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
     }
 
     @Synchronized
-    private fun sendReceive(request: MMARequest): MMAResponse {
+    private fun sendReceive(request: MMARequest): MMAResponse? {
         checkConnected()
 
         sendRequest(request)
+
+        if (!request.needReceive) {
+            return null
+        }
 
         for (i in 0..4) {
             val response = readResponse() ?: continue
@@ -94,7 +98,9 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
             byteArrayOf(0x00, 0x00, 0x00, (1 shl mask).toByte())
         )
 
-        val response = sendReceive(request)
+        val response = checkNotNull(sendReceive(request)) {
+            "MMAResponse is null"
+        }
         check(response.data.size == expectedLength) {
             "MMAResponse data length not equal to expected. Expected: $expectedLength, Actual: ${response.data.size}"
         }
@@ -170,7 +176,7 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
             newOpCodeSN,
             requestData
         )
-        val response = sendReceive(request)
+        val response = checkNotNull(sendReceive(request))
 
         val buffer = ByteBuffer.wrap(response.data)
         val configValues = HashMap<Int, ByteArray?>()
@@ -209,7 +215,7 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
         return configBytes
     }
 
-    fun setDeviceConfig(configs: Map<Int, ByteArray>): Boolean {
+    fun setDeviceConfig(configs: Map<Int, ByteArray>, needReceive: Boolean = true): Boolean {
         if (DEBUG) Log.d(TAG, "setDeviceConfig")
 
         val requestData = ArrayList<Byte>().apply {
@@ -226,15 +232,15 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
         val request = MMARequest(
             EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_CONFIG,
             newOpCodeSN,
-            requestData
+            requestData,
+            needReceive
         )
-        val response = sendReceive(request)
 
-        return response.ok
+        return sendReceive(request)?.ok != false
     }
 
-    fun setDeviceConfig(config: Int, value: ByteArray): Boolean {
-        return setDeviceConfig(hashMapOf(config to value))
+    fun setDeviceConfig(config: Int, value: ByteArray, needReceive: Boolean = true): Boolean {
+        return setDeviceConfig(hashMapOf(config to value), needReceive)
     }
 
     var equalizerMode: Byte
