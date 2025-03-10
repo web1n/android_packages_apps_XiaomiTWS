@@ -88,17 +88,27 @@ class EarbudsService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun handleATCommand(device: BluetoothDevice, intent: Intent) {
-        val earbuds = runCatching {
+        val args = IntentCompat.getParcelableExtra(
+            intent,
+            BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS,
+            Array<Any>::class.java
+        )
+        if ((args?.size ?: 0) > 1) {
+            Log.w(TAG, "handleATCommand: Not valid args size: ${args?.size}, send update")
+
+            if (bluetoothHeadset != null) {
+                ATUtils.sendUpdateATCommand(bluetoothHeadset!!, device)
+            }
+            return
+        }
+
+        runCatching {
             ATUtils.parseATCommandIntent(intent)
+        }.onSuccess { earbuds ->
+            earbuds?.updateDeviceTypeMetadata()
+            earbuds?.updateDeviceBatteryMetadata()
         }.onFailure {
             Log.e(TAG, "handleATCommand: Unable to parse at command intent", it)
-        }.getOrNull()
-
-        if (earbuds != null) {
-            earbuds.updateDeviceTypeMetadata()
-            earbuds.updateDeviceBatteryMetadata()
-        } else if (bluetoothHeadset != null) {
-            ATUtils.sendUpdateATCommand(bluetoothHeadset!!, device)
         }
     }
 
