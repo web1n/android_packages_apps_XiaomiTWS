@@ -1,6 +1,6 @@
 package org.lineageos.xiaomi_bluetooth
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHeadset
@@ -13,6 +13,8 @@ import android.util.Log
 import androidx.core.content.IntentCompat
 import org.lineageos.xiaomi_bluetooth.utils.ATUtils
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils.getBluetoothAdapter
+import org.lineageos.xiaomi_bluetooth.utils.NotificationUtils
+import org.lineageos.xiaomi_bluetooth.utils.PermissionUtils.checkSelfPermissionGranted
 
 class EarbudsService : Service() {
 
@@ -50,18 +52,12 @@ class EarbudsService : Service() {
                 if (DEBUG) Log.d(TAG, "onReceive: Received intent with null device")
                 return
             }
-            if (!device.isConnected) {
-                if (DEBUG) Log.d(TAG, "onReceive: Device is not connected")
-                return
-            }
-            if (bluetoothHeadset == null) {
-                Log.w(TAG, "onReceive: bluetoothHeadset is null")
-                return
-            }
 
             when (intent.action) {
                 BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT ->
                     handleATCommand(device, intent)
+
+                BluetoothDevice.ACTION_ACL_DISCONNECTED -> handleDeviceDisconnected(device)
 
                 else -> Log.w(TAG, "unknown action: ${intent.action}")
             }
@@ -86,7 +82,14 @@ class EarbudsService : Service() {
 
     override fun onBind(intent: Intent) = null
 
-    @SuppressLint("MissingPermission")
+    private fun handleDeviceDisconnected(device: BluetoothDevice) {
+        if (!checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+            return
+        }
+
+        NotificationUtils.cancelEarbudsNotification(this, device)
+    }
+
     private fun handleATCommand(device: BluetoothDevice, intent: Intent) {
         val args = IntentCompat.getParcelableExtra(
             intent,
@@ -96,7 +99,9 @@ class EarbudsService : Service() {
         if ((args?.size ?: 0) > 1) {
             Log.w(TAG, "handleATCommand: Not valid args size: ${args?.size}, send update")
 
-            if (bluetoothHeadset != null) {
+            if (bluetoothHeadset != null
+                && checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT)
+            ) {
                 ATUtils.sendUpdateATCommand(bluetoothHeadset!!, device)
             }
             return
@@ -105,8 +110,16 @@ class EarbudsService : Service() {
         runCatching {
             ATUtils.parseATCommandIntent(intent)
         }.onSuccess { earbuds ->
-            earbuds?.updateDeviceTypeMetadata()
-            earbuds?.updateDeviceBatteryMetadata()
+            if (earbuds == null) return
+
+            if (checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_PRIVILEGED)) {
+                earbuds.updateDeviceTypeMetadata()
+                earbuds.updateDeviceBatteryMetadata()
+            }
+
+            if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+                NotificationUtils.updateEarbudsNotification(this, earbuds)
+            }
         }.onFailure {
             Log.e(TAG, "handleATCommand: Unable to parse at command intent", it)
         }
@@ -133,6 +146,7 @@ class EarbudsService : Service() {
                 BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
                         + "." + ATUtils.MANUFACTURER_ID_XIAOMI
             )
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         }
 
         if (DEBUG) Log.d(TAG, "registering bluetooth state receiver")

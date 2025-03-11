@@ -75,10 +75,7 @@ object ATUtils {
             "Invalid fast connect data size ${fastConnectData?.size}"
         }
 
-        return Earbuds.fromBytes(
-            device.address,
-            fastConnectData[13], fastConnectData[12], fastConnectData[14]
-        ).let {
+        return Earbuds.fromFastConnectBytes(device.address, fastConnectData).let {
             if (it.valid) it else null
         }
     }

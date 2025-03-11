@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
 import android.util.Log
+import androidx.core.content.ContextCompat
 
 object PermissionUtils {
 
@@ -18,14 +19,17 @@ object PermissionUtils {
         }.onFailure {
             Log.e(TAG, "getMissingRuntimePermissions: ", it)
         }.getOrNull()?.filter { permission ->
-            isRuntimePermission(permission) && checkSelfPermissionGranted(permission)
+            isRuntimePermission(permission) && !checkSelfPermissionGranted(permission)
         }?.also {
             if (DEBUG) Log.d(TAG, "getMissingRuntimePermissions: ${it.joinToString()}");
         }?.toTypedArray() ?: arrayOf()
     }
 
-    private fun Context.checkSelfPermissionGranted(permissionName: String): Boolean {
-        return checkSelfPermission(permissionName) != PackageManager.PERMISSION_GRANTED
+    fun Context.checkSelfPermissionGranted(permissionName: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            permissionName
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun Context.isRuntimePermission(permissionName: String): Boolean {

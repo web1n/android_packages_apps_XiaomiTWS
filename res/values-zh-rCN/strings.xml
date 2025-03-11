@@ -54,4 +54,6 @@
     <string name="function_screenshot">截屏</string>
 
     <string name="footer_tips">耳机可能不支持某些功能，以实际为准</string>
+
+    <string name="notification_channel_earbuds_info">耳机信息</string>
 </resources>

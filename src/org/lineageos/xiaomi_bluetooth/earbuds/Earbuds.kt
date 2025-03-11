@@ -7,7 +7,13 @@ import org.lineageos.xiaomi_bluetooth.BleSliceProvider.Companion.generateSliceUr
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils.getBluetoothDevice
 import org.lineageos.xiaomi_bluetooth.utils.BluetoothUtils.setMetadata
 
-data class Earbuds(val address: String, val left: Earbud, val right: Earbud, val case: Earbud) {
+data class Earbuds(
+    val address: String,
+    val left: Earbud,
+    val right: Earbud,
+    val case: Earbud,
+    val caseOpened: Boolean
+) {
 
     val caseValid = this.case.valid
     val leftOrRightValid = this.left.valid || this.right.valid
@@ -55,8 +61,18 @@ data class Earbuds(val address: String, val left: Earbud, val right: Earbud, val
         private val TAG = Earbuds::class.java.simpleName
         private const val DEBUG = true
 
+        fun fromFastConnectBytes(address: String, fastConnectData: ByteArray): Earbuds {
+            return Earbuds(
+                address,
+                Earbud(fastConnectData[13]),
+                Earbud(fastConnectData[12]),
+                Earbud(fastConnectData[14]),
+                fastConnectData[4].toInt() and 0b10 > 0
+            )
+        }
+
         fun fromBytes(address: String, left: Byte, right: Byte, case: Byte): Earbuds {
-            return Earbuds(address, Earbud(left), Earbud(right), Earbud(case))
+            return Earbuds(address, Earbud(left), Earbud(right), Earbud(case), false)
         }
     }
 }

@@ -54,4 +54,6 @@
     <string name="function_screenshot">Screenshot</string>
 
     <string name="footer_tips">Earbuds may not support certain functions</string>
+
+    <string name="notification_channel_earbuds_info">Earbuds Info</string>
 </resources>
