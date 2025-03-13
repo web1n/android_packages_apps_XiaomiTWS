@@ -4,11 +4,14 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.content.Intent
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_bluetooth.R
 import org.lineageos.xiaomi_bluetooth.earbuds.Earbuds
+import org.lineageos.xiaomi_bluetooth.fragments.EarbudsInfoFragment.Companion.ACTION_EARBUDS_INFO
 
 object NotificationUtils {
 
@@ -58,11 +61,21 @@ object NotificationUtils {
             if (case.valid) add("\uD83D\uDD0B Case: ${case.battery}% ${if (case.charging) "charging" else ""}")
         }.joinToString()
 
+        val pendingIntent = Intent(ACTION_EARBUDS_INFO).apply {
+            putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+            setPackage(context.packageName)
+        }.let {
+            PendingIntent.getActivity(
+                context, device.address.hashCode(), it, PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
         val notification = Notification.Builder(context, CHANNEL_ID_EARBUDS_INFO).apply {
             setContentTitle(device.name)
             setContentText(contentString)
             setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             setVisibility(Notification.VISIBILITY_SECRET)
+            setContentIntent(pendingIntent)
         }.build()
 
         context.getSystemService(NotificationManager::class.java)
