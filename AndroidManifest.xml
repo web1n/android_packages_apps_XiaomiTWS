@@ -20,6 +20,7 @@
         <activity
             android:name=".activity.EarbudsActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/xiaomi_earbuds"
             android:theme="@style/Theme.SubSettingsBase">
