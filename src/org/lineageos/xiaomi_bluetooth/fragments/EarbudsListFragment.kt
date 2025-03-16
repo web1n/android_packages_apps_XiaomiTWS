@@ -138,7 +138,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             setPackage(requireContext().packageName)
         }
 
-        earbudsPreference.title = device.name
+        earbudsPreference.title = device.alias
         earbudsPreference.summary = getString(R.string.device_connecting)
         earbudsPreference.intent = infoIntent
         earbudsPreference.isSelectable = false

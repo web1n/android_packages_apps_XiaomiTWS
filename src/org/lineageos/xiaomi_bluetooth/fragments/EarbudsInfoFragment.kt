@@ -82,7 +82,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
             BluetoothDevice::class.java
         )!!
 
-        requireActivity().title = device.name
+        requireActivity().title = device.alias
         if (DEBUG) Log.d(TAG, "Initialized with device: $device")
     }
 

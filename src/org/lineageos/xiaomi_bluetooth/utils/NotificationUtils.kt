@@ -71,7 +71,7 @@ object NotificationUtils {
         }
 
         val notification = Notification.Builder(context, CHANNEL_ID_EARBUDS_INFO).apply {
-            setContentTitle(device.name)
+            setContentTitle(device.alias)
             setContentText(contentString)
             setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             setVisibility(Notification.VISIBILITY_SECRET)
