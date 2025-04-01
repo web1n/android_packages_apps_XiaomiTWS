@@ -7,7 +7,7 @@
     <com.android.settingslib.widget.BannerMessagePreference
         android:key="reload_config"
         android:title="@string/configuration_unavailable"
-        app:controller="org.lineageos.xiaomi_bluetooth.configs.ReloadConfigController" />
+        app:controller="org.lineageos.xiaomi_tws.configs.ReloadConfigController" />
 
     <PreferenceCategory
         android:key="general"
@@ -16,7 +16,7 @@
         <DropDownPreference
             android:key="equalizer_mode"
             android:title="@string/equalizer_mode"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.EqualizerModeController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
     </PreferenceCategory>
 
@@ -27,17 +27,17 @@
         <DropDownPreference
             android:key="switch_noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.NoiseCancellationModeController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationModeController" />
 
         <MultiSelectListPreference
             android:key="left_noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode_left"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.NoiseCancellationListController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationListController" />
 
         <MultiSelectListPreference
             android:key="right_noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode_right"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.NoiseCancellationListController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationListController" />
 
     </PreferenceCategory>
 
@@ -49,42 +49,42 @@
         <DropDownPreference
             android:key="single_click_left"
             android:title="@string/single_click_left"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="single_click_right"
             android:title="@string/single_click_right"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="double_click_left"
             android:title="@string/double_click_left"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="double_click_right"
             android:title="@string/double_click_right"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="treble_click_left"
             android:title="@string/treble_click_left"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="treble_click_right"
             android:title="@string/treble_click_right"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="long_press_left"
             android:title="@string/long_press_left"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
         <DropDownPreference
             android:key="long_press_right"
             android:title="@string/long_press_right"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.ButtonController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
     </PreferenceCategory>
 
@@ -95,13 +95,13 @@
         <SwitchPreference
             android:key="find_earbuds"
             android:title="@string/find_earbuds"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.FindEarbudsController" />
+            app:controller="org.lineageos.xiaomi_tws.configs.FindEarbudsController" />
 
         <Preference
             android:key="serial_number"
             android:summary="@string/device_not_connected"
             android:title="@string/serial_number"
-            app:controller="org.lineageos.xiaomi_bluetooth.configs.SerialNumberController"
+            app:controller="org.lineageos.xiaomi_tws.configs.SerialNumberController"
             app:enableCopying="true" />
 
     </PreferenceCategory>

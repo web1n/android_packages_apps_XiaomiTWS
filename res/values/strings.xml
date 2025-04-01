@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Xiaomi Bluetooth Service</string>
+    <string name="app_name">Xiaomi TWS Service</string>
     <string name="xiaomi_earbuds">Xiaomi Earbuds</string>
     <string name="earbuds_settings">Earbuds settings</string>
     <string name="device_not_connected">Device not connected</string>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.lineageos.xiaomi_bluetooth"
+    package="org.lineageos.xiaomi_tws"
     android:sharedUserId="android.uid.system"
     android:versionCode="2"
     android:versionName="1.0">
@@ -39,7 +39,7 @@
             android:label="@string/earbuds_settings"
             android:targetActivity=".activity.EarbudsActivity">
             <intent-filter>
-                <action android:name="org.lineageos.xiaomi_bluetooth.action.EARBUDS_INFO" />
+                <action android:name="org.lineageos.xiaomi_tws.action.EARBUDS_INFO" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>
@@ -59,7 +59,7 @@
 
         <provider
             android:name=".BleSliceProvider"
-            android:authorities="org.lineageos.xiaomi_bluetooth.ble-slice"
+            android:authorities="org.lineageos.xiaomi_tws.ble-slice"
             android:exported="false" />
 
     </application>

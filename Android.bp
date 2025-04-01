@@ -1,5 +1,5 @@
 android_app {
-    name: "XiaomiBluetooth",
+    name: "XiaomiTWS",
 
     srcs: [
         "src/**/*.java",

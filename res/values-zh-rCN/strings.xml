@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">小米蓝牙服务</string>
+    <string name="app_name">小米耳机服务</string>
     <string name="xiaomi_earbuds">小米耳机</string>
     <string name="earbuds_settings">耳机设置</string>
     <string name="device_not_connected">设备未连接</string>
