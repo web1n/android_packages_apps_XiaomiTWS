@@ -57,6 +57,8 @@ class EarbudsService : Service() {
                 BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT ->
                     handleATCommand(device, intent)
 
+                BluetoothDevice.ACTION_ALIAS_CHANGED -> handleDeviceAliasChanged(device, intent)
+
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> handleDeviceDisconnected(device)
 
                 else -> Log.w(TAG, "unknown action: ${intent.action}")
@@ -88,6 +90,20 @@ class EarbudsService : Service() {
         }
 
         NotificationUtils.cancelEarbudsNotification(this, device)
+    }
+
+    private fun handleDeviceAliasChanged(device: BluetoothDevice, intent: Intent) {
+        val alias = intent.getStringExtra(BluetoothDevice.EXTRA_NAME)
+        if (alias.isNullOrEmpty()) {
+            Log.w(TAG, "Found null or empty BluetoothDevice alias for $device")
+            return
+        }
+
+        if (bluetoothHeadset != null
+            && checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT)
+        ) {
+            ATUtils.sendSetDeviceAliasATCommand(bluetoothHeadset!!, device, alias)
+        }
     }
 
     private fun handleATCommand(device: BluetoothDevice, intent: Intent) {
@@ -147,6 +163,7 @@ class EarbudsService : Service() {
                         + "." + ATUtils.MANUFACTURER_ID_XIAOMI
             )
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+            addAction(BluetoothDevice.ACTION_ALIAS_CHANGED)
         }
 
         if (DEBUG) Log.d(TAG, "registering bluetooth state receiver")

@@ -52,6 +52,20 @@ object ATUtils {
     }
 
     @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
+    fun sendSetDeviceAliasATCommand(
+        bluetoothHeadset: BluetoothHeadset, device: BluetoothDevice, alias: String
+    ) {
+        if (alias.isEmpty()) {
+            Log.w(TAG, "Empty alias for $device")
+            return
+        }
+
+        val data = "%02x%02x%s".format(alias.toByteArray().size + 1, 0x01, alias)
+
+        sendATCommand(bluetoothHeadset, device, 0x03, data)
+    }
+
+    @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT)
     fun sendUpdateATCommand(bluetoothHeadset: BluetoothHeadset, device: BluetoothDevice) {
         sendATCommand(bluetoothHeadset, device, 0x02, "0101")
     }
