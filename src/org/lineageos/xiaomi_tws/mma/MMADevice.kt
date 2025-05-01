@@ -251,7 +251,7 @@ class MMADevice(val device: BluetoothDevice) : AutoCloseable {
             return getDeviceConfig(EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE, 1).let {
                 val eqMode = it[0]
 
-                if (eqMode <= EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN) {
+                if (eqMode <= EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN_MASTER) {
                     eqMode
                 } else {
                     EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT

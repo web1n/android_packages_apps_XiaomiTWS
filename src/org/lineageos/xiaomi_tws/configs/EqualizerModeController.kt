@@ -6,6 +6,7 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MOD
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_BASS_BOOST
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN_MASTER
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_TREBLE_BOOST
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOCAL_ENHANCE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOLUME_BOOST
@@ -100,6 +101,10 @@ class EqualizerModeController(
             ConfigState(
                 byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN),
                 R.string.equalizer_mode_harman
+            ),
+            ConfigState(
+                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN_MASTER),
+                R.string.equalizer_mode_harman_master
             )
         )
     }
