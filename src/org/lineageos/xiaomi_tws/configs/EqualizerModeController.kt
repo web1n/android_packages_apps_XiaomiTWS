@@ -16,14 +16,16 @@ class EqualizerModeController(
     preferenceKey: String
 ) : ListController(context, preferenceKey) {
 
+    data class EqualizerDevice(val vendorId: Int, val productId: Int, val supportedModes: Set<Int>)
+
     override val configId = XIAOMI_MMA_CONFIG_EQUALIZER_MODE
     override val expectedConfigLength = 1
 
     override val configStates: Set<ConfigState>
         get() {
-            val vidPid = ((vid ?: 0) shl 16) or (pid ?: 0)
-            val supportedModes =
-                DEVICE_SUPPORTED_STATES[vidPid] ?: return setOf(defaultState)
+            val supportedModes = DEVICE_SUPPORTED_MODES.find {
+                it.vendorId == vid && it.productId == pid
+            }?.supportedModes ?: return setOf(defaultState)
             if (DEBUG) Log.d(TAG, "Supported modes: ${supportedModes.joinToString()}")
 
             return CONFIG_STATES.filter {
@@ -37,36 +39,36 @@ class EqualizerModeController(
         private val TAG = EqualizerModeController::class.java.simpleName
         private const val DEBUG = true
 
-        private val DEVICE_SUPPORTED_STATES = mapOf(
-            0x2717_5035 to setOf(0, 1, 5, 6, 11, 12),
-            0x2717_503B to setOf(0, 5, 6, 12),
-            0x2717_506A to setOf(0, 1, 5, 6),
-            0x2717_506B to setOf(0, 1, 5, 6),
-            0x2717_506C to setOf(0, 1, 5, 6, 10),
-            0x2717_506D to setOf(0, 1, 5, 6, 10),
-            0x2717_506F to setOf(0, 1, 5, 6, 10),
-            0x2717_5075 to setOf(0, 1, 5, 6),
-            0x2717_507F to setOf(0, 1, 6),
-            0x2717_5080 to setOf(0, 1, 6),
-            0x2717_5081 to setOf(1, 6, 10, 11, 13, 14),
-            0x2717_5082 to setOf(1, 6, 10, 11, 13, 14),
-            0x2717_5088 to setOf(0, 1, 5, 6, 7),
-            0x2717_5089 to setOf(0, 1, 5, 6, 7),
-            0x2717_508A to setOf(0, 1, 5, 6, 10),
-            0x2717_508B to setOf(0, 1, 5, 6, 10),
-            0x2717_5095 to setOf(0, 1, 5, 6),
-            0x2717_509A to setOf(0, 1, 5, 6, 7),
-            0x2717_509B to setOf(0, 1, 5, 6, 7),
-            0x2717_509C to setOf(0, 1, 5, 6, 7),
-            0x2717_509D to setOf(0, 1, 5, 6, 10),
-            0x2717_509E to setOf(0, 1, 5, 6, 10),
-            0x2717_509F to setOf(0, 1, 5, 6, 10),
-            0x2717_50A0 to setOf(0, 1, 5, 6, 10),
-            0x2717_50AF to setOf(0, 1, 5, 6, 10),
-            0x5A4D_EA03 to setOf(0, 1, 5, 6),
-            0x5A4D_EA0D to setOf(0, 1, 5, 6),
-            0x5A4D_EA0E to setOf(0, 1, 5, 6),
-            0x5A4D_EA0F to setOf(0, 1, 5, 6)
+        private val DEVICE_SUPPORTED_MODES = arrayOf(
+            EqualizerDevice(0x2717, 0x5035, setOf(0, 1, 5, 6, 11, 12)),
+            EqualizerDevice(0x2717, 0x503B, setOf(0, 5, 6, 12)),
+            EqualizerDevice(0x2717, 0x506A, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x2717, 0x506B, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x2717, 0x506C, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x506D, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x506F, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x5075, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x2717, 0x507F, setOf(0, 1, 6)),
+            EqualizerDevice(0x2717, 0x5080, setOf(0, 1, 6)),
+            EqualizerDevice(0x2717, 0x5081, setOf(1, 6, 10, 11, 13, 14)),
+            EqualizerDevice(0x2717, 0x5082, setOf(1, 6, 10, 11, 13, 14)),
+            EqualizerDevice(0x2717, 0x5088, setOf(0, 1, 5, 6, 7)),
+            EqualizerDevice(0x2717, 0x5089, setOf(0, 1, 5, 6, 7)),
+            EqualizerDevice(0x2717, 0x508A, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x508B, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x5095, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x2717, 0x509A, setOf(0, 1, 5, 6, 7)),
+            EqualizerDevice(0x2717, 0x509B, setOf(0, 1, 5, 6, 7)),
+            EqualizerDevice(0x2717, 0x509C, setOf(0, 1, 5, 6, 7)),
+            EqualizerDevice(0x2717, 0x509D, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x509E, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x509F, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x50A0, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x2717, 0x50AF, setOf(0, 1, 5, 6, 10)),
+            EqualizerDevice(0x5A4D, 0xEA03, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x5A4D, 0xEA0D, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x5A4D, 0xEA0E, setOf(0, 1, 5, 6)),
+            EqualizerDevice(0x5A4D, 0xEA0F, setOf(0, 1, 5, 6))
         )
 
         private val CONFIG_STATES = setOf(
