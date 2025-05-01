@@ -36,6 +36,9 @@
     <string name="find_earbuds_off">点击查找，耳机会播放声音（请确保耳机不在耳朵内）</string>
     <string name="find_earbuds_on">耳机正在播放声音</string>
 
+    <string name="multi_connect">多点连接</string>
+    <string name="multi_connect_summary">耳机可同时连接多个设备</string>
+
     <string name="single_click_left">单击左耳</string>
     <string name="single_click_right">单击右耳</string>
     <string name="double_click_left">双击左耳</string>

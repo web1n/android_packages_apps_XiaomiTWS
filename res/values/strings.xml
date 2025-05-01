@@ -36,6 +36,9 @@
     <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>
     <string name="find_earbuds_on">The earbuds are playing a sound</string>
 
+    <string name="multi_connect">Multi Connect</string>
+    <string name="multi_connect_summary">Multiple devices can be connected to earbuds simultaneously</string>
+
     <string name="single_click_left">Single Click Left Ear</string>
     <string name="single_click_right">Single Click Right Ear</string>
     <string name="double_click_left">Double Click Left Ear</string>

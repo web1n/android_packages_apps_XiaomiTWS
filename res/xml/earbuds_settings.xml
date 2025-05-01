@@ -97,6 +97,11 @@
             android:title="@string/find_earbuds"
             app:controller="org.lineageos.xiaomi_tws.configs.FindEarbudsController" />
 
+        <SwitchPreference
+            android:key="multi_connect"
+            android:title="@string/multi_connect"
+            app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
+
         <Preference
             android:key="serial_number"
             android:summary="@string/device_not_connected"
