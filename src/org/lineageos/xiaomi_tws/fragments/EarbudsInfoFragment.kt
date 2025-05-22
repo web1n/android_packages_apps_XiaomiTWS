@@ -2,52 +2,64 @@ package org.lineageos.xiaomi_tws.fragments
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMADevice
 import org.lineageos.xiaomi_tws.configs.ConfigController
-import org.lineageos.xiaomi_tws.utils.CommonUtils.executeWithTimeout
+import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.MMAListener
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.getConfig
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.setConfig
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.vidPid
 import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
+@SuppressLint("MissingPermission")
 class EarbudsInfoFragment : PreferenceFragmentCompat() {
 
-    private val actionReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == null) {
-                return
-            }
+    private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
+    private val mmaListener = object : MMAListener() {
+        override fun onDeviceConnected(device: BluetoothDevice) = handleDeviceConnected(device)
 
-            if (intent.action == ACTION_RELOAD_CONFIG) {
-                reloadConfig()
-            } else {
-                if (DEBUG) Log.w(TAG, "unknown action ${intent.action}")
-            }
-        }
+        override fun onDeviceDisconnected(device: BluetoothDevice) =
+            handleDeviceDisconnected(device)
+
+        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
+            handleDeviceBatteryChanged(device, earbuds)
     }
 
     private val configControllers = HashSet<ConfigController>()
-    private lateinit var earbudsExecutor: ExecutorService
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
     private lateinit var device: BluetoothDevice
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         initializeDevice()
-        initializeExecutor()
-        registerActionReceiver()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        manager.registerConnectionListener(mmaListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        manager.unregisterConnectionListener(mmaListener)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -60,21 +72,13 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         bindPreferenceControllers()
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        reloadConfig()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
-        unregisterActionReceiver()
-        shutdownExecutor()
+        coroutineScope.coroutineContext.cancel()
         unbindPreferenceControllers()
     }
 
-    @SuppressLint("MissingPermission")
     private fun initializeDevice() {
         device = IntentCompat.getParcelableExtra(
             requireActivity().intent,
@@ -86,32 +90,6 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         if (DEBUG) Log.d(TAG, "Initialized with device: $device")
     }
 
-    private fun initializeExecutor() {
-        earbudsExecutor = Executors.newSingleThreadExecutor()
-    }
-
-    private fun shutdownExecutor() {
-        if (earbudsExecutor.isShutdown) {
-            return
-        }
-
-        earbudsExecutor.shutdownNow()
-    }
-
-    private fun registerActionReceiver() {
-        ContextCompat.registerReceiver(
-            requireContext(),
-            actionReceiver,
-            IntentFilter(ACTION_RELOAD_CONFIG),
-            ContextCompat.RECEIVER_NOT_EXPORTED
-        )
-    }
-
-    private fun unregisterActionReceiver() {
-        requireContext().unregisterReceiver(actionReceiver)
-    }
-
-    @SuppressLint("MissingPermission")
     private fun reloadConfig() {
         if (DEBUG) Log.d(TAG, "reloadConfig")
 
@@ -122,38 +100,29 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
             .toTypedArray()
         if (DEBUG) Log.d(TAG, "reloadConfig: ids: ${configIds.contentToString()}")
 
-        executeBackgroundTask {
+        coroutineScope.launch {
             runCatching {
-                MMADevice(device).use {
-                    it.apply {
-                        connect()
-                    }.run {
-                        val vidPid = checkNotNull(it.vidPid) {
-                            "Unable to check device model"
-                        }
-                        val configs = HashMap<Int, ByteArray?>().apply {
-                            configIds.forEach { id ->
-                                put(id, runCatching { getDeviceConfig(id) }.getOrNull())
-                            }
-                        }
-
-                        object {
-                            val vid = vidPid.first
-                            val pid = vidPid.second
-                            val configs = configs
-                        }
+                val battery = manager.runRequestCatching(device) { batteryInfo() }.getOrThrow()
+                val (vid, pid) = manager.runRequestCatching(device) { vidPid() }.getOrThrow()
+                val configs = HashMap<Int, ByteArray?>().apply {
+                    configIds.forEach { id ->
+                        val value = manager.runRequestCatching(device) {
+                            getConfig(id)
+                        }.getOrNull()
+                        put(id, value)
                     }
                 }
-            }.onSuccess {
-                it.configs.forEach { (configId, value) ->
+
+                configs.forEach { (configId, value) ->
                     configControllers.filter { controller ->
                         controller.configId == configId
                     }.forEach { controller ->
-                        controller.setVendorData(it.vid, it.pid)
+                        controller.setBatteryData(battery)
+                        controller.setVendorData(vid, pid)
                         controller.configValue = value
                     }
                 }
-
+            }.onSuccess {
                 updateUI { refreshPreferences() }
             }.onFailure {
                 handleError("Config reload failed", it)
@@ -200,7 +169,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
                         if (!update) return@let
                     }
 
-                    executeBackgroundTask { handlePreferenceChange(controller, p, newValue) }
+                    handlePreferenceChange(controller, p, newValue)
                 }
 
                 false
@@ -217,31 +186,42 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun handlePreferenceChange(
-        controller: ConfigController,
-        preference: Preference,
-        newValue: Any
+        controller: ConfigController, preference: Preference, newValue: Any
     ) {
-        runCatching {
-            executeWithTimeout(MMA_DEVICE_CHECK_TIMEOUT_MS) {
-                MMADevice(device).use {
-                    controller.saveConfig(it, newValue)
+        coroutineScope.launch {
+            runCatching {
+                controller.transNewValue(newValue).also {
+                    manager.runRequestCatching(device) {
+                        setConfig(controller.configId, it)
+                    }.getOrThrow()
                 }
+            }.onSuccess {
+                controller.configValue = it
+                updateUI { controller.updateState(preference) }
+            }.onFailure {
+                handleError("Save config failed", it)
             }
-        }.onSuccess {
-            updateUI { controller.updateState(preference) }
-        }.onFailure {
-            handleError("Save config failed", it)
         }
     }
 
-    private fun executeBackgroundTask(task: Runnable) {
-        if (earbudsExecutor.isShutdown) {
-            return
-        }
+    private fun handleDeviceConnected(device: BluetoothDevice) {
+        if (device != this.device) return
 
-        earbudsExecutor.execute(task)
+        reloadConfig()
+    }
+
+    private fun handleDeviceDisconnected(device: BluetoothDevice) {
+        if (device != this.device) return
+
+        activity?.finish()
+    }
+
+    private fun handleDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
+        if (device != this.device) return
+
+        configControllers.forEach { it.setBatteryData(earbuds) }
+    }
     }
 
     private fun updateUI(action: Runnable) {
@@ -288,8 +268,5 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         private const val DEBUG = true
 
         const val ACTION_EARBUDS_INFO = "org.lineageos.xiaomi_tws.action.EARBUDS_INFO"
-        const val ACTION_RELOAD_CONFIG = "org.lineageos.xiaomi_tws.action.RELOAD_CONFIG"
-
-        private const val MMA_DEVICE_CHECK_TIMEOUT_MS: Long = 2000
     }
 }

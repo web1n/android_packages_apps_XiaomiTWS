@@ -1,6 +1,5 @@
 package org.lineageos.xiaomi_tws.fragments
 
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.os.Bundle
@@ -9,25 +8,37 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
-import org.lineageos.xiaomi_tws.mma.MMADevice
-import org.lineageos.xiaomi_tws.utils.BluetoothUtils
-import org.lineageos.xiaomi_tws.utils.CommonUtils.executeWithTimeout
+import org.lineageos.xiaomi_tws.mma.MMAListener
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.utils.CommonUtils.openAppSettings
 import org.lineageos.xiaomi_tws.utils.PermissionUtils.getMissingRuntimePermissions
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class EarbudsListFragment : PreferenceFragmentCompat() {
 
-    private lateinit var earbudsExecutor: ExecutorService
+    private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
+    private val mmaListener = object : MMAListener() {
+        override fun onDeviceConnected(device: BluetoothDevice) = addDevice(device)
+
+        override fun onDeviceDisconnected(device: BluetoothDevice) = removeDevice(device)
+
+        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
+            updateEarbudsPreference(device, earbuds)
+    }
+
     private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        initializeExecutor()
         initializePermissionHandler()
     }
 
@@ -41,20 +52,16 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         reloadDevices()
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        manager.unregisterConnectionListener(mmaListener)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
 
-        shutdownExecutor()
-    }
-
-    private fun initializeExecutor() {
-        earbudsExecutor = Executors.newSingleThreadExecutor()
-    }
-
-    private fun shutdownExecutor() {
-        if (!earbudsExecutor.isShutdown) {
-            earbudsExecutor.shutdownNow()
-        }
+        coroutineScope.coroutineContext.cancel()
     }
 
     private fun initializePermissionHandler() {
@@ -78,40 +85,32 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         return false
     }
 
-    @SuppressLint("MissingPermission")
     private fun reloadDevices() {
         if (!checkPermissions()) return
         if (DEBUG) Log.d(TAG, "reloadDevices")
 
-        BluetoothUtils.connectedHeadsetA2DPDevices.forEach { processDevices(it) }
+        preferenceScreen.removeAll()
+        manager.registerConnectionListener(mmaListener)
     }
 
-    @SuppressLint("MissingPermission")
-    private fun processDevices(device: BluetoothDevice) {
+    private fun addDevice(device: BluetoothDevice) {
         addEarbudsPreference(device)
 
-        executeBackgroundTask {
-            runCatching {
-                executeWithTimeout(MMA_DEVICE_CHECK_TIMEOUT_MS) {
-                    MMADevice(device).use {
-                        it.apply { connect() }.batteryInfo
-                    }
-                }
+        coroutineScope.launch {
+            manager.runRequestCatching(device) {
+                batteryInfo()
             }.onSuccess {
+                Log.d(TAG, "Battery info received: $it")
                 updateUI { updateEarbudsPreference(device, it) }
-            }.onFailure {
-                Log.e(TAG, "Error processing device: ${device.name}", it)
-                updateUI { updateEarbudsPreference(device, null) }
+            }.onError {
+                Log.e(TAG, "Failed to get battery info", it)
+                updateUI { updateEarbudsPreference(device, it) }
             }
         }
     }
 
-    private fun executeBackgroundTask(task: Runnable) {
-        if (earbudsExecutor.isShutdown) {
-            return
-        }
-
-        earbudsExecutor.execute(task)
+    private fun removeDevice(device: BluetoothDevice) {
+        findPreference<Preference>(device.address)?.let { preferenceScreen.removePreference(it) }
     }
 
     private fun updateUI(action: Runnable) {
@@ -123,7 +122,6 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun addEarbudsPreference(device: BluetoothDevice) {
         if (DEBUG) Log.d(TAG, "Adding preference for: $device")
 
@@ -142,26 +140,23 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         earbudsPreference.summary = getString(R.string.device_connecting)
         earbudsPreference.intent = infoIntent
         earbudsPreference.isSelectable = false
-        earbudsPreference.isIconSpaceReserved = false
     }
 
-    private fun updateEarbudsPreference(device: BluetoothDevice, earbuds: Earbuds?) {
+    private fun updateEarbudsPreference(device: BluetoothDevice, result: Any) {
         if (DEBUG) Log.d(TAG, "Updating preference for device: $device")
 
-        val earbudsPreference = findPreference<Preference>(device.address) ?: return
-
-        if (earbuds != null) {
-            earbudsPreference.isSelectable = true
-            earbudsPreference.summary = earbuds.toString()
-        } else {
-            earbudsPreference.summary = getString(R.string.not_xiaomi_earbuds)
+        findPreference<Preference>(device.address)?.apply {
+            summary = if (result is Earbuds) {
+                result.readableString
+            } else {
+                result.toString()
+            }
+            isSelectable = result is Earbuds
         }
     }
 
     companion object {
         private val TAG = EarbudsListFragment::class.java.simpleName
         private const val DEBUG = true
-
-        private const val MMA_DEVICE_CHECK_TIMEOUT_MS: Long = 2000
     }
 }
