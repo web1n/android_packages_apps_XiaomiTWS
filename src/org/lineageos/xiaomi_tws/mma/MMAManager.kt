@@ -22,6 +22,7 @@ import kotlinx.coroutines.withTimeout
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_NCM
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
@@ -125,6 +126,7 @@ class MMAManager private constructor(private val context: Context) {
         } else if (response.type == 1 && response.flag == 1) {
             when (response.opCode) {
                 XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(response)
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG -> handleNotifyDeviceConfig(response)
                 else -> Log.w(TAG, "Unknown notify opCode: $requestId $response")
             }
         } else {
@@ -160,6 +162,33 @@ class MMAManager private constructor(private val context: Context) {
             else -> if (DEBUG) Log.d(
                 TAG,
                 "handleNotifyDeviceInfo: Unknown type: $notifyType, data: ${data.toHexString()}"
+            )
+        }
+    }
+
+    private fun handleNotifyDeviceConfig(response: MMAResponse) {
+        if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: $response")
+        check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG)
+        check(response.type == 1 && response.flag == 1)
+        if (response.data.size < 2) {
+            Log.w(TAG, "handleNotifyDeviceConfig: Empty response data")
+        }
+        val data = response.data
+        val config = bytesToInt(data[0], data[1])
+
+        when (config) {
+            XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE -> {
+                check(data.size == 3) { "In ear report length not 3, actual: ${data.size}" }
+
+                val left = data[2].toInt() and (1 shl 3) != 0
+                val right = data[2].toInt() and (1 shl 2) != 0
+
+                dispatchInEarStateChanged(response.device, left, right)
+            }
+
+            else -> if (DEBUG) Log.d(
+                TAG,
+                "handleNotifyDeviceConfig: Unknown config type: $config, data: ${data.toHexString()}"
             )
         }
     }
@@ -282,6 +311,12 @@ class MMAManager private constructor(private val context: Context) {
     private fun dispatchNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) {
         dispatchEvent("dispatchNoiseCancellationModeChanged: $mode") {
             it.onNoiseCancellationModeChanged(device, mode)
+        }
+    }
+
+    private fun dispatchInEarStateChanged(device: BluetoothDevice, left: Boolean, right: Boolean) {
+        dispatchEvent("dispatchInEarStateChanged: left: $left, right: $right") {
+            it.onInEarStateChanged(device, left, right)
         }
     }
 

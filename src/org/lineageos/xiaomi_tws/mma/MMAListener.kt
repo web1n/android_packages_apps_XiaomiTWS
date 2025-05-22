@@ -8,4 +8,5 @@ open class MMAListener {
     open fun onDeviceDisconnected(device: BluetoothDevice) {}
     open fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {}
     open fun onNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) {}
+    open fun onInEarStateChanged(device: BluetoothDevice, left: Boolean, right: Boolean) {}
 }
