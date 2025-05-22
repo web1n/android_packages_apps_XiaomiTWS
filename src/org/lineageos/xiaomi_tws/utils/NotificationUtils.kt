@@ -55,12 +55,6 @@ object NotificationUtils {
             Manifest.permission.POST_NOTIFICATIONS]
     )
     private fun createEarbudsNotification(context: Context, earbuds: Earbuds) = earbuds.run {
-        val contentString = ArrayList<String>().apply {
-            if (left.valid) add("\uD83C\uDFA7 Left: ${left.battery}% ${if (left.charging) "charging" else ""}")
-            if (right.valid) add("\uD83C\uDFA7 Right: ${right.battery}% ${if (right.charging) "charging" else ""}")
-            if (case.valid) add("\uD83D\uDD0B Case: ${case.battery}% ${if (case.charging) "charging" else ""}")
-        }.joinToString()
-
         val pendingIntent = Intent(ACTION_EARBUDS_INFO).apply {
             putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             setPackage(context.packageName)
@@ -72,7 +66,7 @@ object NotificationUtils {
 
         val notification = Notification.Builder(context, CHANNEL_ID_EARBUDS_INFO).apply {
             setContentTitle(device.alias)
-            setContentText(contentString)
+            setContentText(readableString)
             setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             setVisibility(Notification.VISIBILITY_SECRET)
             setContentIntent(pendingIntent)

@@ -22,6 +22,13 @@ data class Earbuds(
     val device: BluetoothDevice
         get() = getBluetoothDevice(address)
 
+    val readableString: String
+        get() = ArrayList<String>().apply {
+            if (left.valid) add("\uD83C\uDFA7 Left: ${left.battery}% ${if (left.charging) "charging" else ""}")
+            if (right.valid) add("\uD83C\uDFA7 Right: ${right.battery}% ${if (right.charging) "charging" else ""}")
+            if (case.valid) add("\uD83D\uDD0B Case: ${case.battery}% ${if (case.charging) "charging" else ""}")
+        }.joinToString()
+
     @RequiresPermission(android.Manifest.permission.BLUETOOTH_PRIVILEGED)
     fun updateDeviceTypeMetadata() = device.apply {
         if (!isConnected) {
