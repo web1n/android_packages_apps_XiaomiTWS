@@ -6,4 +6,6 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 open class MMAListener {
     open fun onDeviceConnected(device: BluetoothDevice) {}
     open fun onDeviceDisconnected(device: BluetoothDevice) {}
+    open fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {}
+    open fun onNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) {}
 }

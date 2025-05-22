@@ -19,8 +19,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_NCM
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
+import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
+import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -116,8 +122,45 @@ class MMAManager private constructor(private val context: Context) {
         if (flow != null) {
             flow.tryEmit(RequestResponse.Success(requestId, response))
             responseFlows.remove(requestId)
+        } else if (response.type == 1 && response.flag == 1) {
+            when (response.opCode) {
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(response)
+                else -> Log.w(TAG, "Unknown notify opCode: $requestId $response")
+            }
         } else {
             Log.w(TAG, "Unknown flow for request: $requestId $response")
+        }
+    }
+
+    private fun handleNotifyDeviceInfo(response: MMAResponse) {
+        if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: $response")
+        check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO)
+        check(response.type == 1 && response.flag == 1)
+        if (response.data.isEmpty()) {
+            Log.w(TAG, "handleNotifyDeviceInfo: Empty response data")
+        }
+        val data = response.data
+        val notifyType = data[0]
+
+        when (notifyType) {
+            XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
+                check(data.size == 4) { "Battery report length not 4, actual: ${data.size}" }
+                dispatchDeviceBatteryChanged(
+                    Earbuds.fromBytes(response.device.address, data[1], data[2], data[3])
+                )
+            }
+
+            XIAOMI_MMA_NOTIFY_TYPE_NCM -> {
+                check(data.size == 2) { "Ncm report length not 2, actual: ${data.size}" }
+                val noiseCancellationMode = data[1]
+
+                dispatchNoiseCancellationModeChanged(response.device, noiseCancellationMode)
+            }
+
+            else -> if (DEBUG) Log.d(
+                TAG,
+                "handleNotifyDeviceInfo: Unknown type: $notifyType, data: ${data.toHexString()}"
+            )
         }
     }
 
@@ -228,6 +271,18 @@ class MMAManager private constructor(private val context: Context) {
 
     private fun dispatchDeviceDisconnected(device: BluetoothDevice) {
         dispatchEvent("dispatchDeviceDisconnected: $device") { it.onDeviceDisconnected(device) }
+    }
+
+    private fun dispatchDeviceBatteryChanged(earbuds: Earbuds) {
+        dispatchEvent("dispatchDeviceBatteryChanged: $earbuds") {
+            it.onDeviceBatteryChanged(earbuds.device, earbuds)
+        }
+    }
+
+    private fun dispatchNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) {
+        dispatchEvent("dispatchNoiseCancellationModeChanged: $mode") {
+            it.onNoiseCancellationModeChanged(device, mode)
+        }
     }
 
     suspend fun <T> sendRequestSuspend(
