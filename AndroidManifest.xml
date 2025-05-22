@@ -46,7 +46,7 @@
 
         <service
             android:name=".EarbudsService"
-            android:process=":earbuds" />
+            android:exported="false" />
 
         <receiver
             android:name=".BootCompletedReceiver"

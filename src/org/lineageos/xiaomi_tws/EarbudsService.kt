@@ -1,68 +1,28 @@
 package org.lineageos.xiaomi_tws
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothHeadset
-import android.bluetooth.BluetoothProfile
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.util.Log
-import androidx.core.content.IntentCompat
-import org.lineageos.xiaomi_tws.utils.ATUtils
-import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
+import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.MMAListener
+import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.PermissionUtils.checkSelfPermissionGranted
 
+@SuppressLint("MissingPermission")
 class EarbudsService : Service() {
 
-    private var bluetoothHeadset: BluetoothHeadset? = null
-
-    private val profileListener: BluetoothProfile.ServiceListener =
-        object : BluetoothProfile.ServiceListener {
-            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-                if (profile != BluetoothProfile.HEADSET) {
-                    return
-                }
-
-                if (DEBUG) Log.d(TAG, "Bluetooth headset connected: $proxy")
-                bluetoothHeadset = proxy as BluetoothHeadset
-            }
-
-            override fun onServiceDisconnected(profile: Int) {
-                if (profile != BluetoothProfile.HEADSET) {
-                    return
-                }
-
-                if (DEBUG) Log.d(TAG, "Bluetooth headset disconnected")
-                bluetoothHeadset = null
-            }
+    private val manager: MMAManager by lazy { MMAManager.getInstance(this) }
+    private val mmaListener = object : MMAListener() {
+        override fun onDeviceDisconnected(device: BluetoothDevice) {
+            cancelNotification(device)
         }
 
-    private val bluetoothStateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == null) return
-            if (DEBUG) Log.d(TAG, "onReceive: ${intent.action}")
-            val device = IntentCompat.getParcelableExtra(
-                intent, BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java
-            )
-            if (device == null) {
-                if (DEBUG) Log.d(TAG, "onReceive: Received intent with null device")
-                return
-            }
-
-            when (intent.action) {
-                BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT ->
-                    handleATCommand(device, intent)
-
-                BluetoothDevice.ACTION_ALIAS_CHANGED -> handleDeviceAliasChanged(device, intent)
-
-                BluetoothDevice.ACTION_ACL_DISCONNECTED -> handleDeviceDisconnected(device)
-
-                else -> Log.w(TAG, "unknown action: ${intent.action}")
-            }
+        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
+            updateBattery(earbuds)
         }
     }
 
@@ -70,110 +30,35 @@ class EarbudsService : Service() {
         super.onCreate()
         if (DEBUG) Log.d(TAG, "onCreate")
 
-        initializeProfileProxy()
-        startBluetoothStateListening()
+        manager.startBluetoothStateListening()
+        manager.registerConnectionListener(mmaListener)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (DEBUG) Log.d(TAG, "onDestroy")
 
-        closeProfileProxy()
-        stopBluetoothStateListening()
+        manager.stopBluetoothStateListening()
+        manager.unregisterConnectionListener(mmaListener)
     }
 
     override fun onBind(intent: Intent) = null
 
-    private fun handleDeviceDisconnected(device: BluetoothDevice) {
-        if (!checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
-            return
-        }
-
-        NotificationUtils.cancelEarbudsNotification(this, device)
-    }
-
-    private fun handleDeviceAliasChanged(device: BluetoothDevice, intent: Intent) {
-        val alias = intent.getStringExtra(BluetoothDevice.EXTRA_NAME)
-        if (alias.isNullOrEmpty()) {
-            Log.w(TAG, "Found null or empty BluetoothDevice alias for $device")
-            return
-        }
-
-        if (bluetoothHeadset != null
-            && checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT)
-        ) {
-            ATUtils.sendSetDeviceAliasATCommand(bluetoothHeadset!!, device, alias)
+    private fun cancelNotification(device: BluetoothDevice) {
+        if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+            NotificationUtils.cancelEarbudsNotification(this, device)
         }
     }
 
-    private fun handleATCommand(device: BluetoothDevice, intent: Intent) {
-        val args = IntentCompat.getParcelableExtra(
-            intent,
-            BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS,
-            Array<Any>::class.java
-        )
-        if ((args?.size ?: 0) > 1) {
-            Log.w(TAG, "handleATCommand: Not valid args size: ${args?.size}, send update")
-
-            if (bluetoothHeadset != null
-                && checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT)
-            ) {
-                ATUtils.sendUpdateATCommand(bluetoothHeadset!!, device)
-            }
-            return
+    private fun updateBattery(earbuds: Earbuds) {
+        if (checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_PRIVILEGED)) {
+            earbuds.updateDeviceTypeMetadata()
+            earbuds.updateDeviceBatteryMetadata()
         }
 
-        runCatching {
-            ATUtils.parseATCommandIntent(intent)
-        }.onSuccess { earbuds ->
-            if (earbuds == null) return
-
-            if (checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_PRIVILEGED)) {
-                earbuds.updateDeviceTypeMetadata()
-                earbuds.updateDeviceBatteryMetadata()
-            }
-
-            if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
-                NotificationUtils.updateEarbudsNotification(this, earbuds)
-            }
-        }.onFailure {
-            Log.e(TAG, "handleATCommand: Unable to parse at command intent", it)
+        if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+            NotificationUtils.updateEarbudsNotification(this, earbuds)
         }
-    }
-
-    private fun initializeProfileProxy() {
-        getBluetoothAdapter().getProfileProxy(this, profileListener, BluetoothProfile.HEADSET)
-    }
-
-    private fun closeProfileProxy() {
-        bluetoothHeadset?.run {
-            getBluetoothAdapter().closeProfileProxy(BluetoothProfile.HEADSET, this)
-            bluetoothHeadset = null
-        }
-    }
-
-    private fun startBluetoothStateListening() {
-        if (DEBUG) Log.d(TAG, "startBluetoothStateListening")
-
-        val filter = IntentFilter().apply {
-            // Xiaomi AT event
-            addAction(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT)
-            addCategory(
-                BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
-                        + "." + ATUtils.MANUFACTURER_ID_XIAOMI
-            )
-            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
-            addAction(BluetoothDevice.ACTION_ALIAS_CHANGED)
-        }
-
-        if (DEBUG) Log.d(TAG, "registering bluetooth state receiver")
-        registerReceiver(bluetoothStateReceiver, filter)
-    }
-
-    private fun stopBluetoothStateListening() {
-        if (DEBUG) Log.d(TAG, "stopBluetoothStateListening")
-
-        unregisterReceiver(bluetoothStateReceiver)
     }
 
     companion object {
