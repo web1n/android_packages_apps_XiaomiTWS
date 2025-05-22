@@ -12,13 +12,12 @@ Integration of Xiaomi TWS into AOSP.
 
 ## Supported Models
 
-Currently, only TWS earbuds using the Xiaomi MMA and custom Xiaomi Hands-free Profile are supported. Some earbuds may not support these two protocols and, therefore, are not compatible.
+Currently, only TWS earbuds using the Xiaomi MMA protocol are supported.
 
 ## Integration Steps
 
-1. Add commit for `android_packages_modules_Bluetooth`: [Add support for Xiaomi TWS headset commands](https://github.com/web1n/android_packages_modules_Bluetooth/commit/0df13bbf2b70301003e422dccdd9f48520a80260).
-2. Clone `android_packages_apps_XiaomiTWS` into the AOSP: `[AOSP code path]/packages/apps/XiaomiTWS/`.
-3. Add `XiaomiTWS` to your device tree:
+1. Clone `android_packages_apps_XiaomiTWS` into the AOSP: `[AOSP code path]/packages/apps/XiaomiTWS/`.
+2. Add `XiaomiTWS` to your device tree:
    ```makefile
    PRODUCT_PACKAGES += \
        XiaomiTWS
