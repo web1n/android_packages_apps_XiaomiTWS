@@ -3,7 +3,6 @@ package org.lineageos.xiaomi_tws.configs
 import android.content.Context
 import androidx.preference.Preference
 import androidx.preference.TwoStatePreference
-import org.lineageos.xiaomi_tws.mma.MMADevice
 
 abstract class SwitchController(
     context: Context,
@@ -32,18 +31,14 @@ abstract class SwitchController(
             )
         }
 
-    override fun saveConfig(device: MMADevice, value: Any): Boolean {
-        if (value !is Boolean) {
-            return super.saveConfig(device, value)
-        }
+    override fun transNewValue(value: Any): ByteArray {
+        require(value is Boolean) { "Invalid value type: ${value.javaClass.simpleName}" }
 
-        val configValue = if (value) {
+        return if (value) {
             enabledState.configValue
         } else {
             disabledState.configValue
         }
-
-        return super.saveConfig(device, configValue)
     }
 
     override fun updateValue(preference: Preference) {

@@ -1,12 +1,9 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.Manifest
 import android.content.Context
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
-import org.lineageos.xiaomi_tws.mma.MMADevice
 import org.lineageos.xiaomi_tws.utils.ByteUtils.hexToBytes
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 
@@ -76,9 +73,10 @@ abstract class MultiListController(context: Context, preferenceKey: String) :
         preference.entries = entries
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun saveConfig(device: MMADevice, value: Any): Boolean {
-        return super.saveConfig(device, if (value is String) value.hexToBytes() else value)
+    override fun transNewValue(value: Any): ByteArray {
+        require(value is String) { "Invalid value type: ${value.javaClass.simpleName}" }
+
+        return value.hexToBytes()
     }
 
     companion object {

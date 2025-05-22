@@ -1,13 +1,9 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.Manifest
 import android.content.Context
-import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
 import androidx.preference.Preference
-import org.lineageos.xiaomi_tws.mma.MMADevice
-import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
+import org.lineageos.xiaomi_tws.earbuds.Earbuds
 
 abstract class ConfigController(protected val context: Context, val preferenceKey: String) {
 
@@ -24,6 +20,8 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
     var vid: Int? = null
         private set
     var pid: Int? = null
+        private set
+    var battery: Earbuds? = null
         private set
 
     var configValue: ByteArray? = null
@@ -42,6 +40,10 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
     fun setVendorData(vid: Int, pid: Int) {
         this.vid = vid
         this.pid = pid
+    }
+
+    fun setBatteryData(battery: Earbuds) {
+        this.battery = battery
     }
 
     open fun isValidValue(value: ByteArray?): Boolean {
@@ -94,30 +96,7 @@ abstract class ConfigController(protected val context: Context, val preferenceKe
         updateParentVisibility(preference)
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    open fun saveConfig(device: MMADevice, value: Any): Boolean {
-        require(value is ByteArray) {
-            "Invalid value type: ${value.javaClass.simpleName}"
-        }
-
-        if (value.contentEquals(configValue)) {
-            if (DEBUG) Log.d(TAG, "saveConfig: config not change")
-            return true
-        }
-
-        if (!device.isConnected) {
-            device.connect()
-        }
-
-        return device.setDeviceConfig(configId, value, configNeedReceive).also {
-            if (DEBUG) Log.d(
-                TAG,
-                "Config save ${if (it) "successful" else "failed"} " +
-                        "for ${javaClass.simpleName}: ${value.toHexString()}"
-            )
-            if (it) configValue = value
-        }
-    }
+    abstract fun transNewValue(value: Any): ByteArray
 
     companion object {
         private val TAG = ConfigController::class.java.simpleName

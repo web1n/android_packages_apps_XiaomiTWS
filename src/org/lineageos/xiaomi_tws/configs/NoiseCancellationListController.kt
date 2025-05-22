@@ -1,16 +1,13 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.Manifest
 import android.content.Context
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.preference.Preference
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_LIST
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMADevice
 import java.util.Locale
 
 class NoiseCancellationListController(
@@ -67,22 +64,17 @@ class NoiseCancellationListController(
         return (o as Set<*>).size >= 2
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun saveConfig(device: MMADevice, value: Any): Boolean {
-        if (DEBUG) Log.d(TAG, "saveConfig: $value")
-
+    override fun transNewValue(value: Any): ByteArray {
         val valueByte = (value as Set<*>)
             .map { s -> 1 shl (s as String).toInt() }
             .reduce { a, b -> a + b }
             .toByte()
 
-        val configValue = if (position == Position.LEFT) {
+        return if (position == Position.LEFT) {
             byteArrayOf(valueByte, VALUE_NOT_MODIFIED)
         } else {
             byteArrayOf(VALUE_NOT_MODIFIED, valueByte)
         }
-
-        return super.saveConfig(device, configValue)
     }
 
     companion object {

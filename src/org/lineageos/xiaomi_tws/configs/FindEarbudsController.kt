@@ -1,11 +1,8 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.Manifest
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_FIND_EARBUDS
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMADevice
 
 class FindEarbudsController(context: Context, preferenceKey: String) :
     SwitchController(context, preferenceKey) {
@@ -19,35 +16,19 @@ class FindEarbudsController(context: Context, preferenceKey: String) :
     override val isEnabled
         get() = configValue?.get(0) == ENABLE_FLAG
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun saveConfig(device: MMADevice, value: Any): Boolean {
-        require(value is Boolean) {
-            "Invalid value type: ${value.javaClass.simpleName}"
-        }
-        check(device.isDeviceConnected) {
-            "Earbuds not connected"
-        }
+    override fun transNewValue(value: Any): ByteArray {
+        require(value is Boolean) { "Invalid value type: ${value.javaClass.simpleName}" }
+        check(battery?.leftOrRightValid == true) { "Both earbuds disconnected" }
 
-        if (!device.isConnected) {
-            device.connect()
-        }
-
-        val earbuds = device.batteryInfo
-        check(earbuds.leftOrRightValid) {
-            "Both earbuds disconnected"
-        }
-
-        val configValue = byteArrayOf(
+        return byteArrayOf(
             if (value) ENABLE_FLAG else DISABLE_FLAG,
-            earbuds.run {
+            battery!!.run {
                 val left = if (left.valid) LEFT_EARBUD_FLAG else 0
                 val right = if (right.valid) RIGHT_EARBUD_FLAG else 0
 
                 (left or right).toByte()
             }
         )
-
-        return super.saveConfig(device, configValue)
     }
 
     companion object {

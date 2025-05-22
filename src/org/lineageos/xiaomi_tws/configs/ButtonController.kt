@@ -1,9 +1,7 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.Manifest
 import android.content.Context
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED
@@ -17,7 +15,6 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTI
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_UP
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_MODE
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMADevice
 import org.lineageos.xiaomi_tws.utils.ByteUtils.hexToBytes
 import java.nio.ByteBuffer
 
@@ -102,15 +99,42 @@ class ButtonController(
     override val expectedConfigLength = 1
 
     override val configStates = setOf(
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED), R.string.function_disabled),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOICE_ASSISTANT), R.string.function_voice_assistant),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PLAY_PAUSE), R.string.function_play_pause),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PREVIOUS_TRACK), R.string.function_previous_track),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NEXT_TRACK), R.string.function_next_track),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_UP), R.string.function_volume_up),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_DOWN), R.string.function_volume_down),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NOISE_CONTROL), R.string.function_noise_control),
-        ConfigState(byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_SCREENSHOT), R.string.function_screenshot)
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED),
+            R.string.function_disabled
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOICE_ASSISTANT),
+            R.string.function_voice_assistant
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PLAY_PAUSE),
+            R.string.function_play_pause
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PREVIOUS_TRACK),
+            R.string.function_previous_track
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NEXT_TRACK),
+            R.string.function_next_track
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_UP),
+            R.string.function_volume_up
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_DOWN),
+            R.string.function_volume_down
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NOISE_CONTROL),
+            R.string.function_noise_control
+        ),
+        ConfigState(
+            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_SCREENSHOT),
+            R.string.function_screenshot
+        )
     )
     override val defaultState = configStates.first()
 
@@ -134,19 +158,14 @@ class ButtonController(
         (preference as ListPreference).value = buttonConfig.toString()
     }
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun saveConfig(device: MMADevice, value: Any): Boolean {
-        require(value is String) {
-            "Invalid value type: ${value.javaClass.simpleName}"
-        }
+    override fun transNewValue(value: Any): ByteArray {
+        require(value is String) { "Invalid value type: ${value::class.java.simpleName}" }
 
-        val buttonConfig = checkNotNull(buttonConfig) {
+        return checkNotNull(buttonConfig) {
             "No existing button config to update"
         }.apply {
             this.value = value.hexToBytes()[0]
         }.toBytes()
-
-        return super.saveConfig(device, buttonConfig)
     }
 
     private val buttonConfig: ButtonConfig?

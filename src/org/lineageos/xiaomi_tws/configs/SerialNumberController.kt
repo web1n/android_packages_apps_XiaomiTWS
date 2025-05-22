@@ -17,4 +17,6 @@ class SerialNumberController(
             runCatching { String(it, StandardCharsets.UTF_8) }.getOrNull()
         }
 
+    override fun transNewValue(value: Any) = TODO()
+
 }
