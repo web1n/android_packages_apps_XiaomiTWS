@@ -7,9 +7,6 @@
     <string name="device_connecting">正在连接</string>
     <string name="not_xiaomi_earbuds">非小米耳机</string>
 
-    <string name="configuration_unavailable">无法获取耳机配置</string>
-    <string name="reconnect_device">重新连接</string>
-
     <string name="general">常规</string>
     <string name="gestures">手势</string>
     <string name="advanced">高级</string>
