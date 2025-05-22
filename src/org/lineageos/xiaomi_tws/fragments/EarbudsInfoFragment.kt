@@ -38,6 +38,9 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
 
         override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
             handleDeviceBatteryChanged(device, earbuds)
+
+        override fun onNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) =
+            handleOnNoiseCancellationModeChange(device, mode)
     }
 
     private val configControllers = HashSet<ConfigController>()
@@ -222,6 +225,17 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
 
         configControllers.forEach { it.setBatteryData(earbuds) }
     }
+
+    private fun handleOnNoiseCancellationModeChange(device: BluetoothDevice, mode: Byte) {
+        if (device != this.device) return
+
+        configControllers.firstOrNull {
+            it.configId == XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
+        }?.apply {
+            configValue = byteArrayOf(mode, 0x00)
+
+            findPreference<Preference>(preferenceKey)?.let { updateState(it) }
+        }
     }
 
     private fun updateUI(action: Runnable) {
