@@ -6,6 +6,7 @@
     <string name="device_not_connected">Device not connected</string>
     <string name="device_connecting">Connecting</string>
     <string name="not_xiaomi_earbuds">Not Xiaomi Earbuds</string>
+    <string name="earbuds_list">Earbuds list</string>
 
     <string name="general">General</string>
     <string name="gestures">Gestures</string>

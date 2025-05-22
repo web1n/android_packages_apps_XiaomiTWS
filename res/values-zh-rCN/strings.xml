@@ -6,6 +6,7 @@
     <string name="device_not_connected">设备未连接</string>
     <string name="device_connecting">正在连接</string>
     <string name="not_xiaomi_earbuds">非小米耳机</string>
+    <string name="earbuds_list">耳机列表</string>
 
     <string name="general">常规</string>
     <string name="gestures">手势</string>

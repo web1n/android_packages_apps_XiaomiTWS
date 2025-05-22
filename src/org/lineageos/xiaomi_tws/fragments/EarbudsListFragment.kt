@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,9 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
     private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
+
+    private val earbudsListCategory: PreferenceCategory
+        get() = findPreference(KEY_EARBUDS_LIST)!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +93,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         if (!checkPermissions()) return
         if (DEBUG) Log.d(TAG, "reloadDevices")
 
-        preferenceScreen.removeAll()
+        earbudsListCategory.removeAll()
         manager.registerConnectionListener(mmaListener)
     }
 
@@ -110,7 +114,9 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     }
 
     private fun removeDevice(device: BluetoothDevice) {
-        findPreference<Preference>(device.address)?.let { preferenceScreen.removePreference(it) }
+        earbudsListCategory.findPreference<Preference>(device.address)?.let {
+            earbudsListCategory.removePreference(it)
+        }
     }
 
     private fun updateUI(action: Runnable) {
@@ -128,7 +134,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         val earbudsPreference = findPreference(device.address)
             ?: Preference(requireContext()).apply {
                 key = device.address
-                preferenceScreen.addPreference(this)
+                earbudsListCategory.addPreference(this)
             }
 
         val infoIntent = Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO).apply {
@@ -158,5 +164,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     companion object {
         private val TAG = EarbudsListFragment::class.java.simpleName
         private const val DEBUG = true
+
+        private const val KEY_EARBUDS_LIST = "earbuds_list"
     }
 }
