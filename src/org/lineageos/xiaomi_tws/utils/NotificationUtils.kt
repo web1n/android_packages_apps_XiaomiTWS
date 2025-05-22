@@ -42,7 +42,7 @@ object NotificationUtils {
     fun updateEarbudsNotification(context: Context, earbuds: Earbuds) {
         createEarbudsNotificationChannel(context)
 
-        if (earbuds.caseOpened && earbuds.case.valid) {
+        if (earbuds.case.valid) {
             createEarbudsNotification(context, earbuds)
         } else {
             cancelEarbudsNotification(context, earbuds.device)
