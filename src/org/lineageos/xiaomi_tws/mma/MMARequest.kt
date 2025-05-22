@@ -5,8 +5,8 @@ import org.lineageos.xiaomi_tws.utils.ByteUtils.getLowByte
 
 data class MMARequest(
     val opCode: Byte,
-    val opCodeSN: Byte,
     val data: ByteArray,
+    var opCodeSN: Byte = 0,
     val needReceive: Boolean = true
 ) {
 
@@ -29,5 +29,4 @@ data class MMARequest(
         // footer
         this[this.size - 1] = 0xEF.toByte()
     }
-
 }

@@ -1,19 +1,14 @@
 package org.lineageos.xiaomi_tws
 
-import android.os.ParcelUuid
+import java.util.UUID
 
 object EarbudsConstants {
 
-    val UUID_XIAOMI_FAST_CONNECT: ParcelUuid =
-        ParcelUuid.fromString("0000FD2D-0000-1000-8000-00805f9b34fb")
-    private val UUID_XIAOMI_XIAOAI: ParcelUuid =
-        ParcelUuid.fromString("00001101-0000-1000-8000-008584d01810")
-    private val UUID_SPP: ParcelUuid =
-        ParcelUuid.fromString("00001101-0000-1000-8000-00805f9b34fb")
+    private val UUID_XIAOMI_FAST_CONNECT = UUID.fromString("0000FD2D-0000-1000-8000-00805f9b34fb")
+    private val UUID_XIAOMI_XIAOAI = UUID.fromString("00001101-0000-1000-8000-008584d01810")
+    private val UUID_SPP = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
 
-    val XIAOMI_UUIDS = arrayOf(
-        UUID_XIAOMI_FAST_CONNECT, UUID_XIAOMI_XIAOAI, UUID_SPP
-    )
+    val XIAOMI_SPP_UUIDS = arrayOf(UUID_XIAOMI_FAST_CONNECT, UUID_XIAOMI_XIAOAI, UUID_SPP)
 
     const val XIAOMI_MMA_DATA_LENGTH = 22
 

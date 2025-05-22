@@ -19,12 +19,7 @@ object BluetoothUtils {
         get() {
             return BluetoothAdapter.getDefaultAdapter()?.bondedDevices
                 ?.filter { it.isConnected }
-                ?.filter {
-                    it.bluetoothClass?.run {
-                        doesClassMatch(BluetoothClass.PROFILE_A2DP)
-                                && doesClassMatch(BluetoothClass.PROFILE_HEADSET)
-                    } == true
-                }
+                ?.filter { isHeadsetA2DPDevice(it) }
                 ?.toList().orEmpty()
         }
 
@@ -41,6 +36,11 @@ object BluetoothUtils {
             Log.e(TAG, "parseAsScanRecord: ", e)
             null
         }
+    fun isHeadsetA2DPDevice(device: BluetoothDevice): Boolean {
+        return device.bluetoothClass?.run {
+            doesClassMatch(BluetoothClass.PROFILE_A2DP)
+                    && doesClassMatch(BluetoothClass.PROFILE_HEADSET)
+        } == true
     }
 
     fun Context.getBluetoothAdapter(): BluetoothAdapter {
