@@ -238,12 +238,13 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun updateUI(action: Runnable) {
-        requireActivity().runOnUiThread {
-            if (requireActivity().isFinishing) {
+    private fun updateUI(action: () -> Unit) {
+        activity?.runOnUiThread {
+            if (activity?.isFinishing != false || !isAdded) {
                 return@runOnUiThread
             }
-            action.run()
+
+            action()
         }
     }
 
