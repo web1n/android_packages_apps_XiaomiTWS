@@ -9,6 +9,7 @@ import android.util.Log
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.PermissionUtils.checkSelfPermissionGranted
 
@@ -52,8 +53,8 @@ class EarbudsService : Service() {
 
     private fun updateBattery(earbuds: Earbuds) {
         if (checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_PRIVILEGED)) {
-            earbuds.updateDeviceTypeMetadata()
-            earbuds.updateDeviceBatteryMetadata()
+            BluetoothUtils.updateDeviceTypeMetadata(earbuds.device)
+            BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
         }
 
         if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
