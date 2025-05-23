@@ -24,7 +24,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:label="@string/xiaomi_earbuds"
+            android:label="@string/earbuds_list_title"
             android:theme="@style/Theme.SubSettingsBase">
             <intent-filter>
                 <action android:name="com.android.settings.action.IA_SETTINGS" />
@@ -38,7 +38,7 @@
         <activity-alias
             android:name=".activity.EarbudsInfoActivity"
             android:exported="true"
-            android:label="@string/earbuds_settings"
+            android:label="@string/earbuds_settings_title"
             android:targetActivity=".activity.EarbudsActivity">
             <intent-filter>
                 <action android:name="org.lineageos.xiaomi_tws.action.EARBUDS_INFO" />

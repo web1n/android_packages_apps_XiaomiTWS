@@ -143,7 +143,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         }
 
         earbudsPreference.title = device.alias
-        earbudsPreference.summary = getString(R.string.device_connecting)
+        earbudsPreference.summary = getString(R.string.earbuds_list_device_connecting)
         earbudsPreference.intent = infoIntent
         earbudsPreference.isSelectable = false
     }

@@ -2,11 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:persistent="false"
-    android:title="@string/earbuds_settings">
+    android:title="@string/earbuds_settings_title">
 
     <PreferenceCategory
         android:key="general"
-        android:title="@string/general">
+        android:title="@string/earbuds_settings_general">
 
         <DropDownPreference
             android:key="equalizer_mode"
@@ -38,7 +38,7 @@
 
     <PreferenceCategory
         android:key="gestures"
-        android:title="@string/gestures"
+        android:title="@string/earbuds_settings_gestures"
         app:initialExpandedChildrenCount="2">
 
         <DropDownPreference
@@ -85,7 +85,7 @@
 
     <PreferenceCategory
         android:key="advanced"
-        android:title="@string/advanced">
+        android:title="@string/earbuds_settings_advanced">
 
         <SwitchPreference
             android:key="find_earbuds"
@@ -99,7 +99,6 @@
 
         <Preference
             android:key="serial_number"
-            android:summary="@string/device_not_connected"
             android:title="@string/serial_number"
             app:controller="org.lineageos.xiaomi_tws.configs.SerialNumberController"
             app:enableCopying="true" />
@@ -109,6 +108,6 @@
     <com.android.settingslib.widget.FooterPreference
         android:key="footer_tips"
         android:selectable="false"
-        android:title="@string/footer_tips" />
+        android:title="@string/settings_footer_tips" />
 
 </PreferenceScreen>

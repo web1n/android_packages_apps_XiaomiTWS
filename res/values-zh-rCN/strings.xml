@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- app name -->
     <string name="app_name">小米耳机服务</string>
-    <string name="xiaomi_earbuds">小米耳机</string>
-    <string name="earbuds_settings">耳机设置</string>
-    <string name="device_not_connected">设备未连接</string>
-    <string name="device_connecting">正在连接</string>
-    <string name="not_xiaomi_earbuds">非小米耳机</string>
-    <string name="earbuds_list">耳机列表</string>
 
-    <string name="general">常规</string>
-    <string name="gestures">手势</string>
-    <string name="advanced">高级</string>
+    <!-- Earbuds list activity start -->
+    <string name="earbuds_list_title">小米耳机</string>
+    <string name="earbuds_list_category">耳机列表</string>
+    <string name="earbuds_list_device_connecting">正在连接</string>
+    <!-- Earbuds list activity end -->
 
-    <string name="serial_number">序列号</string>
+    <!-- Earbuds settings activity start -->
+    <string name="earbuds_settings_title">耳机设置</string>
+
+    <string name="earbuds_settings_general">常规</string>
+    <string name="earbuds_settings_gestures">手势</string>
+    <string name="earbuds_settings_advanced">高级</string>
 
     <string name="equalizer_mode">均衡器模式</string>
     <string name="equalizer_mode_default">默认</string>
@@ -29,13 +31,6 @@
     <string name="noise_cancellation_mode_transparency">通透模式</string>
     <string name="noise_cancellation_mode_left">左耳按键降噪控制</string>
     <string name="noise_cancellation_mode_right">右耳按键降噪控制</string>
-
-    <string name="find_earbuds">查找耳机</string>
-    <string name="find_earbuds_off">点击查找，耳机会播放声音（请确保耳机不在耳朵内）</string>
-    <string name="find_earbuds_on">耳机正在播放声音</string>
-
-    <string name="multi_connect">多点连接</string>
-    <string name="multi_connect_summary">耳机可同时连接多个设备</string>
 
     <string name="single_click_left">单击左耳</string>
     <string name="single_click_right">单击右耳</string>
@@ -55,7 +50,20 @@
     <string name="function_noise_control">切换噪音控制</string>
     <string name="function_screenshot">截屏</string>
 
-    <string name="footer_tips">耳机可能不支持某些功能，以实际为准</string>
+    <string name="find_earbuds">查找耳机</string>
+    <string name="find_earbuds_off">点击查找，耳机会播放声音（请确保耳机不在耳朵内）</string>
+    <string name="find_earbuds_on">耳机正在播放声音</string>
 
+    <string name="multi_connect">多点连接</string>
+    <string name="multi_connect_summary">耳机可同时连接多个设备</string>
+
+    <string name="serial_number">序列号</string>
+
+    <string name="settings_footer_tips">耳机可能不支持某些功能，以实际为准</string>
+    <!-- Earbuds settings activity end -->
+
+    <!-- Notification start -->
     <string name="notification_channel_earbuds_info">耳机信息</string>
+    <!-- Notification end -->
+
 </resources>

@@ -46,7 +46,7 @@ class BleSliceProvider : SliceProvider() {
         )
 
         return ListBuilder.RowBuilder()
-            .setTitle(requireContext().getString(R.string.earbuds_settings))
+            .setTitle(requireContext().getString(R.string.earbuds_settings_title))
             .setPrimaryAction(sliceAction)
     }
 

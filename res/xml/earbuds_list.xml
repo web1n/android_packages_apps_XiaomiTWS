@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:persistent="false"
-    android:title="@string/xiaomi_earbuds">
+    android:title="@string/earbuds_list_title">
 
     <PreferenceCategory
         android:key="earbuds_list"
-        android:title="@string/earbuds_list" />
+        android:title="@string/earbuds_list_category" />
 </PreferenceScreen>

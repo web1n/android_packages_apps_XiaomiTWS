@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- app name -->
     <string name="app_name">Xiaomi TWS Service</string>
-    <string name="xiaomi_earbuds">Xiaomi Earbuds</string>
-    <string name="earbuds_settings">Earbuds settings</string>
-    <string name="device_not_connected">Device not connected</string>
-    <string name="device_connecting">Connecting</string>
-    <string name="not_xiaomi_earbuds">Not Xiaomi Earbuds</string>
-    <string name="earbuds_list">Earbuds list</string>
 
-    <string name="general">General</string>
-    <string name="gestures">Gestures</string>
-    <string name="advanced">Advanced</string>
+    <!-- Earbuds list activity start -->
+    <string name="earbuds_list_title">Xiaomi Earbuds</string>
+    <string name="earbuds_list_category">Earbuds list</string>
+    <string name="earbuds_list_device_connecting">Connecting</string>
+    <!-- Earbuds list activity end -->
 
-    <string name="serial_number">Serial number</string>
+    <!-- Earbuds settings activity start -->
+    <string name="earbuds_settings_title">Earbuds Settings</string>
+
+    <string name="earbuds_settings_general">General</string>
+    <string name="earbuds_settings_gestures">Gestures</string>
+    <string name="earbuds_settings_advanced">Advanced</string>
 
     <string name="equalizer_mode">Equalizer mode</string>
     <string name="equalizer_mode_default">Default</string>
@@ -29,13 +31,6 @@
     <string name="noise_cancellation_mode_transparency">Transparency</string>
     <string name="noise_cancellation_mode_left">Left Button Control</string>
     <string name="noise_cancellation_mode_right">Right Button Control</string>
-
-    <string name="find_earbuds">Find Earbuds</string>
-    <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>
-    <string name="find_earbuds_on">The earbuds are playing a sound</string>
-
-    <string name="multi_connect">Multi Connect</string>
-    <string name="multi_connect_summary">Multiple devices can be connected to earbuds simultaneously</string>
 
     <string name="single_click_left">Single Click Left Ear</string>
     <string name="single_click_right">Single Click Right Ear</string>
@@ -55,7 +50,20 @@
     <string name="function_noise_control">Switch Noise Control</string>
     <string name="function_screenshot">Screenshot</string>
 
-    <string name="footer_tips">Earbuds may not support certain functions</string>
+    <string name="find_earbuds">Find Earbuds</string>
+    <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>
+    <string name="find_earbuds_on">The earbuds are playing a sound</string>
 
+    <string name="multi_connect">Multi Connect</string>
+    <string name="multi_connect_summary">Multiple devices can be connected to earbuds simultaneously</string>
+
+    <string name="serial_number">Serial number</string>
+
+    <string name="settings_footer_tips">Earbuds may not support certain functions</string>
+    <!-- Earbuds settings activity end -->
+
+    <!-- Notification start -->
     <string name="notification_channel_earbuds_info">Earbuds Info</string>
+    <!-- Notification end -->
+
 </resources>
