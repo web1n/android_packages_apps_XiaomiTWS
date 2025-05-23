@@ -11,8 +11,7 @@ data class Earbuds(
     val address: String,
     val left: Earbud,
     val right: Earbud,
-    val case: Earbud,
-    val caseOpened: Boolean
+    val case: Earbud
 ) {
 
     val caseValid = this.case.valid
@@ -68,18 +67,8 @@ data class Earbuds(
         private val TAG = Earbuds::class.java.simpleName
         private const val DEBUG = true
 
-        fun fromFastConnectBytes(address: String, fastConnectData: ByteArray): Earbuds {
-            return Earbuds(
-                address,
-                Earbud(fastConnectData[13]),
-                Earbud(fastConnectData[12]),
-                Earbud(fastConnectData[14]),
-                fastConnectData[4].toInt() and 0b10 > 0
-            )
-        }
-
         fun fromBytes(address: String, left: Byte, right: Byte, case: Byte): Earbuds {
-            return Earbuds(address, Earbud(left), Earbud(right), Earbud(case), false)
+            return Earbuds(address, Earbud(left), Earbud(right), Earbud(case))
         }
     }
 }

@@ -10,9 +10,6 @@ object EarbudsConstants {
 
     val XIAOMI_SPP_UUIDS = arrayOf(UUID_XIAOMI_FAST_CONNECT, UUID_XIAOMI_XIAOAI, UUID_SPP)
 
-    const val XIAOMI_MMA_DATA_LENGTH = 22
-
-
     const val XIAOMI_MMA_RESPONSE_STATUS_OK: Byte = 0x00
 
     const val XIAOMI_MMA_OPCODE_GET_DEVICE_INFO: Byte = 0x02
