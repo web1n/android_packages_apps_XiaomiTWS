@@ -22,7 +22,6 @@ object EarbudsConstants {
     const val XIAOMI_MMA_MASK_GET_BATTERY = 7
 
     const val XIAOMI_MMA_NOTIFY_TYPE_BATTERY: Byte = 0x00
-    const val XIAOMI_MMA_NOTIFY_TYPE_NCM: Byte = 0x04
 
     const val XIAOMI_MMA_CONFIG_BUTTON_MODE = 0x0002
     const val XIAOMI_MMA_CONFIG_MULTI_CONNECT = 0x0004

@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_NCM
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
@@ -152,13 +151,6 @@ class MMAManager private constructor(private val context: Context) {
                 )
             }
 
-            XIAOMI_MMA_NOTIFY_TYPE_NCM -> {
-                check(data.size == 2) { "Ncm report length not 2, actual: ${data.size}" }
-                val noiseCancellationMode = data[1]
-
-                dispatchNoiseCancellationModeChanged(response.device, noiseCancellationMode)
-            }
-
             else -> if (DEBUG) Log.d(
                 TAG,
                 "handleNotifyDeviceInfo: Unknown type: $notifyType, data: ${data.toHexString()}"
@@ -170,26 +162,23 @@ class MMAManager private constructor(private val context: Context) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: $response")
         check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG)
         check(response.type == 1 && response.flag == 1)
-        if (response.data.size < 2) {
+        if (response.data.size < 3) {
             Log.w(TAG, "handleNotifyDeviceConfig: Empty response data")
         }
-        val data = response.data
-        val config = bytesToInt(data[0], data[1])
+        val config = bytesToInt(response.data[0], response.data[1])
+        val value = response.data.drop(2).toByteArray()
 
         when (config) {
             XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE -> {
-                check(data.size == 3) { "In ear report length not 3, actual: ${data.size}" }
+                check(value.size == 1) { "In ear report length not 1, actual: ${value.size}" }
 
-                val left = data[2].toInt() and (1 shl 3) != 0
-                val right = data[2].toInt() and (1 shl 2) != 0
+                val left = value[0].toInt() and (1 shl 3) != 0
+                val right = value[0].toInt() and (1 shl 2) != 0
 
                 dispatchInEarStateChanged(response.device, left, right)
             }
 
-            else -> if (DEBUG) Log.d(
-                TAG,
-                "handleNotifyDeviceConfig: Unknown config type: $config, data: ${data.toHexString()}"
-            )
+            else -> dispatchConfigChanged(response.device, config, value)
         }
     }
 
@@ -308,9 +297,9 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun dispatchNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) {
-        dispatchEvent("dispatchNoiseCancellationModeChanged: $mode") {
-            it.onNoiseCancellationModeChanged(device, mode)
+    private fun dispatchConfigChanged(device: BluetoothDevice, config: Int, value: ByteArray) {
+        dispatchEvent("dispatchConfigChanged: config: $config, value: ${value.toHexString()}") {
+            it.onDeviceConfigChanged(device, config, value)
         }
     }
 

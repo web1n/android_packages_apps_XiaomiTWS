@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.configs.ConfigController
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
@@ -39,8 +38,8 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
             handleDeviceBatteryChanged(device, earbuds)
 
-        override fun onNoiseCancellationModeChanged(device: BluetoothDevice, mode: Byte) =
-            handleOnNoiseCancellationModeChange(device, mode)
+        override fun onDeviceConfigChanged(device: BluetoothDevice, config: Int, value: ByteArray) =
+            handleOnConfigChanged(device, config, value)
     }
 
     private val configControllers = HashSet<ConfigController>()
@@ -226,15 +225,17 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         configControllers.forEach { it.setBatteryData(earbuds) }
     }
 
-    private fun handleOnNoiseCancellationModeChange(device: BluetoothDevice, mode: Byte) {
+    private fun handleOnConfigChanged(device: BluetoothDevice, configId: Int, value: ByteArray) {
         if (device != this.device) return
 
-        configControllers.firstOrNull {
-            it.configId == XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
-        }?.apply {
-            configValue = byteArrayOf(mode, 0x00)
+        configControllers.filter {
+            it.configId == configId && it.configValue != value
+        }.forEach { controller ->
+            controller.configValue = value
 
-            findPreference<Preference>(preferenceKey)?.let { updateState(it) }
+            findPreference<Preference>(controller.preferenceKey)?.let { preference ->
+                controller.updateState(preference)
+            }
         }
     }
 
