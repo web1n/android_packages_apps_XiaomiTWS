@@ -123,10 +123,14 @@ class MMAManager private constructor(private val context: Context) {
             flow.tryEmit(RequestResponse.Success(requestId, response))
             responseFlows.remove(requestId)
         } else if (response.type == 1 && response.flag == 1) {
-            when (response.opCode) {
-                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(response)
-                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG -> handleNotifyDeviceConfig(response)
-                else -> Log.w(TAG, "Unknown notify opCode: $requestId $response")
+            runCatching {
+                when (response.opCode) {
+                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(response)
+                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG -> handleNotifyDeviceConfig(response)
+                    else -> Log.w(TAG, "Unknown notify opCode: $requestId $response")
+                }
+            }.onFailure {
+                Log.w(TAG, "Failed to handle notify: $requestId $response", it)
             }
         } else {
             Log.w(TAG, "Unknown flow for request: $requestId $response")
