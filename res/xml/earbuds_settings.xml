@@ -26,11 +26,15 @@
 
         <MultiSelectListPreference
             android:key="left_noise_cancellation_mode"
+            android:negativeButtonText="@android:string/cancel"
+            android:positiveButtonText="@android:string/ok"
             android:title="@string/noise_cancellation_mode_left"
             app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationListController" />
 
         <MultiSelectListPreference
             android:key="right_noise_cancellation_mode"
+            android:negativeButtonText="@android:string/cancel"
+            android:positiveButtonText="@android:string/ok"
             android:title="@string/noise_cancellation_mode_right"
             app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationListController" />
 
