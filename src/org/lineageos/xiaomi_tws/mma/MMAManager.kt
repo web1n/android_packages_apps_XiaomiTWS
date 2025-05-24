@@ -141,23 +141,22 @@ class MMAManager private constructor(private val context: Context) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: $response")
         check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO)
         check(response.type == 1 && response.flag == 1)
-        if (response.data.isEmpty()) {
-            Log.w(TAG, "handleNotifyDeviceInfo: Empty response data")
-        }
-        val data = response.data
-        val notifyType = data[0]
+        check(response.data.size >= 2) { "Invalid device info data length" }
+
+        val notifyType = response.data[0]
+        val value = response.data.drop(1).toByteArray()
 
         when (notifyType) {
             XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
-                check(data.size == 4) { "Battery report length not 4, actual: ${data.size}" }
+                check(value.size == 3) { "Battery report length not 3, actual: ${value.size}" }
                 dispatchDeviceBatteryChanged(
-                    Earbuds.fromBytes(response.device.address, data[1], data[2], data[3])
+                    Earbuds.fromBytes(response.device.address, value[0], value[1], value[2])
                 )
             }
 
             else -> if (DEBUG) Log.d(
                 TAG,
-                "handleNotifyDeviceInfo: Unknown type: $notifyType, data: ${data.toHexString()}"
+                "handleNotifyDeviceInfo: Unknown type: $notifyType, value: ${value.toHexString()}"
             )
         }
     }
@@ -166,9 +165,8 @@ class MMAManager private constructor(private val context: Context) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: $response")
         check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG)
         check(response.type == 1 && response.flag == 1)
-        if (response.data.size < 3) {
-            Log.w(TAG, "handleNotifyDeviceConfig: Empty response data")
-        }
+        check(response.data.size >= 3) { "Invalid device config data length" }
+
         val config = bytesToInt(response.data[0], response.data[1])
         val value = response.data.drop(2).toByteArray()
 
