@@ -9,6 +9,13 @@
     <string name="earbuds_list_device_connecting">Connecting</string>
     <string name="earbuds_list_empty">No earbuds found</string>
     <string name="earbuds_list_empty_summary">Please make sure your Xiaomi earbuds using MMA protocol are paired and connected</string>
+    <string name="earbuds_list_empty_summary_system_integration_disabled">System integration is disabled</string>
+
+    <string name="earbuds_list_settings">Settings</string>
+    <string name="earbuds_list_enable_system_integration">Enable system integration</string>
+    <string name="earbuds_list_enable_system_integration_summary">When disabled, all Xiaomi earbuds related functions will be turned off, including earbuds status detection, battery reporting and earbuds management. Restart required to take effect</string>
+    <string name="earbuds_list_enable_notification">Enable notification</string>
+    <string name="earbuds_list_enable_notification_summary">Send notification when earbuds status changes</string>
     <!-- Earbuds list activity end -->
 
     <!-- Earbuds settings activity start -->

@@ -9,6 +9,13 @@
     <string name="earbuds_list_device_connecting">正在连接</string>
     <string name="earbuds_list_empty">未找到耳机</string>
     <string name="earbuds_list_empty_summary">请确保您的小米耳机支持 MMA 协议且已配对连接</string>
+    <string name="earbuds_list_empty_summary_system_integration_disabled">系统集成已禁用</string>
+
+    <string name="earbuds_list_settings">设置</string>
+    <string name="earbuds_list_enable_system_integration">启用系统集成</string>
+    <string name="earbuds_list_enable_system_integration_summary">禁用后，所有小米耳机相关功能将被关闭，包括耳机状态检测、电量报告和耳机管理等。重启生效</string>
+    <string name="earbuds_list_enable_notification">启用通知</string>
+    <string name="earbuds_list_enable_notification_summary">耳机状态更改后发送通知</string>
     <!-- Earbuds list activity end -->
 
     <!-- Earbuds settings activity start -->

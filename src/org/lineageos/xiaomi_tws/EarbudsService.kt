@@ -12,6 +12,7 @@ import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.PermissionUtils.checkSelfPermissionGranted
+import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 @SuppressLint("MissingPermission")
 class EarbudsService : Service() {
@@ -57,7 +58,9 @@ class EarbudsService : Service() {
             BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
         }
 
-        if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+        if (SettingsUtils.getInstance(this).enableNotification
+            && checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)
+        ) {
             NotificationUtils.updateEarbudsNotification(this, earbuds)
         }
     }

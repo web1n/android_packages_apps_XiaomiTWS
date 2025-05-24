@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.lineageos.xiaomi_tws.PersistentApplication.Companion.enableSystemIntegration
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.MMAListener
@@ -50,6 +51,8 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.setStorageDeviceProtected()
+
         addPreferencesFromResource(R.xml.earbuds_list)
     }
 
@@ -176,6 +179,10 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
     private fun updateEmptyState() {
         emptyStatePreference.isVisible = earbudsListCategory.preferenceCount == 0
+        if (!enableSystemIntegration) {
+            emptyStatePreference.summary =
+                getString(R.string.earbuds_list_empty_summary_system_integration_disabled)
+        }
     }
 
     companion object {

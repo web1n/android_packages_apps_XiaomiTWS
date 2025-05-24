@@ -9,6 +9,26 @@
 
     <com.android.settingslib.widget.BannerMessagePreference
         android:key="earbuds_list_empty"
-        android:title="@string/earbuds_list_empty"
-        android:summary="@string/earbuds_list_empty_summary" />
+        android:summary="@string/earbuds_list_empty_summary"
+        android:title="@string/earbuds_list_empty" />
+
+    <PreferenceCategory
+        android:key="settings"
+        android:title="@string/earbuds_list_settings">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="enable_system_integration"
+            android:summary="@string/earbuds_list_enable_system_integration_summary"
+            android:title="@string/earbuds_list_enable_system_integration" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="enable_notification"
+            android:dependency="enable_system_integration"
+            android:summary="@string/earbuds_list_enable_notification_summary"
+            android:title="@string/earbuds_list_enable_notification" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>
