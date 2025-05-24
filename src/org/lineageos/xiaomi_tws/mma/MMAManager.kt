@@ -321,17 +321,22 @@ class MMAManager private constructor(private val context: Context) {
             responseFlow.filter { it.requestId == requestId }.collectLatest { result ->
                 responseFlows.remove(requestId)
 
-                if (result is RequestResponse.Success) {
-                    if (builder.handler == null) {
-                        if (DEBUG) Log.d(TAG, "Request response received, but handler is null")
+                val operationResult = runCatching {
+                    if (result is RequestResponse.Success) {
+                        builder.handler?.let {
+                            OperationResult.Success(it.invoke(result.response))
+                        } ?: let {
+                            throw RuntimeException("No handler provided")
+                        }
+                    } else if (result is RequestResponse.Error) {
+                        throw result.error
                     } else {
-                        continuation.resume(
-                            OperationResult.Success<T>(builder.handler!!.invoke(result.response))
-                        )
+                        throw RuntimeException("Unknown response type")
                     }
-                } else if (result is RequestResponse.Error) {
-                    continuation.resume(OperationResult.Error(result.error))
+                }.getOrElse {
+                    OperationResult.Error(it)
                 }
+                continuation.resume(operationResult)
             }
         }
     }
