@@ -6,4 +6,9 @@
     <PreferenceCategory
         android:key="earbuds_list"
         android:title="@string/earbuds_list_category" />
+
+    <com.android.settingslib.widget.BannerMessagePreference
+        android:key="earbuds_list_empty"
+        android:title="@string/earbuds_list_empty"
+        android:summary="@string/earbuds_list_empty_summary" />
 </PreferenceScreen>

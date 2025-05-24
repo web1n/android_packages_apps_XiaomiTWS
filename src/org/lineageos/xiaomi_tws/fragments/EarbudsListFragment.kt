@@ -40,6 +40,9 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     private val earbudsListCategory: PreferenceCategory
         get() = findPreference(KEY_EARBUDS_LIST)!!
 
+    private val emptyStatePreference: Preference
+        get() = findPreference(KEY_EARBUDS_LIST_EMPTY)!!
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -93,12 +96,13 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         if (!checkPermissions()) return
         if (DEBUG) Log.d(TAG, "reloadDevices")
 
-        earbudsListCategory.removeAll()
+        removeAllDevices()
         manager.registerConnectionListener(mmaListener)
     }
 
     private fun addDevice(device: BluetoothDevice) {
         addEarbudsPreference(device)
+        updateEmptyState()
 
         coroutineScope.launch {
             manager.runRequestCatching(device) {
@@ -117,6 +121,14 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         earbudsListCategory.findPreference<Preference>(device.address)?.let {
             earbudsListCategory.removePreference(it)
         }
+        updateEmptyState()
+    }
+
+    private fun removeAllDevices() {
+        if (DEBUG) Log.d(TAG, "removeAllDevices")
+
+        earbudsListCategory.removeAll()
+        updateEmptyState()
     }
 
     private fun updateUI(action: () -> Unit) {
@@ -162,10 +174,15 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private fun updateEmptyState() {
+        emptyStatePreference.isVisible = earbudsListCategory.preferenceCount == 0
+    }
+
     companion object {
         private val TAG = EarbudsListFragment::class.java.simpleName
         private const val DEBUG = true
 
         private const val KEY_EARBUDS_LIST = "earbuds_list"
+        private const val KEY_EARBUDS_LIST_EMPTY = "earbuds_list_empty"
     }
 }

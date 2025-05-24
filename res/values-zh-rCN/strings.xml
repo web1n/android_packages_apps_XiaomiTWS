@@ -7,6 +7,8 @@
     <string name="earbuds_list_title">小米耳机</string>
     <string name="earbuds_list_category">耳机列表</string>
     <string name="earbuds_list_device_connecting">正在连接</string>
+    <string name="earbuds_list_empty">未找到耳机</string>
+    <string name="earbuds_list_empty_summary">请确保您的小米耳机支持 MMA 协议且已配对连接</string>
     <!-- Earbuds list activity end -->
 
     <!-- Earbuds settings activity start -->
