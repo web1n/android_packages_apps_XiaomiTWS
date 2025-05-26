@@ -17,12 +17,12 @@ object BluetoothUtils {
 
     val connectedHeadsetA2DPDevices: List<BluetoothDevice>
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() {
-            return BluetoothAdapter.getDefaultAdapter()?.bondedDevices
-                ?.filter { it.isConnected }
-                ?.filter { isHeadsetA2DPDevice(it) }
-                ?.toList().orEmpty()
-        }
+        get() = headsetA2DPDevices.filter { it.isConnected }.toList()
+
+    val headsetA2DPDevices: List<BluetoothDevice>
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        get() = BluetoothAdapter.getDefaultAdapter()?.bondedDevices
+            ?.filter { isHeadsetA2DPDevice(it) }?.toList().orEmpty()
 
     fun getBluetoothDevice(mac: String): BluetoothDevice {
         return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac)

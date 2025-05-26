@@ -18,17 +18,24 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 
 class EarbudsListFragment : PreferenceFragmentCompat() {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
     private val mmaListener = object : MMAListener() {
-        override fun onDeviceConnected(device: BluetoothDevice) = addDevice(device)
+        override fun onDeviceConnected(device: BluetoothDevice) {
+            addOrUpdatePreference(device)
+            fetchBatteryInfo(device)
+        }
 
-        override fun onDeviceDisconnected(device: BluetoothDevice) = removeDevice(device)
+        override fun onDeviceDisconnected(device: BluetoothDevice) {
+            addOrUpdatePreference(device)
+        }
 
-        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
-            updateEarbudsPreference(device, earbuds)
+        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
+            addOrUpdatePreference(device, earbuds)
+        }
     }
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
@@ -47,12 +54,22 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
     override fun onResume() {
         super.onResume()
+        if (!enableSystemIntegration) {
+            updateEmptyState()
+            return
+        }
 
-        reloadDevices()
+        earbudsListCategory.removeAll()
+        reloadLocalDevices()
+
+        manager.registerConnectionListener(mmaListener)
     }
 
     override fun onPause() {
         super.onPause()
+        if (!enableSystemIntegration) {
+            return
+        }
 
         manager.unregisterConnectionListener(mmaListener)
     }
@@ -63,42 +80,22 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         coroutineScope.coroutineContext.cancel()
     }
 
-    private fun reloadDevices() {
-        if (DEBUG) Log.d(TAG, "reloadDevices")
+    private fun reloadLocalDevices() {
+        if (DEBUG) Log.d(TAG, "reloadLocalDevices")
 
-        removeAllDevices()
-        manager.registerConnectionListener(mmaListener)
+        BluetoothUtils.headsetA2DPDevices.filter { device ->
+            context?.let { BluetoothUtils.isDeviceMetadataSet(it, device) } == true
+        }.forEach { device ->
+            addOrUpdatePreference(device)
+        }
     }
 
-    private fun addDevice(device: BluetoothDevice) {
-        addEarbudsPreference(device)
-        updateEmptyState()
-
+    private fun fetchBatteryInfo(device: BluetoothDevice) {
         coroutineScope.launch {
-            manager.runCatching {
-                request(devicce, batteryInfo())
-            }.onSuccess {
-                Log.d(TAG, "Battery info received: $it")
-                updateUI { updateEarbudsPreference(device, it) }
-            }.onError {
-                Log.e(TAG, "Failed to get battery info", it)
-                updateUI { updateEarbudsPreference(device, it) }
-            }
+            val result = manager.runCatching { request(device, batteryInfo()) }.getOrElse { it }
+
+            updateUI { addOrUpdatePreference(device, result) }
         }
-    }
-
-    private fun removeDevice(device: BluetoothDevice) {
-        earbudsListCategory.findPreference<Preference>(device.address)?.let {
-            earbudsListCategory.removePreference(it)
-        }
-        updateEmptyState()
-    }
-
-    private fun removeAllDevices() {
-        if (DEBUG) Log.d(TAG, "removeAllDevices")
-
-        earbudsListCategory.removeAll()
-        updateEmptyState()
     }
 
     private fun updateUI(action: () -> Unit) {
@@ -111,36 +108,42 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun addEarbudsPreference(device: BluetoothDevice) {
-        if (DEBUG) Log.d(TAG, "Adding preference for: $device")
+    private fun addOrUpdatePreference(device: BluetoothDevice, result: Any? = null) {
+        if (DEBUG) Log.d(TAG, "Adding or updating preference for: $device")
 
-        val earbudsPreference = findPreference(device.address)
-            ?: Preference(requireContext()).apply {
-                key = device.address
-                earbudsListCategory.addPreference(this)
-            }
-
-        val infoIntent = Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO).apply {
-            putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-            setPackage(requireContext().packageName)
-        }
-
-        earbudsPreference.title = device.alias
-        earbudsPreference.summary = getString(R.string.earbuds_list_device_connecting)
-        earbudsPreference.intent = infoIntent
-        earbudsPreference.isSelectable = false
+        val earbudsPreference = findPreference(device.address) ?: addPreference(device)
+        updatePreference(earbudsPreference, device, result)
     }
 
-    private fun updateEarbudsPreference(device: BluetoothDevice, result: Any) {
-        if (DEBUG) Log.d(TAG, "Updating preference for device: $device")
-
-        findPreference<Preference>(device.address)?.apply {
-            summary = if (result is Earbuds) {
-                result.readableString
-            } else {
-                result.toString()
+    private fun addPreference(device: BluetoothDevice): Preference {
+        val preference = Preference(requireContext()).apply {
+            title = device.alias
+            key = device.address
+            intent = Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO).apply {
+                putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+                setPackage(requireContext().packageName)
             }
-            isSelectable = result is Earbuds
+        }
+        earbudsListCategory.addPreference(preference)
+
+        updateEmptyState()
+        return preference
+    }
+
+    private fun updatePreference(
+        preference: Preference,
+        device: BluetoothDevice,
+        result: Any? = null
+    ) {
+        preference.isSelectable = result is Earbuds
+        preference.summary = if (device.isConnected) {
+            if (result != null) {
+                if (result is Earbuds) result.readableString else result.toString()
+            } else {
+                getString(R.string.earbuds_list_device_connecting)
+            }
+        } else {
+            getString(R.string.earbuds_list_device_disconnected)
         }
     }
 
