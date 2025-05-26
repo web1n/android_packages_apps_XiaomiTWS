@@ -27,6 +27,7 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -104,7 +105,7 @@ class MMAManager private constructor(private val context: Context) {
         responseFlows.keys.filter {
             it.startsWith(device.address)
         }.forEach {
-            emitError(it, RuntimeException("Device disconnected"))
+            emitError(it, IOException("Device disconnected"))
         }
     }
 
@@ -311,58 +312,32 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    suspend fun <T> sendRequestSuspend(
+    private suspend fun sendRequestSuspend(
         device: BluetoothDevice,
-        builder: MMARequestBuilder<T>
-    ): OperationResult<T> = suspendCoroutine { continuation ->
+        builder: MMARequest
+    ): RequestResponse = suspendCoroutine { continuation ->
         val (requestId, responseFlow) = prepareAndSendRequest(device, builder)
 
         coroutineScope.launch {
-            responseFlow.filter { it.requestId == requestId }.collectLatest { result ->
+            responseFlow.filter {
+                it.requestId == requestId
+            }.collectLatest { result ->
                 responseFlows.remove(requestId)
-
-                val operationResult = runCatching {
-                    if (result is RequestResponse.Success) {
-                        builder.handler?.let {
-                            OperationResult.Success(it.invoke(result.response))
-                        } ?: let {
-                            throw RuntimeException("No handler provided")
-                        }
-                    } else if (result is RequestResponse.Error) {
-                        throw result.error
-                    } else {
-                        throw RuntimeException("Unknown response type")
-                    }
-                }.getOrElse {
-                    OperationResult.Error(it)
-                }
-                continuation.resume(operationResult)
+                continuation.resume(result)
             }
         }
     }
 
-    private fun <T> prepareAndSendRequest(
-        device: BluetoothDevice, builder: MMARequestBuilder<T>
+    private fun prepareAndSendRequest(
+        device: BluetoothDevice, request: MMARequest
     ): Pair<String, MutableSharedFlow<RequestResponse>> {
-        val responseFlow = MutableSharedFlow<RequestResponse>(replay = 1)
-
-        if (!isMMADevice(device)) {
-            Log.w(TAG, "Request device not mma device: ${device.address}")
-            val requestId = ""
-            coroutineScope.launch {
-                val error = RequestResponse.Error(
-                    requestId,
-                    RuntimeException("Device not available: ${device.address}")
-                )
-                responseFlow.emit(error)
-            }
-            return requestId to responseFlow
-        }
+        require(isMMADevice(device)) { "Device not available: ${device.address}" }
 
         val newSN = getDevice(device).newOpCodeSN
         val requestId = "${device.address}-$newSN"
-        val request = builder.request.apply { opCodeSN = newSN }
+        val request = request.apply { opCodeSN = newSN }
 
+        val responseFlow = MutableSharedFlow<RequestResponse>(replay = 1)
         responseFlows[requestId] = responseFlow
 
         // Send the request
@@ -383,21 +358,19 @@ class MMAManager private constructor(private val context: Context) {
 
             if (responseFlows.containsKey(requestId)) {
                 Log.w(TAG, "Request timed out: $requestId")
-                emitError(requestId, RuntimeException("Request timed out"))
+                emitError(requestId, IOException("Request timed out"))
             }
         }
 
         return requestId to responseFlow
     }
 
-    suspend fun <T> runRequestCatching(
-        device: BluetoothDevice,
-        builder: () -> MMARequestBuilder<T>
-    ): OperationResult<T> {
-        return try {
-            sendRequestSuspend(device, builder())
-        } catch (e: Throwable) {
-            OperationResult.Error(e)
+    suspend fun <T> request(device: BluetoothDevice, builder: MMARequestBuilder<T>): T {
+        val response = sendRequestSuspend(device, builder.request)
+
+        return when (response) {
+            is RequestResponse.Success -> builder.handler(response.response)
+            is RequestResponse.Error -> throw response.error
         }
     }
 

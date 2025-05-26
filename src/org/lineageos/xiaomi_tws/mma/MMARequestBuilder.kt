@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
 
 open class MMARequestBuilder<T>(
     internal var request: MMARequest,
-    internal var handler: ((MMAResponse) -> T)? = null
+    internal var handler: ((MMAResponse) -> T)
 ) {
     companion object {
         fun batteryInfo(): MMARequestBuilder<Earbuds> {

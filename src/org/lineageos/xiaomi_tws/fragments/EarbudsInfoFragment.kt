@@ -104,13 +104,11 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
 
         coroutineScope.launch {
             runCatching {
-                val battery = manager.runRequestCatching(device) { batteryInfo() }.getOrThrow()
-                val (vid, pid) = manager.runRequestCatching(device) { vidPid() }.getOrThrow()
+                val battery = manager.request(device, batteryInfo())
+                val (vid, pid) = manager.request(device, vidPid())
                 val configs = HashMap<Int, ByteArray?>().apply {
                     configIds.forEach { id ->
-                        val value = manager.runRequestCatching(device) {
-                            getConfig(id)
-                        }.getOrNull()
+                        val value = manager.request(device, getConfig(id))
                         put(id, value)
                     }
                 }
@@ -194,9 +192,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         coroutineScope.launch {
             runCatching {
                 controller.transNewValue(newValue).also {
-                    manager.runRequestCatching(device) {
-                        setConfig(controller.configId, it)
-                    }.getOrThrow()
+                    manager.request(device, setConfig(controller.configId, it))
                 }
             }.onSuccess {
                 controller.configValue = it

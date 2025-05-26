@@ -75,8 +75,8 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         updateEmptyState()
 
         coroutineScope.launch {
-            manager.runRequestCatching(device) {
-                batteryInfo()
+            manager.runCatching {
+                request(devicce, batteryInfo())
             }.onSuccess {
                 Log.d(TAG, "Battery info received: $it")
                 updateUI { updateEarbudsPreference(device, it) }
