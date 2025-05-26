@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.configs.ConfigController
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
@@ -29,17 +30,18 @@ import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
 class EarbudsInfoFragment : PreferenceFragmentCompat() {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
-    private val mmaListener = object : MMAListener() {
-        override fun onDeviceConnected(device: BluetoothDevice) = handleDeviceConnected(device)
+    private val mmaListener = object : MMAListener {
+        override fun onDeviceEvent(event: DeviceEvent) {
+            if (event.device != device) return
 
-        override fun onDeviceDisconnected(device: BluetoothDevice) =
-            handleDeviceDisconnected(device)
-
-        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) =
-            handleDeviceBatteryChanged(device, earbuds)
-
-        override fun onDeviceConfigChanged(device: BluetoothDevice, config: Int, value: ByteArray) =
-            handleOnConfigChanged(device, config, value)
+            when (event) {
+                is DeviceEvent.Connected -> reloadConfig()
+                is DeviceEvent.Disconnected -> activity?.finish()
+                is DeviceEvent.BatteryChanged -> updateBatteryData(event.battery)
+                is DeviceEvent.ConfigChanged -> updateConfigValue(event.config, event.value)
+                else -> {}
+            }
+        }
     }
 
     private val configControllers = HashSet<ConfigController>()
@@ -203,27 +205,11 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun handleDeviceConnected(device: BluetoothDevice) {
-        if (device != this.device) return
-
-        reloadConfig()
-    }
-
-    private fun handleDeviceDisconnected(device: BluetoothDevice) {
-        if (device != this.device) return
-
-        activity?.finish()
-    }
-
-    private fun handleDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
-        if (device != this.device) return
-
+    private fun updateBatteryData(earbuds: Earbuds) {
         configControllers.forEach { it.setBatteryData(earbuds) }
     }
 
-    private fun handleOnConfigChanged(device: BluetoothDevice, configId: Int, value: ByteArray) {
-        if (device != this.device) return
-
+    private fun updateConfigValue(configId: Int, value: ByteArray) {
         configControllers.filter {
             it.configId == configId && it.configValue != value
         }.forEach { controller ->

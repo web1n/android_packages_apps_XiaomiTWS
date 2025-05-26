@@ -84,7 +84,7 @@ class MMAManager private constructor(private val context: Context) {
             mmaDevices[device.address] = mma
 
             startReading(device)
-            dispatchDeviceConnected(device)
+            dispatchEvent(DeviceEvent.Connected(device))
         }.onFailure {
             Log.e(TAG, "Failed to connect device: ${device.address}", it)
             mma.close()
@@ -97,7 +97,7 @@ class MMAManager private constructor(private val context: Context) {
             mma.close()
 
             cancelAllRequests(device)
-            dispatchDeviceDisconnected(device)
+            dispatchEvent(DeviceEvent.Disconnected(device))
         }
     }
 
@@ -150,8 +150,12 @@ class MMAManager private constructor(private val context: Context) {
         when (notifyType) {
             XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
                 check(value.size == 3) { "Battery report length not 3, actual: ${value.size}" }
-                dispatchDeviceBatteryChanged(
-                    Earbuds.fromBytes(response.device.address, value[0], value[1], value[2])
+
+                dispatchEvent(
+                    DeviceEvent.BatteryChanged(
+                        response.device,
+                        Earbuds.fromBytes(response.device.address, value[0], value[1], value[2])
+                    )
                 )
             }
 
@@ -178,10 +182,10 @@ class MMAManager private constructor(private val context: Context) {
                 val left = value[0].toInt() and (1 shl 3) != 0
                 val right = value[0].toInt() and (1 shl 2) != 0
 
-                dispatchInEarStateChanged(response.device, left, right)
+                dispatchEvent(DeviceEvent.InEarStateChanged(response.device, left, right))
             }
 
-            else -> dispatchConfigChanged(response.device, config, value)
+            else -> dispatchEvent(DeviceEvent.ConfigChanged(response.device, config, value))
         }
     }
 
@@ -257,7 +261,9 @@ class MMAManager private constructor(private val context: Context) {
             if (!connectionListeners.contains(listener)) {
                 connectionListeners.add(listener)
 
-                mmaDevices.values.forEach { listener.onDeviceConnected(it.device) }
+                mmaDevices.values.forEach {
+                    listener.onDeviceEvent(DeviceEvent.Connected(it.device))
+                }
             } else {
                 Log.w(TAG, "Listener already registered: $listener")
             }
@@ -276,39 +282,13 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun dispatchEvent(logMessage: String, action: (MMAListener) -> Unit) {
-        if (DEBUG) Log.d(TAG, logMessage)
+    private fun dispatchEvent(event: DeviceEvent) {
+        if (DEBUG) Log.d(TAG, "dispatchEvent: $event")
 
         coroutineScope.launch(Dispatchers.Main) {
             synchronized(connectionListeners) {
-                connectionListeners.forEach(action)
+                connectionListeners.forEach { it.onDeviceEvent(event) }
             }
-        }
-    }
-
-    private fun dispatchDeviceConnected(device: BluetoothDevice) {
-        dispatchEvent("dispatchDeviceConnected: $device") { it.onDeviceConnected(device) }
-    }
-
-    private fun dispatchDeviceDisconnected(device: BluetoothDevice) {
-        dispatchEvent("dispatchDeviceDisconnected: $device") { it.onDeviceDisconnected(device) }
-    }
-
-    private fun dispatchDeviceBatteryChanged(earbuds: Earbuds) {
-        dispatchEvent("dispatchDeviceBatteryChanged: $earbuds") {
-            it.onDeviceBatteryChanged(earbuds.device, earbuds)
-        }
-    }
-
-    private fun dispatchConfigChanged(device: BluetoothDevice, config: Int, value: ByteArray) {
-        dispatchEvent("dispatchConfigChanged: config: $config, value: ${value.toHexString()}") {
-            it.onDeviceConfigChanged(device, config, value)
-        }
-    }
-
-    private fun dispatchInEarStateChanged(device: BluetoothDevice, left: Boolean, right: Boolean) {
-        dispatchEvent("dispatchInEarStateChanged: left: $left, right: $right") {
-            it.onInEarStateChanged(device, left, right)
         }
     }
 

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.PersistentApplication.Companion.enableSystemIntegration
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
@@ -23,18 +24,18 @@ import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 class EarbudsListFragment : PreferenceFragmentCompat() {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
-    private val mmaListener = object : MMAListener() {
-        override fun onDeviceConnected(device: BluetoothDevice) {
-            addOrUpdatePreference(device)
-            fetchBatteryInfo(device)
-        }
+    private val mmaListener = object : MMAListener {
+        override fun onDeviceEvent(event: DeviceEvent) {
+            when (event) {
+                is DeviceEvent.Connected -> {
+                    addOrUpdatePreference(event.device)
+                    fetchBatteryInfo(event.device)
+                }
 
-        override fun onDeviceDisconnected(device: BluetoothDevice) {
-            addOrUpdatePreference(device)
-        }
-
-        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
-            addOrUpdatePreference(device, earbuds)
+                is DeviceEvent.Disconnected -> addOrUpdatePreference(event.device)
+                is DeviceEvent.BatteryChanged -> addOrUpdatePreference(event.device, event.battery)
+                else -> {}
+            }
         }
     }
 

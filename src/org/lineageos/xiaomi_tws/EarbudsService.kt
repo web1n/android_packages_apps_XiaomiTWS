@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.util.Log
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
@@ -16,13 +17,13 @@ import org.lineageos.xiaomi_tws.utils.SettingsUtils
 class EarbudsService : Service() {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(this) }
-    private val mmaListener = object : MMAListener() {
-        override fun onDeviceDisconnected(device: BluetoothDevice) {
-            cancelNotification(device)
-        }
-
-        override fun onDeviceBatteryChanged(device: BluetoothDevice, earbuds: Earbuds) {
-            updateBattery(earbuds)
+    private val mmaListener = object : MMAListener {
+        override fun onDeviceEvent(event: DeviceEvent) {
+            when (event) {
+                is DeviceEvent.Disconnected -> cancelNotification(event.device)
+                is DeviceEvent.BatteryChanged -> updateBattery(event.battery)
+                else -> {}
+            }
         }
     }
 
