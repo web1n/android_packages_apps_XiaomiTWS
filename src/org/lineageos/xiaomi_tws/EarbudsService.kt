@@ -1,6 +1,5 @@
 package org.lineageos.xiaomi_tws
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothDevice
@@ -11,7 +10,6 @@ import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
-import org.lineageos.xiaomi_tws.utils.PermissionUtils.checkSelfPermissionGranted
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 @SuppressLint("MissingPermission")
@@ -47,20 +45,14 @@ class EarbudsService : Service() {
     override fun onBind(intent: Intent) = null
 
     private fun cancelNotification(device: BluetoothDevice) {
-        if (checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)) {
-            NotificationUtils.cancelEarbudsNotification(this, device)
-        }
+        NotificationUtils.cancelEarbudsNotification(this, device)
     }
 
     private fun updateBattery(earbuds: Earbuds) {
-        if (checkSelfPermissionGranted(Manifest.permission.BLUETOOTH_PRIVILEGED)) {
-            BluetoothUtils.updateDeviceTypeMetadata(earbuds.device)
-            BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
-        }
+        BluetoothUtils.updateDeviceTypeMetadata(earbuds.device)
+        BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
 
-        if (SettingsUtils.getInstance(this).enableNotification
-            && checkSelfPermissionGranted(Manifest.permission.POST_NOTIFICATIONS)
-        ) {
+        if (SettingsUtils.getInstance(this).enableNotification) {
             NotificationUtils.updateEarbudsNotification(this, earbuds)
         }
     }

@@ -4,8 +4,6 @@ import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -20,8 +18,6 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
-import org.lineageos.xiaomi_tws.utils.CommonUtils.openAppSettings
-import org.lineageos.xiaomi_tws.utils.PermissionUtils.getMissingRuntimePermissions
 
 class EarbudsListFragment : PreferenceFragmentCompat() {
 
@@ -35,7 +31,6 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             updateEarbudsPreference(device, earbuds)
     }
 
-    private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
 
     private val earbudsListCategory: PreferenceCategory
@@ -43,12 +38,6 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
     private val emptyStatePreference: Preference
         get() = findPreference(KEY_EARBUDS_LIST_EMPTY)!!
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        initializePermissionHandler()
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -74,29 +63,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         coroutineScope.coroutineContext.cancel()
     }
 
-    private fun initializePermissionHandler() {
-        permissionRequestLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { result ->
-            val allGranted = !result.containsValue(false)
-            if (allGranted) {
-                reloadDevices()
-            } else {
-                openAppSettings(requireActivity())
-            }
-        }
-    }
-
-    private fun checkPermissions(): Boolean {
-        val missingPermissions = requireContext().getMissingRuntimePermissions()
-        if (missingPermissions.isEmpty()) return true
-
-        permissionRequestLauncher.launch(missingPermissions)
-        return false
-    }
-
     private fun reloadDevices() {
-        if (!checkPermissions()) return
         if (DEBUG) Log.d(TAG, "reloadDevices")
 
         removeAllDevices()
