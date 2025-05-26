@@ -49,14 +49,22 @@ object BluetoothUtils {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_PRIVILEGED)
-    fun updateDeviceTypeMetadata(device: BluetoothDevice) {
+    fun updateDeviceTypeMetadata(context: Context, device: BluetoothDevice) {
         mapOf(
+            BluetoothDevice.METADATA_COMPANION_APP to context.packageName,
             BluetoothDevice.METADATA_DEVICE_TYPE to BluetoothDevice.DEVICE_TYPE_UNTETHERED_HEADSET,
             BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET to true,
             BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI to generateSliceUri(device.address)
         ).forEach {
             device.setMetadata(it.key, it.value)
         }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_PRIVILEGED)
+    fun isDeviceMetadataSet(context: Context, device: BluetoothDevice): Boolean {
+        val companionApp = device.getMetadata(BluetoothDevice.METADATA_COMPANION_APP)
+            ?.runCatching { String(this) }?.getOrNull()
+        return companionApp == context.packageName
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_PRIVILEGED)

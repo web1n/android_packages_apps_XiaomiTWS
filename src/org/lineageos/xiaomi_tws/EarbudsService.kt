@@ -49,7 +49,7 @@ class EarbudsService : Service() {
     }
 
     private fun updateBattery(earbuds: Earbuds) {
-        BluetoothUtils.updateDeviceTypeMetadata(earbuds.device)
+        BluetoothUtils.updateDeviceTypeMetadata(this, earbuds.device)
         BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
 
         if (SettingsUtils.getInstance(this).enableNotification) {
