@@ -13,10 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
@@ -30,6 +28,7 @@ import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("MissingPermission")
@@ -299,11 +298,16 @@ class MMAManager private constructor(private val context: Context) {
         val (requestId, responseFlow) = prepareAndSendRequest(device, builder)
 
         coroutineScope.launch {
-            responseFlow.filter {
-                it.requestId == requestId
-            }.collectLatest { result ->
+            runCatching {
+                withTimeout(TIMEOUT_MS_READ) {
+                    responseFlow.first { it.requestId == requestId }
+                }
+            }.onSuccess {
                 responseFlows.remove(requestId)
-                continuation.resume(result)
+                continuation.resume(it)
+            }.onFailure {
+                responseFlows.remove(requestId)
+                continuation.resumeWithException(it)
             }
         }
     }
@@ -329,16 +333,6 @@ class MMAManager private constructor(private val context: Context) {
             }.onFailure {
                 Log.e(TAG, "Failed to send request: $device", it)
                 emitError(requestId, it)
-            }
-        }
-
-        // Set timeout for the response
-        coroutineScope.launch {
-            delay(TIMEOUT_MS_READ)
-
-            if (responseFlows.containsKey(requestId)) {
-                Log.w(TAG, "Request timed out: $requestId")
-                emitError(requestId, IOException("Request timed out"))
             }
         }
 
