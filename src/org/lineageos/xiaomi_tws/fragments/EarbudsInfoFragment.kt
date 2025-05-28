@@ -110,7 +110,9 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
                 val (vid, pid) = manager.request(device, vidPid())
                 val configs = HashMap<Int, ByteArray?>().apply {
                     configIds.forEach { id ->
-                        val value = manager.request(device, getConfig(id))
+                        val value = manager.runCatching {
+                            request(device, getConfig(id))
+                        }.getOrNull()
                         put(id, value)
                     }
                 }
