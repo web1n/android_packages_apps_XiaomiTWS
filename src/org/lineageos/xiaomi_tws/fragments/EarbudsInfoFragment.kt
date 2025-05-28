@@ -169,8 +169,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
             Preference.OnPreferenceChangeListener { p, newValue ->
                 findController(p)?.let { controller ->
                     if (controller is Preference.OnPreferenceChangeListener) {
-                        val update = controller.onPreferenceChange(p, newValue)
-                        if (!update) return@let
+                        return@OnPreferenceChangeListener controller.onPreferenceChange(p, newValue)
                     }
 
                     handlePreferenceChange(controller, p, newValue)
