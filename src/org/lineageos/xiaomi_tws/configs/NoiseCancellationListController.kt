@@ -2,7 +2,6 @@ package org.lineageos.xiaomi_tws.configs
 
 import android.content.Context
 import android.util.Log
-import androidx.preference.Preference
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_LIST
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON
@@ -13,7 +12,7 @@ import java.util.Locale
 class NoiseCancellationListController(
     context: Context,
     preferenceKey: String
-) : MultiListController(context, preferenceKey), Preference.OnPreferenceChangeListener {
+) : MultiListController(context, preferenceKey) {
 
     private enum class Position { LEFT, RIGHT }
 
@@ -58,14 +57,12 @@ class NoiseCancellationListController(
             }.toSet()
         }
 
-    override fun onPreferenceChange(preference: Preference, o: Any): Boolean {
-        if (DEBUG) Log.d(TAG, "onPreferenceChange: $o")
-
-        return (o as Set<*>).size >= 2
-    }
-
     override fun transNewValue(value: Any): ByteArray {
-        val valueByte = (value as Set<*>)
+        require((value as Set<*>).size >= 2) {
+            "Require at least two modes selected, got: ${value.size}"
+        }
+
+        val valueByte = value
             .map { s -> 1 shl (s as String).toInt() }
             .reduce { a, b -> a + b }
             .toByte()
