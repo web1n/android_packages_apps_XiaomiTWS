@@ -174,18 +174,16 @@ class MMAManager private constructor(private val context: Context) {
         val config = bytesToInt(response.data[0], response.data[1])
         val value = response.data.drop(2).toByteArray()
 
-        when (config) {
-            XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE -> {
-                check(value.size == 1) { "In ear report length not 1, actual: ${value.size}" }
+        if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
+            check(value.size == 1) { "In ear report length not 1, actual: ${value.size}" }
 
-                val left = value[0].toInt() and (1 shl 3) != 0
-                val right = value[0].toInt() and (1 shl 2) != 0
+            val left = value[0].toInt() and (1 shl 3) != 0
+            val right = value[0].toInt() and (1 shl 2) != 0
 
-                dispatchEvent(DeviceEvent.InEarStateChanged(response.device, left, right))
-            }
-
-            else -> dispatchEvent(DeviceEvent.ConfigChanged(response.device, config, value))
+            dispatchEvent(DeviceEvent.InEarStateChanged(response.device, left, right))
         }
+
+        dispatchEvent(DeviceEvent.ConfigChanged(response.device, config, value))
     }
 
     private fun emitError(requestId: String, throwable: Throwable) {
