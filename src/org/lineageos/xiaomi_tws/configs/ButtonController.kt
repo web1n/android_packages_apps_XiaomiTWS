@@ -1,80 +1,20 @@
 package org.lineageos.xiaomi_tws.configs
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
 import androidx.preference.ListPreference
-import androidx.preference.Preference
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NEXT_TRACK
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NOISE_CONTROL
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PLAY_PAUSE
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PREVIOUS_TRACK
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_SCREENSHOT
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOICE_ASSISTANT
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_DOWN
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_UP
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_BUTTON_MODE
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.utils.ByteUtils.hexToBytes
-import java.nio.ByteBuffer
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.configs.Gesture
+import org.lineageos.xiaomi_tws.mma.configs.Gesture.Function
+import org.lineageos.xiaomi_tws.mma.configs.Gesture.Position
+import org.lineageos.xiaomi_tws.mma.configs.Gesture.Type
 
-class ButtonController(
-    context: Context,
-    preferenceKey: String
-) : ListController(context, preferenceKey) {
+class ButtonController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<ListPreference, Map<Pair<Position, Type>, Function>>
+        (preferenceKey, device) {
 
-    private enum class Type(val value: Byte) {
-        SINGLE_CLICK(0x04), DOUBLE_CLICK(0x01), TREBLE_CLICK(0x02), LONG_PRESS(0x03);
-
-        companion object {
-            fun fromByte(value: Byte): Type? {
-                for (type: Type in entries) {
-                    if (type.value == value) return type
-                }
-
-                Log.w(TAG, "Unknown Type value: 0x%02x".format(value))
-                return null
-            }
-        }
-    }
-
-    private enum class Position { LEFT, RIGHT }
-
-    private data class ButtonConfig(val type: Type, val position: Position, var value: Byte) {
-        fun toBytes() = byteArrayOf(
-            type.value,
-            if (position == Position.LEFT) value else VALUE_NOT_MODIFIED,
-            if (position == Position.RIGHT) value else VALUE_NOT_MODIFIED
-        )
-
-        override fun toString() = "%02x".format(value)
-
-        companion object {
-            fun parseFromBytes(value: ByteArray): List<ButtonConfig> {
-                if (value.size % 3 != 0) {
-                    Log.w(TAG, "Length must be multiple of 3. Actual: ${value.size}")
-                    return emptyList()
-                }
-
-                val configs = ArrayList<ButtonConfig>()
-                val buffer = ByteBuffer.wrap(value)
-
-                while (buffer.remaining() >= 3) {
-                    val typeByte: Byte = buffer.get()
-                    val leftValue: Byte = buffer.get()
-                    val rightValue: Byte = buffer.get()
-
-                    val type = Type.fromByte(typeByte)
-                    if (type != null) {
-                        configs.add(ButtonConfig(type, Position.LEFT, leftValue))
-                        configs.add(ButtonConfig(type, Position.RIGHT, rightValue))
-                    }
-                }
-
-                return configs
-            }
-        }
-    }
+    override val config = Gesture()
 
     private val type: Type
     private val position: Position
@@ -86,8 +26,19 @@ class ButtonController(
         }
 
         try {
-            type = Type.valueOf(preferenceKey.substring(0, lastUnderlineIndex).uppercase())
-            position = Position.valueOf(preferenceKey.substring(lastUnderlineIndex + 1).uppercase())
+            type = preferenceKey
+                .substring(0, lastUnderlineIndex)
+                .replace("_", "")
+                .lowercase()
+                .let { name ->
+                    Type.entries.find { it.name.lowercase() == name }!!
+                }
+            position = preferenceKey
+                .substring(lastUnderlineIndex + 1)
+                .lowercase()
+                .let { name ->
+                    Position.entries.find { it.name.lowercase() == name }!!
+                }
         } catch (e: IllegalArgumentException) {
             throw IllegalArgumentException(
                 "Invalid type or position in preference key: $preferenceKey", e
@@ -95,90 +46,61 @@ class ButtonController(
         }
     }
 
-    override val configId = XIAOMI_MMA_CONFIG_BUTTON_MODE
-    override val expectedConfigLength = 1
+    override fun preInitView(preference: ListPreference) {
+        preference.isSelectable = false
 
-    override val configStates = setOf(
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_DISABLED),
-            R.string.function_disabled
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOICE_ASSISTANT),
-            R.string.function_voice_assistant
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PLAY_PAUSE),
-            R.string.function_play_pause
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_PREVIOUS_TRACK),
-            R.string.function_previous_track
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NEXT_TRACK),
-            R.string.function_next_track
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_UP),
-            R.string.function_volume_up
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_VOLUME_DOWN),
-            R.string.function_volume_down
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_NOISE_CONTROL),
-            R.string.function_noise_control
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_BUTTON_FUNCTION_SCREENSHOT),
-            R.string.function_screenshot
-        )
-    )
-    override val defaultState = configStates.first()
+        super.preInitView(preference)
+    }
 
-    override val summary: String?
-        get() = buttonConfig?.let {
-            context.getString(
-                configStates.first { state -> state.configValue[0] == it.value }.summaryResId
-            )
+    override fun postInitView(preference: ListPreference) {
+        preference.isSelectable = true
+
+        preference.entries = Function.entries
+            .map { functionToString(preference.context, it) }
+            .toTypedArray()
+        preference.entryValues = Function.entries
+            .map { it.name }
+            .toTypedArray()
+
+        super.postInitView(preference)
+    }
+
+    override fun postUpdateValue(preference: ListPreference) {
+        if (value == null) return
+
+        val function = value!![position to type] ?: Function.Disabled
+        preference.value = function.name
+        preference.summary = functionToString(preference.context, function)
+
+        super.postUpdateValue(preference)
+    }
+
+    override suspend fun onPreferenceChange(
+        manager: MMAManager,
+        preference: ListPreference,
+        newValue: Any
+    ): Boolean {
+        val newConfigValue = HashMap(value!!).apply {
+            put(position to type, Function.valueOf(newValue as String))
         }
 
-    override fun isValidValue(value: ByteArray?): Boolean {
-        return value?.let { ButtonConfig.parseFromBytes(value).isNotEmpty() } == true
+        return super.onPreferenceChange(manager, preference, newConfigValue)
     }
 
-    override fun updateValue(preference: Preference) {
-        val buttonConfig = buttonConfig ?: let {
-            Log.w(TAG, "No button config found for update")
-            return
+    private fun functionToString(context: Context, function: Function): String {
+        val stringRes = when (function) {
+            Function.Disabled -> R.string.function_disabled
+            Function.VoiceAssistant -> R.string.function_voice_assistant
+            Function.PlayPause -> R.string.function_play_pause
+            Function.PreviousTrack -> R.string.function_previous_track
+            Function.NextTrack -> R.string.function_next_track
+            Function.VolumeUp -> R.string.function_volume_up
+            Function.VolumeDown -> R.string.function_volume_down
+            Function.NoiseControl -> R.string.function_noise_control
+            Function.Screenshot -> R.string.function_screenshot
         }
 
-        (preference as ListPreference).value = buttonConfig.toString()
+        return context.getString(stringRes)
     }
 
-    override fun transNewValue(value: Any): ByteArray {
-        require(value is String) { "Invalid value type: ${value::class.java.simpleName}" }
-
-        return checkNotNull(buttonConfig) {
-            "No existing button config to update"
-        }.apply {
-            this.value = value.hexToBytes()[0]
-        }.toBytes()
-    }
-
-    private val buttonConfig: ButtonConfig?
-        get() = configValue?.let {
-            ButtonConfig.parseFromBytes(it).firstOrNull { config ->
-                config.type == type && config.position == position
-            }
-        }
-
-    companion object {
-        private val TAG = ButtonController::class.java.simpleName
-//        private const val DEBUG = true
-
-        private const val VALUE_NOT_MODIFIED: Byte = -1
-    }
 }

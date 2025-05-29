@@ -1,83 +1,87 @@
 package org.lineageos.xiaomi_tws.configs
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_LIST
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY
+import androidx.preference.MultiSelectListPreference
 import org.lineageos.xiaomi_tws.R
-import java.util.Locale
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList
+import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList.Mode
+import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList.Position
 
-class NoiseCancellationListController(
-    context: Context,
-    preferenceKey: String
-) : MultiListController(context, preferenceKey) {
+class NoiseCancellationListController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<MultiSelectListPreference, Map<Position, List<Mode>>>(preferenceKey, device),
+    BaseConfigController.OnPreferenceChangeListener<MultiSelectListPreference> {
 
-    private enum class Position { LEFT, RIGHT }
+    override val config = NoiseCancellationList()
 
-    private val position =
-        Position.valueOf(
-            preferenceKey.split("_".toRegex()).dropLastWhile { it.isEmpty() }
-                .toTypedArray()[0].uppercase(
-                Locale.getDefault()
-            )
-        )
+    private val position: Position = preferenceKey.split("_".toRegex())
+        .dropLastWhile { it.isEmpty() }
+        .toTypedArray()[0]
+        .lowercase()
+        .let { name ->
+            Position.entries.find { it.name.lowercase() == name }!!
+        }
 
-    override val configId = XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_LIST
-    override val expectedConfigLength = 2
+    override fun preInitView(preference: MultiSelectListPreference) {
+        preference.isSelectable = false
+        preference.isPersistent = false
 
-    override val configStates = setOf(
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF),
-            R.string.noise_cancellation_mode_off
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON),
-            R.string.noise_cancellation_mode_on
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY),
-            R.string.noise_cancellation_mode_transparency
-        )
-    )
+        super.preInitView(preference)
+    }
 
-    override val checkedStates: Set<ConfigState>
-        get() {
-            if (DEBUG) Log.d(TAG, "getCheckedStates")
+    override fun postInitView(preference: MultiSelectListPreference) {
+        preference.isSelectable = true
 
-            if (configValue == null || !isValidValue(configValue)) {
-                return setOf()
+        preference.entryValues = Mode.entries
+            .map { it.name }
+            .toTypedArray()
+        preference.entries = Mode.entries
+            .map { modeToString(preference.context, it) }
+            .toTypedArray()
+
+        super.postInitView(preference)
+    }
+
+    override fun postUpdateValue(preference: MultiSelectListPreference) {
+        if (value == null) return
+
+        val modes = value!![position] ?: emptySet()
+        preference.values = modes.map { it.name }.toSet()
+        preference.summary = modes.joinToString(", ") { modeToString(preference.context, it) }
+
+        super.postUpdateValue(preference)
+    }
+
+    private fun modeToString(context: Context, mode: Mode): String {
+        val stringRes = when (mode) {
+            Mode.Off -> R.string.noise_cancellation_mode_off
+            Mode.On -> R.string.noise_cancellation_mode_on
+            Mode.Transparency -> R.string.noise_cancellation_mode_transparency
+        }
+
+        return context.getString(stringRes)
+    }
+
+    override suspend fun onPreferenceChange(
+        manager: MMAManager,
+        preference: MultiSelectListPreference,
+        newValue: Any
+    ): Boolean {
+        require((newValue as Set<*>).size >= 2) {
+            "Require at least two modes selected, got: ${value!!.size}"
+        }
+
+        val newConfigValue = HashMap<Position, List<Mode>>().apply {
+            value!!.forEach {
+                if (it.key != position) put(it.key, it.value)
             }
 
-            val configByte = configValue!![if (position == Position.LEFT) 0 else 1]
-
-            return configStates.filter { state ->
-                (configByte.toInt() and (1 shl state.configValue[0].toInt())) > 0
-            }.toSet()
+            val modes = newValue.map { Mode.valueOf(it as String) }
+            put(position, modes)
         }
 
-    override fun transNewValue(value: Any): ByteArray {
-        require((value as Set<*>).size >= 2) {
-            "Require at least two modes selected, got: ${value.size}"
-        }
-
-        val valueByte = value
-            .map { s -> 1 shl (s as String).toInt() }
-            .reduce { a, b -> a + b }
-            .toByte()
-
-        return if (position == Position.LEFT) {
-            byteArrayOf(valueByte, VALUE_NOT_MODIFIED)
-        } else {
-            byteArrayOf(VALUE_NOT_MODIFIED, valueByte)
-        }
+        return super.onPreferenceChange(manager, preference, newConfigValue)
     }
 
-    companion object {
-        private val TAG = ListController::class.java.simpleName
-        private const val DEBUG = true
-
-        private const val VALUE_NOT_MODIFIED: Byte = -1
-    }
 }

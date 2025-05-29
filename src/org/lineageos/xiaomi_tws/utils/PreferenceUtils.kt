@@ -1,8 +1,10 @@
 package org.lineageos.xiaomi_tws.utils
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.annotation.XmlRes
-import org.lineageos.xiaomi_tws.configs.ConfigController
+import androidx.preference.Preference
+import org.lineageos.xiaomi_tws.configs.BaseConfigController
 import org.xmlpull.v1.XmlPullParser
 
 object PreferenceUtils {
@@ -15,8 +17,12 @@ object PreferenceUtils {
 
     private const val PREFERENCE_TAG_SUFFIX = "Preference"
 
-    fun createAllControllers(context: Context, @XmlRes xmlResId: Int): Set<ConfigController> {
-        val configControllers = HashSet<ConfigController>()
+    fun createAllControllers(
+        context: Context,
+        @XmlRes xmlResId: Int,
+        device: BluetoothDevice
+    ): Set<BaseConfigController<Preference>> {
+        val configControllers = HashSet<BaseConfigController<Preference>>()
 
         runCatching {
             context.resources.getXml(xmlResId).use { parser ->
@@ -31,7 +37,7 @@ object PreferenceUtils {
                         parser.getAttributeValue(NAMESPACE_APP, NAME_CONTROLLER) ?: continue
 
                     if (isPreferenceTag(tagName)) {
-                        configControllers.add(createControllerInstance(context, controller, key))
+                        configControllers.add(createControllerInstance(controller, key, device))
                     }
                 }
             }
@@ -49,18 +55,16 @@ object PreferenceUtils {
     }
 
     private fun createControllerInstance(
-        context: Context,
         controllerClass: String,
-        preferenceKey: String
-    ): ConfigController {
+        preferenceKey: String,
+        device: BluetoothDevice
+    ): BaseConfigController<Preference> {
         val instance = Class.forName(controllerClass)
-            .getConstructor(Context::class.java, String::class.java)
-            .newInstance(context, preferenceKey)
+            .getConstructor(String::class.java, BluetoothDevice::class.java)
+            .newInstance(preferenceKey, device)
 
-        check(instance is ConfigController) {
-            "$controllerClass is not valid ConfigController"
-        }
-        return instance
+        @Suppress("UNCHECKED_CAST")
+        return instance as BaseConfigController<Preference>
     }
 
 }

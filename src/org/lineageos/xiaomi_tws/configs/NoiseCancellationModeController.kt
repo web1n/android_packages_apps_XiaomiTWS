@@ -1,35 +1,65 @@
 package org.lineageos.xiaomi_tws.configs
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY
+import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode
+import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode.Mode
 
-class NoiseCancellationModeController(
-    context: Context,
-    preferenceKey: String
-) : ListController(context, preferenceKey) {
+class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<ListPreference, Mode>(preferenceKey, device) {
 
-    override val configId = XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE
-    override val expectedConfigLength = 2
-    override val configNeedReceive = false
+    override val config = NoiseCancellationMode()
 
-    override val configStates = setOf(
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_OFF, 0x00),
-            R.string.noise_cancellation_mode_off
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_ON, 0x00),
-            R.string.noise_cancellation_mode_on
-        ),
-        ConfigState(
-            byteArrayOf(XIAOMI_MMA_CONFIG_NOISE_CANCELLATION_MODE_TRANSPARENCY, 0x00),
-            R.string.noise_cancellation_mode_transparency
-        )
-    )
-    override val defaultState = configStates.first()
+    override fun preInitView(preference: ListPreference) {
+        preference.isPersistent = false
+        preference.value = Mode.Off.name
+
+        super.preInitView(preference)
+    }
+
+    override fun postInitView(preference: ListPreference) {
+        preference.isSelectable = true
+
+        preference.entryValues = Mode.entries
+            .map { it.name }
+            .toTypedArray()
+        preference.entries = Mode.entries
+            .map { modeToString(preference.context, it) }
+            .toTypedArray()
+
+        super.postInitView(preference)
+    }
+
+    override fun postUpdateValue(preference: ListPreference) {
+        if (value == null) return
+
+        preference.value = value!!.name
+        preference.summary = modeToString(preference.context, value!!)
+
+        super.postUpdateValue(preference)
+    }
+
+    override suspend fun onPreferenceChange(
+        manager: MMAManager,
+        preference: ListPreference,
+        newValue: Any
+    ): Boolean {
+        val newConfigValue = Mode.valueOf(newValue as String)
+
+        return super.onPreferenceChange(manager, preference, newConfigValue)
+    }
+
+    private fun modeToString(context: Context, mode: Mode): String {
+        val stringRes = when (mode) {
+            Mode.Off -> R.string.noise_cancellation_mode_off
+            Mode.On -> R.string.noise_cancellation_mode_on
+            Mode.Transparency -> R.string.noise_cancellation_mode_transparency
+        }
+
+        return context.getString(stringRes)
+    }
 
 }

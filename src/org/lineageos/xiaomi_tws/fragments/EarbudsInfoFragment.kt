@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.content.IntentCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -15,36 +14,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.configs.ConfigController
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.configs.BaseConfigController
+import org.lineageos.xiaomi_tws.configs.BaseConfigController.OnPreferenceChangeListener
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.getConfig
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.setConfig
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.vidPid
 import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
 
 @SuppressLint("MissingPermission")
-class EarbudsInfoFragment : PreferenceFragmentCompat() {
+class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
-    private val mmaListener = object : MMAListener {
-        override fun onDeviceEvent(event: DeviceEvent) {
-            if (event.device != device) return
 
-            when (event) {
-                is DeviceEvent.Connected -> reloadConfig()
-                is DeviceEvent.Disconnected -> activity?.finish()
-                is DeviceEvent.BatteryChanged -> updateBatteryData(event.battery)
-                is DeviceEvent.ConfigChanged -> updateConfigValue(event.config, event.value)
-                else -> {}
-            }
-        }
-    }
-
-    private val configControllers = HashSet<ConfigController>()
+    private val configControllers = HashSet<BaseConfigController<Preference>>()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
     private lateinit var device: BluetoothDevice
 
@@ -57,13 +39,13 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
 
-        manager.registerConnectionListener(mmaListener)
+        manager.registerConnectionListener(this)
     }
 
     override fun onStop() {
         super.onStop()
 
-        manager.unregisterConnectionListener(mmaListener)
+        manager.unregisterConnectionListener(this)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -97,39 +79,29 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
     private fun reloadConfig() {
         if (DEBUG) Log.d(TAG, "reloadConfig")
 
-        val configIds = configControllers
-            .map { it.configId }
-            .filter { it != ConfigController.CONFIG_ID_INVALID }
-            .distinct()
-            .toTypedArray()
-        if (DEBUG) Log.d(TAG, "reloadConfig: ids: ${configIds.contentToString()}")
+        configControllers.forEach { controller ->
+            findPreference(controller)?.let { controller.preInitView(it) }
+        }
 
         coroutineScope.launch {
-            runCatching {
-                val battery = manager.request(device, batteryInfo())
-                val (vid, pid) = manager.request(device, vidPid())
-                val configs = HashMap<Int, ByteArray?>().apply {
-                    configIds.forEach { id ->
-                        val value = manager.runCatching {
-                            request(device, getConfig(id))
-                        }.getOrNull()
-                        put(id, value)
+            configControllers.forEach { controller ->
+                val success = controller
+                    .runCatching { initData(manager) }
+                    .onFailure {
+                        Log.e(TAG, "controller ${controller.preferenceKey} init failed", it)
                     }
-                }
+                    .isSuccess
 
-                configs.forEach { (configId, value) ->
-                    configControllers.filter { controller ->
-                        controller.configId == configId
-                    }.forEach { controller ->
-                        controller.setBatteryData(battery)
-                        controller.setVendorData(vid, pid)
-                        controller.configValue = value
+                updateUI {
+                    findPreference(controller)?.let {
+                        if (success) {
+                            controller.postInitView(it)
+                            controller.postUpdateValue(it)
+                        } else {
+                            it.isVisible = false
+                        }
                     }
                 }
-            }.onSuccess {
-                updateUI { refreshPreferences() }
-            }.onFailure {
-                handleError("Config reload failed", it)
             }
         }
     }
@@ -137,16 +109,16 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
     private fun bindPreferenceControllers() {
         if (DEBUG) Log.d(TAG, "bindPreferenceControllers")
 
-        createAllControllers(requireContext(), R.xml.earbuds_settings).onEach {
+        createAllControllers(requireContext(), R.xml.earbuds_settings, device).onEach {
             bindControllerToPreference(it)
         }.also {
             configControllers.addAll(it)
         }
     }
 
-    private fun bindControllerToPreference(controller: ConfigController) {
+    private fun bindControllerToPreference(controller: BaseConfigController<Preference>) {
         findPreference<Preference>(controller.preferenceKey)?.let {
-            controller.displayPreference(it)
+            controller.preInitView(it)
             setupPreferenceListener(it)
         }
     }
@@ -168,11 +140,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         preference.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { p, newValue ->
                 findController(p)?.let { controller ->
-                    if (controller is Preference.OnPreferenceChangeListener) {
-                        return@OnPreferenceChangeListener controller.onPreferenceChange(p, newValue)
-                    }
-
-                    handlePreferenceChange(controller, p, newValue)
+                    handlePreferenceChange(controller, preference, newValue)
                 }
 
                 false
@@ -189,37 +157,51 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         }
     }
 
+    override fun onDeviceEvent(event: DeviceEvent) {
+        if (event.device != device) return
+
+        when (event) {
+            is DeviceEvent.Connected -> reloadConfig()
+            is DeviceEvent.Disconnected -> {
+                activity?.finish()
+                return
+            }
+
+            else -> {}
+        }
+
+        configControllers.forEach { controller ->
+            val preference = findPreference(controller) ?: return@forEach
+
+            if (controller is MMAListener) {
+                controller.onDeviceEvent(event)
+                controller.postUpdateValue(preference)
+            }
+        }
+    }
+
     private fun handlePreferenceChange(
-        controller: ConfigController, preference: Preference, newValue: Any
-    ) {
+        controller: BaseConfigController<Preference>,
+        preference: Preference,
+        newValue: Any
+    ): Boolean {
+        if (controller !is OnPreferenceChangeListener<*>) {
+            return false
+        }
+
         coroutineScope.launch {
-            runCatching {
-                controller.transNewValue(newValue).also {
-                    manager.request(device, setConfig(controller.configId, it))
-                }
-            }.onSuccess {
-                controller.configValue = it
-                updateUI { controller.updateState(preference) }
-            }.onFailure {
-                handleError("Save config failed", it)
+            @Suppress("UNCHECKED_CAST")
+            val result = (controller as OnPreferenceChangeListener<Preference>)
+                .runCatching { onPreferenceChange(manager, preference, newValue) }
+                .onFailure {
+                    Log.w(TAG, "Unable to handle on preference change", it)
+                }.getOrElse { false }
+            if (result) {
+                updateUI { controller.postUpdateValue(preference) }
             }
         }
-    }
 
-    private fun updateBatteryData(earbuds: Earbuds) {
-        configControllers.forEach { it.setBatteryData(earbuds) }
-    }
-
-    private fun updateConfigValue(configId: Int, value: ByteArray) {
-        configControllers.filter {
-            it.configId == configId && it.configValue != value
-        }.forEach { controller ->
-            controller.configValue = value
-
-            findPreference<Preference>(controller.preferenceKey)?.let { preference ->
-                controller.updateState(preference)
-            }
-        }
+        return true
     }
 
     private fun updateUI(action: () -> Unit) {
@@ -232,15 +214,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun refreshPreferences() {
-        configControllers.forEach { controller ->
-            findPreference<Preference>(controller.preferenceKey)?.let { preference ->
-                controller.updateState(preference)
-            }
-        }
-    }
-
-    private fun findController(preference: Preference): ConfigController? {
+    private fun findController(preference: Preference): BaseConfigController<Preference>? {
         val controller = configControllers.firstOrNull { controller ->
             controller.preferenceKey == preference.key
         }
@@ -251,15 +225,8 @@ class EarbudsInfoFragment : PreferenceFragmentCompat() {
         return controller
     }
 
-    private fun showToast(content: String) {
-        if (DEBUG) Log.d(TAG, "showToast: $content")
-
-        updateUI { Toast.makeText(activity, content, Toast.LENGTH_SHORT).show() }
-    }
-
-    private fun handleError(message: String, e: Throwable) {
-        Log.e(TAG, message, e)
-        showToast("$message: $e")
+    private fun findPreference(controller: BaseConfigController<Preference>): Preference? {
+        return findPreference(controller.preferenceKey)
     }
 
     companion object {

@@ -1,22 +1,20 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.content.Context
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_SN
-import java.nio.charset.StandardCharsets
+import android.bluetooth.BluetoothDevice
+import androidx.preference.Preference
+import org.lineageos.xiaomi_tws.mma.configs.SerialNumber
 
-class SerialNumberController(
-    context: Context,
-    preferenceKey: String
-) : ConfigController(context, preferenceKey) {
+class SerialNumberController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<Preference, String>(preferenceKey, device) {
 
-    override val configId = XIAOMI_MMA_CONFIG_SN
-    override val expectedConfigLength = 20
+    override val config = SerialNumber()
 
-    override val summary: String?
-        get() = configValue?.let {
-            runCatching { String(it, StandardCharsets.UTF_8) }.getOrNull()
-        }
+    override fun postUpdateValue(preference: Preference) {
+        if (value == null) return
 
-    override fun transNewValue(value: Any) = TODO()
+        preference.summary = value
+
+        super.postUpdateValue(preference)
+    }
 
 }

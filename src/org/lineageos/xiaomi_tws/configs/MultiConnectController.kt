@@ -1,16 +1,11 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.content.Context
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_MULTI_CONNECT
-import org.lineageos.xiaomi_tws.R
+import android.bluetooth.BluetoothDevice
+import org.lineageos.xiaomi_tws.mma.configs.MultiConnect
 
-class MultiConnectController(context: Context, preferenceKey: String) :
-    SwitchController(context, preferenceKey) {
+class MultiConnectController(preferenceKey: String, device: BluetoothDevice) :
+    SwitchController(preferenceKey, device) {
 
-    override val enabledState = ConfigState(byteArrayOf(1), R.string.multi_connect_summary)
-    override val disabledState = ConfigState(byteArrayOf(0), R.string.multi_connect_summary)
-
-    override val configId = XIAOMI_MMA_CONFIG_MULTI_CONNECT
-    override val expectedConfigLength = 1
+    override val config = MultiConnect()
 
 }

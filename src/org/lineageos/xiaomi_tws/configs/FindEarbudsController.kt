@@ -1,50 +1,73 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.content.Context
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_FIND_EARBUDS
-import org.lineageos.xiaomi_tws.R
+import android.bluetooth.BluetoothDevice
+import androidx.preference.SwitchPreference
+import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.DeviceEvent
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds
+import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds.Position
 
-class FindEarbudsController(context: Context, preferenceKey: String) :
-    SwitchController(context, preferenceKey) {
+class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<SwitchPreference, Pair<Boolean, List<Position>>>(preferenceKey, device) {
 
-    override val enabledState = ConfigState(ENABLED_CONFIG, R.string.find_earbuds_on)
-    override val disabledState = ConfigState(DISABLED_CONFIG, R.string.find_earbuds_off)
+    override val config = FindEarbuds()
 
-    override val configId = XIAOMI_MMA_CONFIG_FIND_EARBUDS
-    override val expectedConfigLength = 2
+    private lateinit var earbudsStatus: Earbuds
 
-    override val isEnabled
-        get() = configValue?.get(0) == ENABLE_FLAG
+    override suspend fun initData(manager: MMAManager) {
+        super.initData(manager)
 
-    override fun transNewValue(value: Any): ByteArray {
-        require(value is Boolean) { "Invalid value type: ${value.javaClass.simpleName}" }
-        check(battery?.leftOrRightValid == true) { "Both earbuds disconnected" }
+        earbudsStatus = manager.request(device, batteryInfo())
+    }
 
-        return byteArrayOf(
-            if (value) ENABLE_FLAG else DISABLE_FLAG,
-            battery!!.run {
-                val left = if (left.valid) LEFT_EARBUD_FLAG else 0
-                val right = if (right.valid) RIGHT_EARBUD_FLAG else 0
+    override fun preInitView(preference: SwitchPreference) {
+        preference.isPersistent = false
+        preference.isSelectable = false
 
-                (left or right).toByte()
+        super.preInitView(preference)
+    }
+
+    override fun postInitView(preference: SwitchPreference) {
+        preference.isSelectable = true
+
+        super.postInitView(preference)
+    }
+
+    override fun postUpdateValue(preference: SwitchPreference) {
+        if (value == null) return
+
+        preference.isChecked = value!!.first == true
+
+        super.postUpdateValue(preference)
+    }
+
+    override fun onDeviceEvent(event: DeviceEvent) {
+        super.onDeviceEvent(event)
+
+        if (event is DeviceEvent.BatteryChanged) {
+            earbudsStatus = event.battery
+        }
+    }
+
+    override suspend fun onPreferenceChange(
+        manager: MMAManager,
+        preference: SwitchPreference,
+        newValue: Any
+    ): Boolean {
+        val newConfigValue = if (newValue == true) {
+            val positions = ArrayList<Position>().apply {
+                if (earbudsStatus.left.valid) add(Position.Left)
+                if (earbudsStatus.right.valid) add(Position.Right)
             }
-        )
+
+            true to positions
+        } else {
+            false to listOf(Position.Left, Position.Right)
+        }
+
+        return super.onPreferenceChange(manager, preference, newConfigValue)
     }
 
-    companion object {
-//        private val TAG = FindEarbudsController::class.java.simpleName
-//        private const val DEBUG: Boolean = true
-
-        private const val LEFT_EARBUD_FLAG = 0x01
-        private const val RIGHT_EARBUD_FLAG = 0x02
-        private const val ENABLE_FLAG: Byte = 0x01
-        private const val DISABLE_FLAG: Byte = 0x00
-
-        private val ENABLED_CONFIG = byteArrayOf(
-            ENABLE_FLAG, (LEFT_EARBUD_FLAG or RIGHT_EARBUD_FLAG).toByte()
-        )
-        private val DISABLED_CONFIG = byteArrayOf(
-            DISABLE_FLAG, (LEFT_EARBUD_FLAG or RIGHT_EARBUD_FLAG).toByte()
-        )
-    }
 }

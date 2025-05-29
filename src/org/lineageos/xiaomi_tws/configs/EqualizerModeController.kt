@@ -1,45 +1,96 @@
 package org.lineageos.xiaomi_tws.configs
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.util.Log
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_BASS_BOOST
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN_MASTER
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_TREBLE_BOOST
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOCAL_ENHANCE
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOLUME_BOOST
+import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
+import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.vidPid
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
+import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode.Mode
 
-class EqualizerModeController(
-    context: Context,
-    preferenceKey: String
-) : ListController(context, preferenceKey) {
+class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<ListPreference, Mode>(preferenceKey, device) {
 
     data class EqualizerDevice(val vendorId: Int, val productId: Int, val supportedModes: Set<Int>)
 
-    override val configId = XIAOMI_MMA_CONFIG_EQUALIZER_MODE
-    override val expectedConfigLength = 1
+    override val config = EqualizerMode()
 
-    override val configStates: Set<ConfigState>
-        get() {
-            val supportedModes = DEVICE_SUPPORTED_MODES.find {
-                it.vendorId == vid && it.productId == pid
-            }?.supportedModes ?: return setOf(defaultState)
-            if (DEBUG) Log.d(TAG, "Supported modes: ${supportedModes.joinToString()}")
+    private var vid: Int = 0
+    private var pid: Int = 0
 
-            return CONFIG_STATES.filter {
-                supportedModes.contains(it.configValue[0].toInt())
-            }.toSet()
+    override suspend fun initData(manager: MMAManager) {
+        super.initData(manager)
+
+        val (vid, pid) = manager.request(device, vidPid())
+        this.vid = vid
+        this.pid = pid
+    }
+
+    override fun preInitView(preference: ListPreference) {
+        preference.isPersistent = false
+        preference.isSelectable = false
+
+        super.preInitView(preference)
+    }
+
+    override fun postInitView(preference: ListPreference) {
+        preference.isSelectable = true
+
+        val supportedModes = getSupportedModes()
+        preference.entries = supportedModes
+            .map { modeToString(preference.context, it) }
+            .toTypedArray()
+        preference.entryValues = supportedModes
+            .map { it.name }
+            .toTypedArray()
+
+        super.postInitView(preference)
+    }
+
+    override fun postUpdateValue(preference: ListPreference) {
+        if (value == null) return
+
+        preference.value = value!!.name
+        preference.summary = modeToString(preference.context, value!!)
+
+        super.postUpdateValue(preference)
+    }
+
+    override suspend fun onPreferenceChange(
+        manager: MMAManager,
+        preference: ListPreference,
+        newValue: Any
+    ): Boolean {
+        val newConfigValue = Mode.valueOf(newValue as String)
+
+        return super.onPreferenceChange(manager, preference, newConfigValue)
+    }
+
+    private fun getSupportedModes(): Set<Mode> {
+        return DEVICE_SUPPORTED_MODES
+            .find { it.vendorId == vid && it.productId == pid }
+            ?.supportedModes
+            ?.mapNotNull { Mode.fromValue(it.toByte()) }
+            ?.toSet()
+            ?: return setOf(Mode.Default)
+    }
+
+    private fun modeToString(context: Context, mode: Mode): String {
+        val stringRes = when (mode) {
+            Mode.Default -> R.string.equalizer_mode_default
+            Mode.VocalEnhance -> R.string.equalizer_mode_vocal_enhance
+            Mode.BassBoost -> R.string.equalizer_mode_bass_boost
+            Mode.TrebleBoost -> R.string.equalizer_mode_treble_boost
+            Mode.VolumeBoost -> R.string.equalizer_mode_volume_boost
+            Mode.Harman -> R.string.equalizer_mode_harman
+            Mode.HarmanMaster -> R.string.equalizer_mode_harman_master
         }
 
-    override val defaultState = CONFIG_STATES.first()
+        return context.getString(stringRes)
+    }
 
     companion object {
-        private val TAG = EqualizerModeController::class.java.simpleName
-        private const val DEBUG = true
-
         private val DEVICE_SUPPORTED_MODES = arrayOf(
             EqualizerDevice(0x2717, 0x5035, setOf(0, 1, 5, 6, 11, 12)),
             EqualizerDevice(0x2717, 0x503B, setOf(0, 5, 6, 12)),
@@ -77,35 +128,5 @@ class EqualizerModeController(
             EqualizerDevice(0x5A4D, 0xEA0F, setOf(0, 1, 5, 6))
         )
 
-        private val CONFIG_STATES = setOf(
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_DEFAULT),
-                R.string.equalizer_mode_default
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOCAL_ENHANCE),
-                R.string.equalizer_mode_vocal_enhance
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_BASS_BOOST),
-                R.string.equalizer_mode_bass_boost
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_TREBLE_BOOST),
-                R.string.equalizer_mode_treble_boost
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_VOLUME_BOOST),
-                R.string.equalizer_mode_volume_boost
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN),
-                R.string.equalizer_mode_harman
-            ),
-            ConfigState(
-                byteArrayOf(XIAOMI_MMA_CONFIG_EQUALIZER_MODE_HARMAN_MASTER),
-                R.string.equalizer_mode_harman_master
-            )
-        )
     }
 }

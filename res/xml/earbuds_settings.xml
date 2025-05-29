@@ -93,11 +93,14 @@
 
         <SwitchPreference
             android:key="find_earbuds"
+            android:summaryOff="@string/find_earbuds_off"
+            android:summaryOn="@string/find_earbuds_on"
             android:title="@string/find_earbuds"
             app:controller="org.lineageos.xiaomi_tws.configs.FindEarbudsController" />
 
         <SwitchPreference
             android:key="multi_connect"
+            android:summary="@string/multi_connect_summary"
             android:title="@string/multi_connect"
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
 

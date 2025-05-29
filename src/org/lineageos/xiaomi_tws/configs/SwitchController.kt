@@ -1,48 +1,26 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.content.Context
-import androidx.preference.Preference
+import android.bluetooth.BluetoothDevice
 import androidx.preference.TwoStatePreference
+import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
 
-abstract class SwitchController(
-    context: Context,
-    preferenceKey: String
-) : ConfigController(context, preferenceKey) {
+abstract class SwitchController(preferenceKey: String, device: BluetoothDevice) :
+    ConfigController<TwoStatePreference, Boolean>(preferenceKey, device) {
 
-    protected abstract val enabledState: ConfigState
-    protected abstract val disabledState: ConfigState
+    abstract override val config: ConfigRequestBuilder<Boolean>
 
-    protected open val isEnabled: Boolean
-        get() = enabledState.configValue.contentEquals(configValue)
-
-    override fun displayPreference(preference: Preference) {
-        super.displayPreference(preference)
-
-        (preference as TwoStatePreference).apply {
-            setSummaryOn(enabledState.summaryResId)
-            setSummaryOff(disabledState.summaryResId)
-        }
+    override fun preInitView(preference: TwoStatePreference) {
+        preference.isSelectable = false
     }
 
-    override val summary: String?
-        get() = configValue?.let {
-            context.getString(
-                (if (isEnabled) enabledState else disabledState).summaryResId
-            )
-        }
-
-    override fun transNewValue(value: Any): ByteArray {
-        require(value is Boolean) { "Invalid value type: ${value.javaClass.simpleName}" }
-
-        return if (value) {
-            enabledState.configValue
-        } else {
-            disabledState.configValue
-        }
+    override fun postInitView(preference: TwoStatePreference) {
+        preference.isSelectable = true
     }
 
-    override fun updateValue(preference: Preference) {
-        (preference as TwoStatePreference).isChecked = isEnabled
+    override fun postUpdateValue(preference: TwoStatePreference) {
+        if (value == null) return
+
+        preference.isChecked = value!!
     }
 
 }
