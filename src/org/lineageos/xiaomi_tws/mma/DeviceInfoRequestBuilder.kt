@@ -1,10 +1,12 @@
 package org.lineageos.xiaomi_tws.mma
 
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_INFO_SET_IN_EAR_DETECT
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_BATTERY
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_UBOOT_VERSION
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_VERSION
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_VID_PID
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_INFO
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toVersionString
@@ -25,6 +27,20 @@ class DeviceInfoRequestBuilder {
                 validateDeviceInfoResponse(response.data, mask, expectedSize)
                 dataProcessor(response)
             }
+        }
+
+        private fun createSetDeviceInfoRequest(
+            config: Byte,
+            bytes: ByteArray,
+        ): MMARequestBuilder<Boolean> {
+            val requestData = buildList<Byte> {
+                add((bytes.size + 1).toByte())
+                add(config)
+                addAll(bytes.toList())
+            }.toByteArray()
+
+            val request = MMARequest(XIAOMI_MMA_OPCODE_SET_DEVICE_INFO, requestData)
+            return MMARequestBuilder(request) { it.ok }
         }
 
         private fun validateDeviceInfoResponse(
@@ -69,6 +85,9 @@ class DeviceInfoRequestBuilder {
             }
         }
 
+        fun disableHeadsetInEarDetect(): MMARequestBuilder<Boolean> {
+            return createSetDeviceInfoRequest(XIAOMI_MMA_INFO_SET_IN_EAR_DETECT, byteArrayOf(0x01))
+        }
     }
 
 }
