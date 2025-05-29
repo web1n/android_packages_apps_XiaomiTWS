@@ -1,5 +1,6 @@
 package org.lineageos.xiaomi_tws.utils
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
@@ -25,9 +26,18 @@ class SettingsUtils private constructor(context: Context) {
         get() = getBoolean(KEY_ENABLE_NOTIFICATION, true)
         set(value) = putBoolean(KEY_ENABLE_NOTIFICATION, value)
 
+    fun isAutoSwitchDeviceEnabled(device: BluetoothDevice): Boolean {
+        return getBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", false)
+    }
+
+    fun setAutoSwitchDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
+        putBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", enabled)
+    }
+
     companion object {
         private const val KEY_ENABLE_SYSTEM_INTEGRATION = "enable_system_integration"
         private const val KEY_ENABLE_NOTIFICATION = "enable_notification"
+        private const val KEY_ENABLE_AUTO_SWITCH_DEVICE = "enable_auto_switch_device"
 
         @Volatile
         private var INSTANCE: SettingsUtils? = null

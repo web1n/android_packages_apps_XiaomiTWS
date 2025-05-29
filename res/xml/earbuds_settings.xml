@@ -13,6 +13,12 @@
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
+        <SwitchPreference
+            android:key="enable_auto_switch_device"
+            android:summary="@string/auto_switch_device_summary"
+            android:title="@string/auto_switch_device"
+            app:controller="org.lineageos.xiaomi_tws.configs.AutoSwitchDeviceController" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -35,6 +35,9 @@
     <string name="equalizer_mode_harman">哈曼模式</string>
     <string name="equalizer_mode_harman_master">哈曼大师</string>
 
+    <string name="auto_switch_device">自动切换媒体设备</string>
+    <string name="auto_switch_device_summary">摘下两只耳机时音频切换至本地，戴上任意一只时切换至耳机</string>
+
     <string name="noise_cancellation_mode">降噪模式</string>
     <string name="noise_cancellation_mode_off">关闭</string>
     <string name="noise_cancellation_mode_on">开启</string>
