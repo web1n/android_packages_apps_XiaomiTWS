@@ -33,7 +33,7 @@
 
             <meta-data
                 android:name="com.android.settings.category"
-                android:value="com.android.settings.category.ia.device" />
+                android:value="com.android.settings.category.ia.connect" />
         </activity>
 
         <activity-alias
