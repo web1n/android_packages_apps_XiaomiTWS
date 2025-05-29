@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.vidPid
+import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.vidPid
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
 import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode.Mode

@@ -18,7 +18,7 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 
 class EarbudsListFragment : PreferenceFragmentCompat() {

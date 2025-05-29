@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice
 import androidx.preference.SwitchPreference
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
-import org.lineageos.xiaomi_tws.mma.MMARequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds
 import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds.Position
