@@ -39,8 +39,8 @@ class EqualizerMode : ConfigRequestBuilder<EqualizerMode.Mode>(CONFIG_ID) {
         private const val MODE_BASS_BOOST: Byte = 0x05
         private const val MODE_TREBLE_BOOST: Byte = 0x06
         private const val MODE_VOLUME_BOOST: Byte = 0x07
-        private const val MODE_HARMAN: Byte = 0x14
-        private const val MODE_HARMAN_MASTER: Byte = 0x15
+        private const val MODE_HARMAN: Byte = 0x0E
+        private const val MODE_HARMAN_MASTER: Byte = 0x0F
     }
 
 }
