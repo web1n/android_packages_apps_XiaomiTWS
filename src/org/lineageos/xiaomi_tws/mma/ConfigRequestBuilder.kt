@@ -59,7 +59,7 @@ abstract class ConfigRequestBuilder<T>(val configId: Int) {
         private fun parseConfigResponse(data: ByteArray, expectedConfig: Int): ByteArray {
             val buffer = ByteBuffer.wrap(data)
 
-            require(buffer.remaining() >= 4) { "Response data too short: ${buffer.remaining()}" }
+            require(buffer.remaining() >= 3) { "Response data too short: ${buffer.remaining()}" }
 
             val length = buffer.get().toInt()
             require(length >= 2 && length <= buffer.remaining() + 1) {
