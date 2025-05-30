@@ -46,6 +46,12 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
         }
     }
 
+    override suspend fun initData(manager: MMAManager) {
+        super.initData(manager)
+
+        value = value?.filter { it.key == position to type }
+    }
+
     override fun preInitView(preference: ListPreference) {
         preference.isSelectable = false
 
@@ -80,9 +86,7 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
         preference: ListPreference,
         newValue: Any
     ): Boolean {
-        val newConfigValue = HashMap(value!!).apply {
-            put(position to type, Function.valueOf(newValue as String))
-        }
+        val newConfigValue = mapOf((position to type) to Function.valueOf(newValue as String))
 
         return super.onPreferenceChange(manager, preference, newConfigValue)
     }
