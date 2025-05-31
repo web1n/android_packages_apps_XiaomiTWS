@@ -111,6 +111,12 @@
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
 
         <Preference
+            android:key="device_info"
+            android:title="@string/device_info"
+            app:controller="org.lineageos.xiaomi_tws.configs.DeviceInfoController"
+            app:enableCopying="true" />
+
+        <Preference
             android:key="serial_number"
             android:title="@string/serial_number"
             app:controller="org.lineageos.xiaomi_tws.configs.SerialNumberController"
