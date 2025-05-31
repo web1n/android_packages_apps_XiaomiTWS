@@ -9,7 +9,6 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_IN
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
-import org.lineageos.xiaomi_tws.utils.ByteUtils.toVersionString
 
 class DeviceInfoRequestBuilder {
     companion object {
@@ -66,8 +65,8 @@ class DeviceInfoRequestBuilder {
         }
 
         fun softwareVersion(): MMARequestBuilder<String> {
-            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VERSION, 6) {
-                bytesToInt(it.data[2], it.data[3]).toVersionString()
+            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VERSION, 4) {
+                Integer.toHexString(bytesToInt(it.data[2], it.data[3]))
             }
         }
 

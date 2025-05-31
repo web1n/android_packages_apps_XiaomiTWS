@@ -2,10 +2,6 @@ package org.lineageos.xiaomi_tws.utils
 
 object ByteUtils {
 
-    fun Int.toVersionString(): String {
-        return Integer.toHexString(this).split("").joinToString { "." }
-    }
-
     fun bytesToInt(highByte: Byte, lowByte: Byte, bigEndian: Boolean = true): Int {
         val high = highByte.toInt() and 0xFF
         val low = lowByte.toInt() and 0xFF
