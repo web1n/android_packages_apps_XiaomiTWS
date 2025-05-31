@@ -65,12 +65,6 @@ class DeviceInfoRequestBuilder {
             }
         }
 
-        fun uBootVersion(): MMARequestBuilder<String> {
-            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_UBOOT_VERSION, 4) {
-                bytesToInt(it.data[2], it.data[3]).toVersionString()
-            }
-        }
-
         fun softwareVersion(): MMARequestBuilder<String> {
             return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VERSION, 6) {
                 bytesToInt(it.data[2], it.data[3]).toVersionString()
