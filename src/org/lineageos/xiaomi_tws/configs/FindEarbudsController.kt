@@ -22,25 +22,10 @@ class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
         earbudsStatus = manager.request(device, batteryInfo())
     }
 
-    override fun preInitView(preference: SwitchPreference) {
-        preference.isPersistent = false
-        preference.isSelectable = false
-
-        super.preInitView(preference)
-    }
-
-    override fun postInitView(preference: SwitchPreference) {
-        preference.isSelectable = true
-
-        super.postInitView(preference)
-    }
-
     override fun postUpdateValue(preference: SwitchPreference) {
         if (value == null) return
 
         preference.isChecked = value!!.first == true
-
-        super.postUpdateValue(preference)
     }
 
     override fun onDeviceEvent(event: DeviceEvent) {

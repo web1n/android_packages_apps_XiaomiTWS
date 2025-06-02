@@ -53,13 +53,7 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
     }
 
     override fun preInitView(preference: ListPreference) {
-        preference.isSelectable = false
-
         super.preInitView(preference)
-    }
-
-    override fun postInitView(preference: ListPreference) {
-        preference.isSelectable = true
 
         preference.entries = Function.entries
             .map { functionToString(preference.context, it) }
@@ -68,8 +62,6 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
             .map { it.name }
             .toTypedArray()
         preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
-
-        super.postInitView(preference)
     }
 
     override fun postUpdateValue(preference: ListPreference) {
@@ -77,8 +69,6 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
 
         val function = value!![position to type] ?: Function.Disabled
         preference.value = function.name
-
-        super.postUpdateValue(preference)
     }
 
     override suspend fun onPreferenceChange(

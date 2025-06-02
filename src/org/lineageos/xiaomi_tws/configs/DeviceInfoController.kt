@@ -23,8 +23,6 @@ class DeviceInfoController(preferenceKey: String, device: BluetoothDevice) :
 
     override fun postUpdateValue(preference: Preference) {
         preference.summary = "vid: $vid, pid: $pid, software: $softwareVersion"
-
-        super.postUpdateValue(preference)
     }
 
 }

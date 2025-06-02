@@ -14,14 +14,7 @@ class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDe
     override val config = NoiseCancellationMode()
 
     override fun preInitView(preference: ListPreference) {
-        preference.isPersistent = false
-        preference.value = Mode.Off.name
-
         super.preInitView(preference)
-    }
-
-    override fun postInitView(preference: ListPreference) {
-        preference.isSelectable = true
 
         preference.entryValues = Mode.entries
             .map { it.name }
@@ -30,16 +23,12 @@ class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDe
             .map { modeToString(preference.context, it) }
             .toTypedArray()
         preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
-
-        super.postInitView(preference)
     }
 
     override fun postUpdateValue(preference: ListPreference) {
         if (value == null) return
 
         preference.value = value!!.name
-
-        super.postUpdateValue(preference)
     }
 
     override suspend fun onPreferenceChange(

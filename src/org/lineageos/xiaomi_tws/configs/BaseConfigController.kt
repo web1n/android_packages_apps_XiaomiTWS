@@ -14,9 +14,13 @@ abstract class BaseConfigController<T : Preference>(
 
     abstract suspend fun initData(manager: MMAManager)
 
-    open fun preInitView(preference: T) {}
+    open fun preInitView(preference: T) {
+        preference.isSelectable = false
+    }
 
     open fun postInitView(preference: T) {
+        preference.isSelectable = true
+
         updateParentVisibility(preference)
     }
 

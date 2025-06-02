@@ -21,6 +21,8 @@ abstract class ConfigController<T : Preference, R>(preferenceKey: String, device
 
     override fun preInitView(preference: T) {
         super.preInitView(preference)
+
+        preference.isPersistent = false
     }
 
     override fun onDeviceEvent(event: DeviceEvent) {

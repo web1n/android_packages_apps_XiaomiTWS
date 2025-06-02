@@ -25,14 +25,7 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
         }
 
     override fun preInitView(preference: MultiSelectListPreference) {
-        preference.isSelectable = false
-        preference.isPersistent = false
-
         super.preInitView(preference)
-    }
-
-    override fun postInitView(preference: MultiSelectListPreference) {
-        preference.isSelectable = true
 
         preference.entryValues = Mode.entries
             .map { it.name }
@@ -48,8 +41,6 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
                 }.joinToString(", ")
             }
         }
-
-        super.postInitView(preference)
     }
 
     override fun postUpdateValue(preference: MultiSelectListPreference) {
@@ -57,8 +48,6 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
 
         val modes = value!![position] ?: emptySet()
         preference.values = modes.map { it.name }.toSet()
-
-        super.postUpdateValue(preference)
     }
 
     private fun modeToString(context: Context, mode: Mode): String {

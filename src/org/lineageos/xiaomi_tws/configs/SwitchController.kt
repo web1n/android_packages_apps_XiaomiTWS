@@ -9,14 +9,6 @@ abstract class SwitchController(preferenceKey: String, device: BluetoothDevice) 
 
     abstract override val config: ConfigRequestBuilder<Boolean>
 
-    override fun preInitView(preference: TwoStatePreference) {
-        preference.isSelectable = false
-    }
-
-    override fun postInitView(preference: TwoStatePreference) {
-        preference.isSelectable = true
-    }
-
     override fun postUpdateValue(preference: TwoStatePreference) {
         if (value == null) return
 

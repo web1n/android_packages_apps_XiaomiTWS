@@ -17,23 +17,9 @@ class AutoSwitchDeviceController(preferenceKey: String, device: BluetoothDevice)
         }
     }
 
-    override fun preInitView(preference: SwitchPreference) {
-        preference.isSelectable = false
-
-        super.preInitView(preference)
-    }
-
-    override fun postInitView(preference: SwitchPreference) {
-        preference.isSelectable = true
-
-        super.postInitView(preference)
-    }
-
     override fun postUpdateValue(preference: SwitchPreference) {
         preference.isChecked = SettingsUtils.getInstance(preference.context)
             .isAutoSwitchDeviceEnabled(device)
-
-        super.postUpdateValue(preference)
     }
 
     override suspend fun onPreferenceChange(

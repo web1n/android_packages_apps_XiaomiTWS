@@ -28,14 +28,13 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
     }
 
     override fun preInitView(preference: ListPreference) {
-        preference.isPersistent = false
-        preference.isSelectable = false
-
         super.preInitView(preference)
+
+        preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
     }
 
     override fun postInitView(preference: ListPreference) {
-        preference.isSelectable = true
+        super.postInitView(preference)
 
         val supportedModes = getSupportedModes()
         preference.entries = supportedModes
@@ -44,17 +43,12 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
         preference.entryValues = supportedModes
             .map { it.name }
             .toTypedArray()
-        preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
-
-        super.postInitView(preference)
     }
 
     override fun postUpdateValue(preference: ListPreference) {
         if (value == null) return
 
         preference.value = value!!.name
-
-        super.postUpdateValue(preference)
     }
 
     override suspend fun onPreferenceChange(

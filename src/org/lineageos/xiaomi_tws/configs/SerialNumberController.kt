@@ -13,8 +13,6 @@ class SerialNumberController(preferenceKey: String, device: BluetoothDevice) :
         if (value == null) return
 
         preference.summary = value
-
-        super.postUpdateValue(preference)
     }
 
 }
