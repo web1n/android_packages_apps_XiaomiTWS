@@ -65,17 +65,16 @@ class MediaManager(context: Context) : LocalMediaManager.DeviceCallback {
         }
     }
 
-    private fun getLatestActiveSession(): MediaController? {
-        return mediaSessionManager.getActiveSessions(null).run {
-            find { it.isPlaying() } ?: firstOrNull()
-        }
-    }
-
     fun playMedia() {
         if (DEBUG) Log.d(TAG, "playMedia")
-        val latestSession = getLatestActiveSession() ?: return
-        if (latestSession.isPlaying()) return
 
+        val activeSessions = mediaSessionManager.getActiveSessions(null)
+        activeSessions.find { it.isPlaying() }?.let {
+            if (DEBUG) Log.d(TAG, "Media is already playing on session: $it")
+            return
+        }
+
+        val latestSession = activeSessions.find { !it.isPlaying() } ?: return
         latestSession.runCatching {
             transportControls.play()
         }.onFailure {
@@ -85,14 +84,16 @@ class MediaManager(context: Context) : LocalMediaManager.DeviceCallback {
 
     fun pauseMedia() {
         if (DEBUG) Log.d(TAG, "pauseMedia")
-        val latestSession = getLatestActiveSession() ?: return
-        if (!latestSession.isPlaying()) return
 
-        latestSession.runCatching {
-            transportControls.pause()
-        }.onFailure {
-            Log.e(TAG, "Failed to pause media on session: $it")
-        }
+        mediaSessionManager.getActiveSessions(null)
+            .filter { it.isPlaying() }
+            .forEach { session ->
+                session.runCatching {
+                    transportControls.pause()
+                }.onFailure {
+                    Log.e(TAG, "Failed to pause media on session: $it")
+                }
+            }
     }
 
     companion object {
