@@ -72,14 +72,7 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
             "Require at least two modes selected, got: ${value!!.size}"
         }
 
-        val newConfigValue = HashMap<Position, List<Mode>>().apply {
-            value!!.forEach {
-                if (it.key != position) put(it.key, it.value)
-            }
-
-            val modes = newValue.map { Mode.valueOf(it as String) }
-            put(position, modes)
-        }
+        val newConfigValue = mapOf(position to newValue.map { Mode.valueOf(it as String) })
 
         return super.onPreferenceChange(manager, preference, newConfigValue)
     }
