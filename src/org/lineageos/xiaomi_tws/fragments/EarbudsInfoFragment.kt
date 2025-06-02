@@ -39,6 +39,11 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
     override fun onResume() {
         super.onResume()
 
+        if (!device.isConnected) {
+            activity?.finish()
+            return
+        }
+
         manager.registerConnectionListener(this)
     }
 
