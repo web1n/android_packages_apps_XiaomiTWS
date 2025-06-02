@@ -5,7 +5,7 @@ import androidx.preference.TwoStatePreference
 import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
 
 abstract class SwitchController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<TwoStatePreference, Boolean>(preferenceKey, device) {
+    ConfigController<TwoStatePreference, Boolean, Boolean>(preferenceKey, device) {
 
     abstract override val config: ConfigRequestBuilder<Boolean>
 
@@ -13,6 +13,10 @@ abstract class SwitchController(preferenceKey: String, device: BluetoothDevice) 
         if (value == null) return
 
         preference.isChecked = value!!
+    }
+
+    override fun preferenceValueToValue(value: Boolean): Boolean {
+        return value
     }
 
 }

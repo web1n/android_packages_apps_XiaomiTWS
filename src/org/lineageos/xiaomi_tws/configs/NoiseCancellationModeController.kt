@@ -4,12 +4,11 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode.Mode
 
 class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<ListPreference, Mode>(preferenceKey, device) {
+    ConfigController<ListPreference, String, Mode>(preferenceKey, device) {
 
     override val config = NoiseCancellationMode()
 
@@ -31,14 +30,8 @@ class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDe
         preference.value = value!!.name
     }
 
-    override suspend fun onPreferenceChange(
-        manager: MMAManager,
-        preference: ListPreference,
-        newValue: Any
-    ): Boolean {
-        val newConfigValue = Mode.valueOf(newValue as String)
-
-        return super.onPreferenceChange(manager, preference, newConfigValue)
+    override fun preferenceValueToValue(value: String): Mode {
+        return Mode.valueOf(value)
     }
 
     private fun modeToString(context: Context, mode: Mode): String {

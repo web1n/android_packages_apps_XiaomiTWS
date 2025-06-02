@@ -8,12 +8,17 @@ import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 
-abstract class ConfigController<T : Preference, R>(preferenceKey: String, device: BluetoothDevice) :
+abstract class ConfigController<T : Preference, U, R>(
+    preferenceKey: String,
+    device: BluetoothDevice
+) :
     BaseConfigController<T>(preferenceKey, device), MMAListener,
-    BaseConfigController.OnPreferenceChangeListener<T> {
+    BaseConfigController.OnPreferenceChangeListener<T, U> {
 
     protected abstract val config: ConfigRequestBuilder<R>
     protected var value: R? = null
+
+    protected abstract fun preferenceValueToValue(value: U): R
 
     override suspend fun initData(manager: MMAManager) {
         value = manager.request(device, config.get())
@@ -39,18 +44,17 @@ abstract class ConfigController<T : Preference, R>(preferenceKey: String, device
         }
     }
 
-    override suspend fun onPreferenceChange(
+    final override suspend fun onPreferenceChange(
         manager: MMAManager,
         preference: T,
-        newValue: Any
+        newValue: U
     ): Boolean {
-        @Suppress("UNCHECKED_CAST")
-        val typedValue = newValue as R
+        val realValue = preferenceValueToValue(newValue)
 
         val result = manager
-            .runCatching { request(device, config.set(typedValue)) }
+            .runCatching { request(device, config.set(realValue)) }
             .getOrElse { false }
-        if (result) value = typedValue
+        if (result) value = realValue
         return result
     }
 

@@ -8,8 +8,8 @@ abstract class BaseConfigController<T : Preference>(
     val preferenceKey: String,
     protected val device: BluetoothDevice
 ) {
-    interface OnPreferenceChangeListener<T : Preference> {
-        suspend fun onPreferenceChange(manager: MMAManager, preference: T, newValue: Any): Boolean
+    interface OnPreferenceChangeListener<T : Preference, U> {
+        suspend fun onPreferenceChange(manager: MMAManager, preference: T, newValue: U): Boolean
     }
 
     abstract suspend fun initData(manager: MMAManager)

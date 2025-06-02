@@ -5,7 +5,7 @@ import androidx.preference.Preference
 import org.lineageos.xiaomi_tws.mma.configs.SerialNumber
 
 class SerialNumberController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<Preference, String>(preferenceKey, device) {
+    ConfigController<Preference, Nothing, String>(preferenceKey, device) {
 
     override val config = SerialNumber()
 
@@ -13,6 +13,10 @@ class SerialNumberController(preferenceKey: String, device: BluetoothDevice) :
         if (value == null) return
 
         preference.summary = value
+    }
+
+    override fun preferenceValueToValue(value: Nothing): String {
+        throw NotImplementedError()
     }
 
 }

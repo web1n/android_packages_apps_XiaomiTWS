@@ -10,7 +10,7 @@ import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
 import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode.Mode
 
 class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<ListPreference, Mode>(preferenceKey, device) {
+    ConfigController<ListPreference, String, Mode>(preferenceKey, device) {
 
     data class EqualizerDevice(val vendorId: Int, val productId: Int, val supportedModes: Set<Int>)
 
@@ -51,14 +51,8 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
         preference.value = value!!.name
     }
 
-    override suspend fun onPreferenceChange(
-        manager: MMAManager,
-        preference: ListPreference,
-        newValue: Any
-    ): Boolean {
-        val newConfigValue = Mode.valueOf(newValue as String)
-
-        return super.onPreferenceChange(manager, preference, newConfigValue)
+    override fun preferenceValueToValue(value: String): Mode {
+        return Mode.valueOf(value)
     }
 
     private fun getSupportedModes(): Set<Mode> {

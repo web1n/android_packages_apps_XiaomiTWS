@@ -5,14 +5,13 @@ import android.content.Context
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference.SummaryProvider
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList.Mode
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList.Position
 
 class NoiseCancellationListController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<MultiSelectListPreference, Map<Position, List<Mode>>>(preferenceKey, device),
-    BaseConfigController.OnPreferenceChangeListener<MultiSelectListPreference> {
+    ConfigController<MultiSelectListPreference, Set<String>, Map<Position, List<Mode>>>
+        (preferenceKey, device) {
 
     override val config = NoiseCancellationList()
 
@@ -60,18 +59,12 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
         return context.getString(stringRes)
     }
 
-    override suspend fun onPreferenceChange(
-        manager: MMAManager,
-        preference: MultiSelectListPreference,
-        newValue: Any
-    ): Boolean {
-        require((newValue as Set<*>).size >= 2) {
-            "Require at least two modes selected, got: ${value!!.size}"
+    override fun preferenceValueToValue(value: Set<String>): Map<Position, List<Mode>> {
+        require(value.size >= 2) {
+            "Require at least two modes selected, got: ${value.size}"
         }
 
-        val newConfigValue = mapOf(position to newValue.map { Mode.valueOf(it as String) })
-
-        return super.onPreferenceChange(manager, preference, newConfigValue)
+        return mapOf(position to value.map { Mode.valueOf(it) })
     }
 
 }

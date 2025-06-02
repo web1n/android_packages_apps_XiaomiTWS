@@ -10,7 +10,8 @@ import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds
 import org.lineageos.xiaomi_tws.mma.configs.FindEarbuds.Position
 
 class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<SwitchPreference, Pair<Boolean, List<Position>>>(preferenceKey, device) {
+    ConfigController<SwitchPreference, Boolean, Pair<Boolean, List<Position>>>
+        (preferenceKey, device) {
 
     override val config = FindEarbuds()
 
@@ -36,12 +37,8 @@ class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
         }
     }
 
-    override suspend fun onPreferenceChange(
-        manager: MMAManager,
-        preference: SwitchPreference,
-        newValue: Any
-    ): Boolean {
-        val newConfigValue = if (newValue == true) {
+    override fun preferenceValueToValue(value: Boolean): Pair<Boolean, List<Position>> {
+        return if (value) {
             val positions = ArrayList<Position>().apply {
                 if (earbudsStatus.left.valid) add(Position.Left)
                 if (earbudsStatus.right.valid) add(Position.Right)
@@ -51,8 +48,6 @@ class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
         } else {
             false to listOf(Position.Left, Position.Right)
         }
-
-        return super.onPreferenceChange(manager, preference, newConfigValue)
     }
 
 }

@@ -9,7 +9,7 @@ import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 class AutoSwitchDeviceController(preferenceKey: String, device: BluetoothDevice) :
     BaseConfigController<SwitchPreference>(preferenceKey, device),
-    BaseConfigController.OnPreferenceChangeListener<SwitchPreference> {
+    BaseConfigController.OnPreferenceChangeListener<SwitchPreference, Boolean> {
 
     override suspend fun initData(manager: MMAManager) {
         if (!isInEarGestureSupported(manager)) {
@@ -25,13 +25,13 @@ class AutoSwitchDeviceController(preferenceKey: String, device: BluetoothDevice)
     override suspend fun onPreferenceChange(
         manager: MMAManager,
         preference: SwitchPreference,
-        newValue: Any
+        newValue: Boolean
     ): Boolean {
         // disable headset builtin in ear detect
         manager.request(device, disableHeadsetInEarDetect())
 
         SettingsUtils.getInstance(preference.context)
-            .setAutoSwitchDeviceEnabled(device, newValue as Boolean)
+            .setAutoSwitchDeviceEnabled(device, newValue)
         return true
     }
 

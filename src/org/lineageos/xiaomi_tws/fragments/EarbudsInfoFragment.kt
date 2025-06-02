@@ -192,13 +192,13 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
         preference: Preference,
         newValue: Any
     ): Boolean {
-        if (controller !is OnPreferenceChangeListener<*>) {
+        if (controller !is OnPreferenceChangeListener<*, *>) {
             return false
         }
 
         coroutineScope.launch {
             @Suppress("UNCHECKED_CAST")
-            val result = (controller as OnPreferenceChangeListener<Preference>)
+            val result = (controller as OnPreferenceChangeListener<Preference, Any>)
                 .runCatching { onPreferenceChange(manager, preference, newValue) }
                 .onFailure {
                     Log.w(TAG, "Unable to handle on preference change", it)

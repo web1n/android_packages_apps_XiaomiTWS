@@ -11,7 +11,7 @@ import org.lineageos.xiaomi_tws.mma.configs.Gesture.Position
 import org.lineageos.xiaomi_tws.mma.configs.Gesture.Type
 
 class ButtonController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<ListPreference, Map<Pair<Position, Type>, Function>>
+    ConfigController<ListPreference, String, Map<Pair<Position, Type>, Function>>
         (preferenceKey, device) {
 
     override val config = Gesture()
@@ -71,14 +71,8 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
         preference.value = function.name
     }
 
-    override suspend fun onPreferenceChange(
-        manager: MMAManager,
-        preference: ListPreference,
-        newValue: Any
-    ): Boolean {
-        val newConfigValue = mapOf((position to type) to Function.valueOf(newValue as String))
-
-        return super.onPreferenceChange(manager, preference, newConfigValue)
+    override fun preferenceValueToValue(value: String): Map<Pair<Position, Type>, Function> {
+        return mapOf((position to type) to Function.valueOf(value))
     }
 
     private fun functionToString(context: Context, function: Function): String {
