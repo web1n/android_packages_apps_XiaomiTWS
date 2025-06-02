@@ -44,6 +44,7 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
         preference.entryValues = supportedModes
             .map { it.name }
             .toTypedArray()
+        preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
 
         super.postInitView(preference)
     }
@@ -52,7 +53,6 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
         if (value == null) return
 
         preference.value = value!!.name
-        preference.summary = modeToString(preference.context, value!!)
 
         super.postUpdateValue(preference)
     }

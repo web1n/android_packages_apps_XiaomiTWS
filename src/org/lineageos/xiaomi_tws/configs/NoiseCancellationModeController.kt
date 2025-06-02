@@ -29,6 +29,7 @@ class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDe
         preference.entries = Mode.entries
             .map { modeToString(preference.context, it) }
             .toTypedArray()
+        preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
 
         super.postInitView(preference)
     }
@@ -37,7 +38,6 @@ class NoiseCancellationModeController(preferenceKey: String, device: BluetoothDe
         if (value == null) return
 
         preference.value = value!!.name
-        preference.summary = modeToString(preference.context, value!!)
 
         super.postUpdateValue(preference)
     }

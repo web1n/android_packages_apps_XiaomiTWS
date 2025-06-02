@@ -3,6 +3,7 @@ package org.lineageos.xiaomi_tws.configs
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.MultiSelectListPreference
+import androidx.preference.Preference.SummaryProvider
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationList
@@ -39,6 +40,14 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
         preference.entries = Mode.entries
             .map { modeToString(preference.context, it) }
             .toTypedArray()
+        preference.summaryProvider = object : SummaryProvider<MultiSelectListPreference> {
+            override fun provideSummary(preference: MultiSelectListPreference): CharSequence {
+                return preference.values.mapNotNull { value ->
+                    val index = preference.entryValues.indexOf(value)
+                    if (index >= 0) preference.entries[index] else null
+                }.joinToString(", ")
+            }
+        }
 
         super.postInitView(preference)
     }
@@ -48,7 +57,6 @@ class NoiseCancellationListController(preferenceKey: String, device: BluetoothDe
 
         val modes = value!![position] ?: emptySet()
         preference.values = modes.map { it.name }.toSet()
-        preference.summary = modes.joinToString(", ") { modeToString(preference.context, it) }
 
         super.postUpdateValue(preference)
     }

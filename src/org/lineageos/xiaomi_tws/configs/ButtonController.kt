@@ -67,6 +67,7 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
         preference.entryValues = Function.entries
             .map { it.name }
             .toTypedArray()
+        preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
 
         super.postInitView(preference)
     }
@@ -76,7 +77,6 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
 
         val function = value!![position to type] ?: Function.Disabled
         preference.value = function.name
-        preference.summary = functionToString(preference.context, function)
 
         super.postUpdateValue(preference)
     }
