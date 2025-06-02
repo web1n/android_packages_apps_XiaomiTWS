@@ -146,6 +146,7 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
     private fun setupPreferenceListener(preference: Preference) {
         preference.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { p, newValue ->
+                if (!p.isEnabled || !p.isSelectable) return@OnPreferenceChangeListener false
                 findController(p)?.let { controller ->
                     handlePreferenceChange(controller, preference, newValue)
                 }
