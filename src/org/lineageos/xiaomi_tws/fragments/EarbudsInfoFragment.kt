@@ -87,7 +87,10 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
         if (DEBUG) Log.d(TAG, "reloadConfig")
 
         configControllers.forEach { controller ->
-            findPreference(controller)?.let { controller.preInitView(it) }
+            findPreference(controller)?.let {
+                controller.preInitView(it)
+                it.isVisible = true
+            }
         }
 
         coroutineScope.launch {
