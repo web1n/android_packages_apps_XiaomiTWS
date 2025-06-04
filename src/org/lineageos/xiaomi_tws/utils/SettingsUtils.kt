@@ -34,10 +34,19 @@ class SettingsUtils private constructor(context: Context) {
         putBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", enabled)
     }
 
+    fun isSwitchDeviceAllowed(device: BluetoothDevice): Boolean {
+        return getBoolean("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", false)
+    }
+
+    fun setSwitchDeviceAllowed(device: BluetoothDevice, enabled: Boolean) {
+        putBoolean("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", enabled)
+    }
+
     companion object {
         private const val KEY_ENABLE_SYSTEM_INTEGRATION = "enable_system_integration"
         private const val KEY_ENABLE_NOTIFICATION = "enable_notification"
         private const val KEY_ENABLE_AUTO_SWITCH_DEVICE = "enable_auto_switch_device"
+        private const val KEY_ALLOW_SWITCH_DEVICE = "allow_switch_device"
 
         @Volatile
         private var INSTANCE: SettingsUtils? = null

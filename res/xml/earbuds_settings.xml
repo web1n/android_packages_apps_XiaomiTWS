@@ -110,6 +110,12 @@
             android:title="@string/multi_connect"
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
 
+        <SwitchPreference
+            android:key="allow_switch_device"
+            android:summary="@string/allow_switch_device_summary"
+            android:title="@string/allow_switch_device"
+            app:controller="org.lineageos.xiaomi_tws.configs.AllowSwitchDeviceController" />
+
         <Preference
             android:key="device_info"
             android:title="@string/device_info"

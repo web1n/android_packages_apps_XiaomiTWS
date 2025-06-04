@@ -70,6 +70,9 @@
     <string name="multi_connect">多点连接</string>
     <string name="multi_connect_summary">耳机可同时连接多个设备</string>
 
+    <string name="allow_switch_device">允许其他设备连接</string>
+    <string name="allow_switch_device_summary">允许被其他已配对本耳机的设备抢占</string>
+
     <string name="device_info">设备信息</string>
 
     <string name="serial_number">序列号</string>
