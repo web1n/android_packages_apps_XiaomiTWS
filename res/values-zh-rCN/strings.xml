@@ -24,6 +24,7 @@
 
     <string name="earbuds_settings_general">常规</string>
     <string name="earbuds_settings_gestures">手势</string>
+    <string name="earbuds_settings_multi_devices">多设备</string>
     <string name="earbuds_settings_advanced">高级</string>
 
     <string name="equalizer_mode">均衡器模式</string>

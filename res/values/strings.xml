@@ -24,6 +24,7 @@
 
     <string name="earbuds_settings_general">General</string>
     <string name="earbuds_settings_gestures">Gestures</string>
+    <string name="earbuds_settings_multi_devices">Multi Devices</string>
     <string name="earbuds_settings_advanced">Advanced</string>
 
     <string name="equalizer_mode">Equalizer mode</string>

@@ -94,15 +94,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="advanced"
-        android:title="@string/earbuds_settings_advanced">
-
-        <SwitchPreference
-            android:key="find_earbuds"
-            android:summaryOff="@string/find_earbuds_off"
-            android:summaryOn="@string/find_earbuds_on"
-            android:title="@string/find_earbuds"
-            app:controller="org.lineageos.xiaomi_tws.configs.FindEarbudsController" />
+        android:key="multi_devices"
+        android:title="@string/earbuds_settings_multi_devices">
 
         <SwitchPreference
             android:key="multi_connect"
@@ -122,6 +115,19 @@
             android:summary="@string/auto_connect_device_summary"
             android:title="@string/auto_connect_device"
             app:controller="org.lineageos.xiaomi_tws.configs.AutoConnectDeviceController" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="advanced"
+        android:title="@string/earbuds_settings_advanced">
+
+        <SwitchPreference
+            android:key="find_earbuds"
+            android:summaryOff="@string/find_earbuds_off"
+            android:summaryOn="@string/find_earbuds_on"
+            android:title="@string/find_earbuds"
+            app:controller="org.lineageos.xiaomi_tws.configs.FindEarbudsController" />
 
         <Preference
             android:key="device_info"
