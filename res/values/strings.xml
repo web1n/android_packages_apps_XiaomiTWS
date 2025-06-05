@@ -73,6 +73,9 @@
     <string name="allow_switch_device">Allow other devices to connect</string>
     <string name="allow_switch_device_summary">Allow other paired devices to take over this earbuds connection</string>
 
+    <string name="auto_connect_device">Auto connect to earbuds</string>
+    <string name="auto_connect_device_summary">Automatically take over earbuds connection when playing media</string>
+
     <string name="device_info">Device Info</string>
 
     <string name="serial_number">Serial number</string>

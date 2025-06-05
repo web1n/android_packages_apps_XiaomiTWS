@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_tws.mma
+package org.lineageos.xiaomi_tws.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -31,17 +31,21 @@ class HeadsetManager private constructor(private val context: Context) {
         }
     }
 
-    fun startListening() {
+    fun initProxy() {
         adapter.getProfileProxy(context, profileListener, BluetoothProfile.HEADSET)
     }
 
-    fun stopListening() {
+    fun closeProxy() {
         adapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
         bluetoothHeadset = null
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun sendXiaomiATCommand(device: BluetoothDevice, arg: String): Boolean {
+        if (!SUPPORT_XIAOMI_AT_COMMAND) {
+            Log.w(TAG, "Rom doesn't support Xiaomi AT Command")
+        }
+
         val result = bluetoothHeadset?.sendVendorSpecificResultCode(
             device,
             AT_COMMAND_XIAOMI,
