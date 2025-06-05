@@ -116,6 +116,13 @@
             android:title="@string/allow_switch_device"
             app:controller="org.lineageos.xiaomi_tws.configs.AllowSwitchDeviceController" />
 
+        <SwitchPreference
+            android:dependency="allow_switch_device"
+            android:key="auto_connect_device"
+            android:summary="@string/auto_connect_device_summary"
+            android:title="@string/auto_connect_device"
+            app:controller="org.lineageos.xiaomi_tws.configs.AutoConnectDeviceController" />
+
         <Preference
             android:key="device_info"
             android:title="@string/device_info"

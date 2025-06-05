@@ -73,6 +73,9 @@
     <string name="allow_switch_device">允许其他设备连接</string>
     <string name="allow_switch_device_summary">允许被其他已配对本耳机的设备抢占</string>
 
+    <string name="auto_connect_device">自动连接到耳机</string>
+    <string name="auto_connect_device_summary">当播放媒体时，自动抢占已连接到其他设备的本耳机</string>
+
     <string name="device_info">设备信息</string>
 
     <string name="serial_number">序列号</string>

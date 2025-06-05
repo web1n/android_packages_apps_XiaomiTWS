@@ -2,16 +2,24 @@ package org.lineageos.xiaomi_tws
 
 import android.annotation.SuppressLint
 import android.app.Service
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.PowerManager
 import android.util.Log
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
-import org.lineageos.xiaomi_tws.mma.HeadsetManager
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
+import org.lineageos.xiaomi_tws.utils.HeadsetManager
 import org.lineageos.xiaomi_tws.utils.MediaManager
+import org.lineageos.xiaomi_tws.utils.MediaManager.MediaPlayingListener
+import org.lineageos.xiaomi_tws.utils.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
@@ -20,13 +28,14 @@ class EarbudsService : Service() {
 
     private val mmaManager: MMAManager by lazy { MMAManager.getInstance(this) }
     private val headsetManager: HeadsetManager by lazy { HeadsetManager.getInstance(this) }
+    private val nearbyDeviceScanner: NearbyDeviceScanner by lazy { NearbyDeviceScanner(this) }
     private val mediaManager: MediaManager by lazy { MediaManager(this) }
     private val settingsUtils: SettingsUtils by lazy { SettingsUtils.getInstance(this) }
 
     private val mmaListener = object : MMAListener {
         override fun onDeviceEvent(event: DeviceEvent) {
             when (event) {
-                is DeviceEvent.Connected -> updateStatue(event.device)
+                is DeviceEvent.Connected -> updateStatus(event.device)
                 is DeviceEvent.Disconnected -> cancelNotification(event.device)
                 is DeviceEvent.BatteryChanged -> updateBattery(event.battery)
                 is DeviceEvent.InEarStateChanged ->
@@ -37,29 +46,120 @@ class EarbudsService : Service() {
         }
     }
 
+    private val deviceStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = updateNearbyScanStatus()
+    }
+
+    private val mediaPlayingListener = object : MediaPlayingListener {
+        override fun onAnyMediaPlaying() = tryConnectNearbyDevice()
+    }
+
+    private val nearbyDeviceListener = object : NearbyDeviceScanner.NearbyDeviceListener {
+        override fun onDevicesChanged(devices: Set<NearbyDeviceScanner.NearbyDevice>) {
+            if (DEBUG) Log.d(TAG, "Nearby devices changed: ${devices.joinToString()}")
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         if (DEBUG) Log.d(TAG, "onCreate")
 
-        mediaManager.startScan()
-        headsetManager.startListening()
-        mmaManager.startBluetoothStateListening()
-        mmaManager.registerConnectionListener(mmaListener)
+        registerStateListener()
+        registerFastConnectListener()
+        registerMediaManager()
+        initHeadsetProxy()
+        registerMMAManager()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (DEBUG) Log.d(TAG, "onDestroy")
 
+        unregisterStateListener()
+        unregisterFastConnectListener()
+        unregisterMediaManager()
+        closeHeadsetProxy()
+        unregisterMMAManager()
+    }
+
+    private fun registerStateListener() {
+        val intentFilter = IntentFilter().apply {
+            addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
+        }
+        registerReceiver(deviceStateReceiver, intentFilter, RECEIVER_EXPORTED)
+    }
+
+    private fun unregisterStateListener() = unregisterReceiver(deviceStateReceiver)
+
+    private fun registerFastConnectListener() {
+        nearbyDeviceScanner.registerNearbyListener(nearbyDeviceListener)
+        updateNearbyScanStatus()
+    }
+
+    private fun unregisterFastConnectListener() {
+        nearbyDeviceScanner.unregisterNearbyListener(nearbyDeviceListener)
+        nearbyDeviceScanner.stopScan()
+    }
+
+    private fun registerMediaManager() {
+        mediaManager.addPlayingListener(mediaPlayingListener)
+        mediaManager.startScan()
+    }
+
+    private fun unregisterMediaManager() {
+        mediaManager.removeListener(mediaPlayingListener)
         mediaManager.stopScan()
-        headsetManager.stopListening()
-        mmaManager.stopBluetoothStateListening()
+    }
+
+    private fun initHeadsetProxy() = headsetManager.initProxy()
+    private fun closeHeadsetProxy() = headsetManager.closeProxy()
+
+    private fun registerMMAManager() {
+        mmaManager.registerConnectionListener(mmaListener)
+        mmaManager.startBluetoothStateListening()
+    }
+
+    private fun unregisterMMAManager() {
         mmaManager.unregisterConnectionListener(mmaListener)
+        mmaManager.stopBluetoothStateListening()
     }
 
     override fun onBind(intent: Intent) = null
 
-    private fun updateStatue(device: BluetoothDevice) {
+    private fun updateNearbyScanStatus() {
+        val isLeEnabled =
+            getSystemService(BluetoothManager::class.java)?.adapter?.isLeEnabled == true
+        val isInteractive = getSystemService(PowerManager::class.java).isInteractive
+        val anyDeviceAutoConnectEnabled =
+            BluetoothUtils.headsetA2DPDevices.any { settingsUtils.isAutoConnectDeviceEnabled(it) }
+        val anyDeviceConnected = BluetoothUtils.connectedHeadsetA2DPDevices.isNotEmpty()
+
+        if (isLeEnabled && isInteractive && anyDeviceAutoConnectEnabled && !anyDeviceConnected) {
+            if (!nearbyDeviceScanner.isScanning()) nearbyDeviceScanner.startScan()
+        } else {
+            if (nearbyDeviceScanner.isScanning()) nearbyDeviceScanner.stopScan()
+        }
+    }
+
+    private fun tryConnectNearbyDevice() {
+        val anyDeviceConnected = BluetoothUtils.connectedHeadsetA2DPDevices.isNotEmpty()
+        if (anyDeviceConnected) return
+
+        val device = nearbyDeviceScanner.devices
+            .filter { it.device.bondState == BluetoothDevice.BOND_BONDED }
+            .filter { !it.device.isConnected }
+            .find { settingsUtils.isAutoConnectDeviceEnabled(it.device) }
+            ?.device ?: return
+
+        if (DEBUG) Log.d(TAG, "Find bonded device, try connect: $device")
+        device.runCatching { connect() }
+    }
+
+    private fun updateStatus(device: BluetoothDevice) {
         headsetManager.sendSwitchDeviceAllowed(device, settingsUtils.isSwitchDeviceAllowed(device))
     }
 
