@@ -7,6 +7,7 @@ A comprehensive Android application that seamlessly integrates Xiaomi TWS (True 
 - **Battery Monitoring**: Real-time battery level reporting for both earbuds and charging case
 - **Audio Enhancement**: Advanced equalizer configuration with multiple presets
 - **Automatic Media Switching**: Intelligent audio switching - switches to local audio when both earbuds are removed, switches back to earbuds when either earbud is worn
+- **Automatic Device Switching**: Automatically take over earbuds from other connected devices when playing media on this device
 - **Noise Control**: Intelligent switching between noise cancellation and transparency modes
 - **Gesture Customization**: Full customization of touch controls including:
   - Single tap, double tap, triple tap actions
@@ -34,6 +35,10 @@ A comprehensive Android application that seamlessly integrates Xiaomi TWS (True 
    PRODUCT_PACKAGES += \
        XiaomiTWS
    ```
+3. [OPTIONAL] Add commit for `android_packages_modules_Bluetooth`: [Add support for Xiaomi TWS headset commands](https://github.com/web1n/android_packages_modules_Bluetooth/commit/0df13bbf2b70301003e422dccdd9f48520a80260).
+
+> **Note**: Without this commit, most features will still work except for:
+> - Automatic Device Switching
 
 ## Screenshots
 
