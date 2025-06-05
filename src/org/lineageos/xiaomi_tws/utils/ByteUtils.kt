@@ -21,8 +21,8 @@ object ByteUtils {
         return (this and 0xFF).toByte()
     }
 
-    fun ByteArray.toHexString(): String {
-        return joinToString("") { "%02X".format(it) }
+    fun ByteArray.toHexString(separator: String = ""): String {
+        return joinToString(separator) { "%02X".format(it) }
     }
 
     fun String.hexToBytes(): ByteArray {
