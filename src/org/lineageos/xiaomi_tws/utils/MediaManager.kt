@@ -4,42 +4,127 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
 import android.media.session.PlaybackState.STATE_PLAYING
 import android.util.Log
 import com.android.settingslib.media.BluetoothMediaDevice
 import com.android.settingslib.media.LocalMediaManager
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE
+import java.util.concurrent.ConcurrentHashMap
 
-class MediaManager(context: Context) : LocalMediaManager.DeviceCallback {
+class MediaManager(context: Context) : LocalMediaManager.DeviceCallback, MediaController.Callback(),
+    MediaSessionManager.OnActiveSessionsChangedListener {
+
+    interface MediaPlayingListener {
+        fun onAnyMediaPlaying()
+    }
 
     private val localMediaManager = LocalMediaManager(context, context.packageName)
     private val mediaSessionManager = context.getSystemService(MediaSessionManager::class.java)
 
-    private val mediaDevices = ArrayList<MediaDevice>()
+    private val mediaDevices = ConcurrentHashMap.newKeySet<MediaDevice>()
+    private val mediaPlayingListeners = ConcurrentHashMap.newKeySet<MediaPlayingListener>()
+    private val registeredMediaControllers = ConcurrentHashMap.newKeySet<MediaController>()
 
     override fun onDeviceListUpdate(devices: List<MediaDevice>) {
-        synchronized(mediaDevices) {
-            mediaDevices.clear()
-            mediaDevices.addAll(devices)
+        mediaDevices.clear()
+        mediaDevices.addAll(devices)
+    }
+
+    override fun onActiveSessionsChanged(controllers: List<MediaController>?) {
+        unregisterAllMediaControllers()
+
+        controllers?.forEach {
+            it.registerCallback(this@MediaManager)
+            registeredMediaControllers.add(it)
         }
+    }
+
+    override fun onPlaybackStateChanged(state: PlaybackState?) {
+        val anyPlaying = mediaSessionManager.getActiveSessions(null).any { it.isPlaying() }
+        if (anyPlaying) notifyPlayingListeners()
     }
 
     fun startScan() {
-        try {
-            localMediaManager.registerCallback(this)
-            localMediaManager.startScan()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start media scan", e)
-        }
+        if (DEBUG) Log.d(TAG, "Starting media scan")
+
+        registerMediaSessionManager()
+        registerLocalMediaManager()
     }
 
     fun stopScan() {
-        try {
-            localMediaManager.unregisterCallback(this)
-            localMediaManager.stopScan()
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to stop media scan", e)
+        if (DEBUG) Log.d(TAG, "Stopping media scan")
+
+        unregisterMediaSessionManager()
+        unregisterLocalMediaManager()
+        mediaDevices.clear()
+    }
+
+    private fun registerMediaSessionManager() {
+        mediaSessionManager.runCatching {
+            addOnActiveSessionsChangedListener(this@MediaManager, null)
+
+            onActiveSessionsChanged(getActiveSessions(null))
+        }.onFailure {
+            Log.e(TAG, "Failed to init media session manager", it)
+        }
+    }
+
+    private fun registerLocalMediaManager() {
+        localMediaManager.runCatching {
+            registerCallback(this@MediaManager)
+            startScan()
+        }.onFailure {
+            Log.e(TAG, "Failed to init local media manager", it)
+        }
+    }
+
+    private fun unregisterMediaSessionManager() {
+        unregisterAllMediaControllers()
+
+        mediaSessionManager.runCatching {
+            removeOnActiveSessionsChangedListener(this@MediaManager)
+        }.onFailure {
+            Log.e(TAG, "Failed to cleanup media session manager", it)
+        }
+    }
+
+    private fun unregisterLocalMediaManager() {
+        localMediaManager.runCatching {
+            unregisterCallback(this@MediaManager)
+            stopScan()
+        }.onFailure {
+            Log.e(TAG, "Failed to cleanup local media manager", it)
+        }
+    }
+
+    private fun unregisterAllMediaControllers() {
+        registeredMediaControllers.forEach { controller ->
+            controller.runCatching {
+                unregisterCallback(this@MediaManager)
+            }.onFailure {
+                Log.w(TAG, "Failed to unregister controller: $controller", it)
+            }
+        }
+        registeredMediaControllers.clear()
+    }
+
+    fun addPlayingListener(listener: MediaPlayingListener) {
+        mediaPlayingListeners.add(listener)
+    }
+
+    fun removeListener(listener: MediaPlayingListener) {
+        mediaPlayingListeners.remove(listener)
+    }
+
+    private fun notifyPlayingListeners() {
+        mediaPlayingListeners.forEach { listener ->
+            listener.runCatching {
+                onAnyMediaPlaying()
+            }.onFailure {
+                Log.e(TAG, "Error notifying listener: $listener", it)
+            }
         }
     }
 
@@ -58,7 +143,7 @@ class MediaManager(context: Context) : LocalMediaManager.DeviceCallback {
         }
 
         return try {
-            return localMediaManager.connectDevice(mediaDevice)
+            localMediaManager.connectDevice(mediaDevice)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to transfer media to device $mediaDevice", e)
             false
