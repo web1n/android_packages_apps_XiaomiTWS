@@ -168,7 +168,7 @@ class NearbyDeviceScanner(context: Context) {
 
         private val FAST_CONNECT_FILTERS = listOf(
             ScanFilter.Builder()
-                .setManufacturerData(XIAOMI_MANUFACTURER_ID, null)
+                .setManufacturerData(XIAOMI_MANUFACTURER_ID, byteArrayOf(0x16, 0x01))
                 .build()
         )
         private val FAST_CONNECT_SETTINGS = ScanSettings.Builder()
