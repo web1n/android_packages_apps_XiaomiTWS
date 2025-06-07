@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.experimental.and
 
-class NearbyDeviceScanner(context: Context) {
+class NearbyDeviceScanner private constructor(context: Context) {
 
     interface NearbyDeviceListener {
         fun onDevicesChanged(devices: Set<NearbyDevice>)
@@ -178,5 +178,14 @@ class NearbyDeviceScanner(context: Context) {
             .setNumOfMatches(ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT)
             .setReportDelay(SCAN_REPORT_DELAY)
             .build()
+
+        @Volatile
+        private var instance: NearbyDeviceScanner? = null
+
+        fun getInstance(context: Context) = instance ?: synchronized(this) {
+            instance ?: NearbyDeviceScanner(context.applicationContext).also {
+                instance = it
+            }
+        }
     }
 }

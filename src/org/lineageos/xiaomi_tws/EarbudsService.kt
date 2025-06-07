@@ -28,7 +28,9 @@ class EarbudsService : Service() {
 
     private val mmaManager: MMAManager by lazy { MMAManager.getInstance(this) }
     private val headsetManager: HeadsetManager by lazy { HeadsetManager.getInstance(this) }
-    private val nearbyDeviceScanner: NearbyDeviceScanner by lazy { NearbyDeviceScanner(this) }
+    private val nearbyDeviceScanner: NearbyDeviceScanner by lazy {
+        NearbyDeviceScanner.getInstance(this)
+    }
     private val mediaManager: MediaManager by lazy { MediaManager(this) }
     private val settingsUtils: SettingsUtils by lazy { SettingsUtils.getInstance(this) }
 
