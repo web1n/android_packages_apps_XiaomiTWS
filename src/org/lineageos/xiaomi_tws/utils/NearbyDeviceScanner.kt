@@ -116,7 +116,7 @@ class NearbyDeviceScanner(context: Context) {
         }
 
         isScanning.set(false)
-        devices.clear()
+        notifyNewDevices(emptySet())
     }
 
     fun isScanning() = isScanning.get()
