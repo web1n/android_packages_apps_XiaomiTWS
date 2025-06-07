@@ -17,6 +17,7 @@
     <string name="earbuds_list_enable_system_integration_summary">When disabled, all Xiaomi earbuds related functions will be turned off, including earbuds status detection, battery reporting and earbuds management. Restart required to take effect</string>
     <string name="earbuds_list_enable_notification">Enable notification</string>
     <string name="earbuds_list_enable_notification_summary">Send notification when earbuds status changes</string>
+    <string name="earbuds_list_enable_ble_scan">Enable ble scan</string>
     <!-- Earbuds list activity end -->
 
     <!-- Earbuds settings activity start -->
@@ -76,6 +77,7 @@
 
     <string name="auto_connect_device">Auto connect to earbuds</string>
     <string name="auto_connect_device_summary">Automatically take over earbuds connection when playing media</string>
+    <string name="auto_connect_device_summary_ble_scan_disabled">Ble scan disabled</string>
 
     <string name="device_info">Device Info</string>
 

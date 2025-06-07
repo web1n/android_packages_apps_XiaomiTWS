@@ -26,6 +26,10 @@ class SettingsUtils private constructor(context: Context) {
         get() = getBoolean(KEY_ENABLE_NOTIFICATION, true)
         set(value) = putBoolean(KEY_ENABLE_NOTIFICATION, value)
 
+    var enableBleScan: Boolean
+        get() = getBoolean(KEY_ENABLE_BLE_SCAN, true)
+        set(value) = putBoolean(KEY_ENABLE_BLE_SCAN, value)
+
     fun isAutoSwitchDeviceEnabled(device: BluetoothDevice): Boolean {
         return getBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", false)
     }
@@ -53,6 +57,8 @@ class SettingsUtils private constructor(context: Context) {
     companion object {
         private const val KEY_ENABLE_SYSTEM_INTEGRATION = "enable_system_integration"
         private const val KEY_ENABLE_NOTIFICATION = "enable_notification"
+        private const val KEY_ENABLE_BLE_SCAN = "enable_ble_scan"
+
         private const val KEY_ENABLE_AUTO_SWITCH_DEVICE = "enable_auto_switch_device"
         private const val KEY_ALLOW_SWITCH_DEVICE = "allow_switch_device"
         private const val KEY_ENABLE_AUTO_CONNECT_DEVICE = "enable_auto_connect_device"

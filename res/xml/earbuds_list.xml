@@ -29,6 +29,11 @@
             android:summary="@string/earbuds_list_enable_notification_summary"
             android:title="@string/earbuds_list_enable_notification" />
 
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="enable_ble_scan"
+            android:title="@string/earbuds_list_enable_ble_scan" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

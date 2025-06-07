@@ -17,6 +17,7 @@
     <string name="earbuds_list_enable_system_integration_summary">禁用后，所有小米耳机相关功能将被关闭，包括耳机状态检测、电量报告和耳机管理等。重启生效</string>
     <string name="earbuds_list_enable_notification">启用通知</string>
     <string name="earbuds_list_enable_notification_summary">耳机状态更改后发送通知</string>
+    <string name="earbuds_list_enable_ble_scan">启用蓝牙扫描</string>
     <!-- Earbuds list activity end -->
 
     <!-- Earbuds settings activity start -->
@@ -76,6 +77,7 @@
 
     <string name="auto_connect_device">自动连接到耳机</string>
     <string name="auto_connect_device_summary">当播放媒体时，自动抢占已连接到其他设备的本耳机</string>
+    <string name="auto_connect_device_summary_ble_scan_disabled">蓝牙扫描已禁用</string>
 
     <string name="device_info">设备信息</string>
 

@@ -85,8 +85,6 @@ class EarbudsService : Service() {
     private fun registerStateListener() {
         val intentFilter = IntentFilter().apply {
             addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
-            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
-            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
         }
@@ -134,11 +132,9 @@ class EarbudsService : Service() {
         val isLeEnabled =
             getSystemService(BluetoothManager::class.java)?.adapter?.isLeEnabled == true
         val isInteractive = getSystemService(PowerManager::class.java).isInteractive
-        val anyDeviceAutoConnectEnabled =
-            BluetoothUtils.headsetA2DPDevices.any { settingsUtils.isAutoConnectDeviceEnabled(it) }
-        val anyDeviceConnected = BluetoothUtils.connectedHeadsetA2DPDevices.isNotEmpty()
+        val bleScanEnabled = settingsUtils.enableBleScan
 
-        if (isLeEnabled && isInteractive && anyDeviceAutoConnectEnabled && !anyDeviceConnected) {
+        if (isLeEnabled && isInteractive && bleScanEnabled) {
             if (!nearbyDeviceScanner.isScanning()) nearbyDeviceScanner.startScan()
         } else {
             if (nearbyDeviceScanner.isScanning()) nearbyDeviceScanner.stopScan()
