@@ -72,9 +72,6 @@ class MMAManager private constructor(private val context: Context) {
         if (mmaDevices.containsKey(device.address)) {
             return@launch
         }
-        if (!BluetoothUtils.isHeadsetA2DPDevice(device)) {
-            return@launch
-        }
 
         val mma = MMADevice(device)
         mma.runCatching {
