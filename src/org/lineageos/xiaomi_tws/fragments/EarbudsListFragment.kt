@@ -115,9 +115,6 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
         devices.forEach { device ->
             val state = determineDeviceState(device)
-            if (state == EarbudsState.NEARBY || state == EarbudsState.UNKNOWN) {
-                return@forEach
-            }
 
             updateUI {
                 val preference = EarbudsPreference(requireContext(), device).apply {
