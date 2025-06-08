@@ -122,6 +122,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             updateUI {
                 val preference = EarbudsPreference(requireContext(), device).apply {
                     this.state = state
+                    title = getDeviceName(device)
                 }
                 earbudsListCategory.addPreference(preference)
             }
@@ -143,6 +144,13 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             isBonded -> EarbudsState.BONDED
             else -> EarbudsState.UNKNOWN
         }
+    }
+
+    private fun getDeviceName(device: BluetoothDevice): String {
+        return device.alias
+            ?: device.name
+            ?: nearbyDeviceScanner.devices.find { it.device == device }?.name
+            ?: device.address
     }
 
     private fun updateEmptyState() {
