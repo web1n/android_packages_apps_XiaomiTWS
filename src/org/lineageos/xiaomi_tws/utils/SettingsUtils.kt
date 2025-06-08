@@ -27,7 +27,7 @@ class SettingsUtils private constructor(context: Context) {
         set(value) = putBoolean(KEY_ENABLE_NOTIFICATION, value)
 
     var enableBleScan: Boolean
-        get() = getBoolean(KEY_ENABLE_BLE_SCAN, true)
+        get() = getBoolean(KEY_ENABLE_BLE_SCAN, false)
         set(value) = putBoolean(KEY_ENABLE_BLE_SCAN, value)
 
     fun isAutoSwitchDeviceEnabled(device: BluetoothDevice): Boolean {
