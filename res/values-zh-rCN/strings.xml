@@ -7,7 +7,9 @@
     <string name="earbuds_list_title">小米耳机</string>
     <string name="earbuds_list_category">耳机列表</string>
     <string name="earbuds_list_device_disconnected">未连接</string>
-    <string name="earbuds_list_device_connecting">正在连接</string>
+    <string name="earbuds_list_device_connected">已连接</string>
+    <string name="earbuds_list_device_nearby">在附近，未配对</string>
+    <string name="earbuds_list_device_nearby_bonded">在附近，未连接</string>
     <string name="earbuds_list_empty">未找到耳机</string>
     <string name="earbuds_list_empty_summary">请确保您的小米耳机支持 MMA 协议且已配对连接</string>
     <string name="earbuds_list_empty_summary_system_integration_disabled">系统集成已禁用</string>

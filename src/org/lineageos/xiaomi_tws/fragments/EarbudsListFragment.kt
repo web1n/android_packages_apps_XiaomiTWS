@@ -1,51 +1,48 @@
 package org.lineageos.xiaomi_tws.fragments
 
 import android.bluetooth.BluetoothDevice
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.PersistentApplication.Companion.enableSystemIntegration
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.nearby.NearbyDevice
+import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
+import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
+import org.lineageos.xiaomi_tws.widgets.EarbudsPreference
+import org.lineageos.xiaomi_tws.widgets.EarbudsPreference.EarbudsState
 
 class EarbudsListFragment : PreferenceFragmentCompat() {
 
-    private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
+    private val mmaManager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
+    private val nearbyDeviceScanner by lazy { NearbyDeviceScanner.getInstance(requireContext()) }
+
     private val mmaListener = object : MMAListener {
         override fun onDeviceEvent(event: DeviceEvent) {
-            when (event) {
-                is DeviceEvent.Connected -> {
-                    addOrUpdatePreference(event.device)
-                    fetchBatteryInfo(event.device)
-                }
-
-                is DeviceEvent.Disconnected -> addOrUpdatePreference(event.device)
-                is DeviceEvent.BatteryChanged -> addOrUpdatePreference(event.device, event.battery)
-                else -> {}
+            if (event is DeviceEvent.Connected || event is DeviceEvent.Disconnected) {
+                updateMMADevice(event.device, event is DeviceEvent.Connected)
             }
         }
     }
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
+    private val nearbyDeviceListener = object : NearbyDeviceListener {
+        override fun onDevicesChanged(devices: Set<NearbyDevice>) = updateNearbyDevices(devices)
+    }
 
     private val earbudsListCategory: PreferenceCategory
         get() = findPreference(KEY_EARBUDS_LIST)!!
 
     private val emptyStatePreference: Preference
         get() = findPreference(KEY_EARBUDS_LIST_EMPTY)!!
+
+    private val mmaDevices = mutableSetOf<BluetoothDevice>()
+    private val nearbyDevices = mutableSetOf<BluetoothDevice>()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -60,10 +57,14 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             return
         }
 
-        earbudsListCategory.removeAll()
-        reloadLocalDevices()
+        mmaDevices.clear()
+        nearbyDevices.clear()
+        nearbyDevices.addAll(nearbyDeviceScanner.devices.map { it.device })
 
-        manager.registerConnectionListener(mmaListener)
+        updateDevicePreferences()
+
+        mmaManager.registerConnectionListener(mmaListener)
+        nearbyDeviceScanner.registerNearbyListener(nearbyDeviceListener)
     }
 
     override fun onPause() {
@@ -72,31 +73,8 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
             return
         }
 
-        manager.unregisterConnectionListener(mmaListener)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        coroutineScope.coroutineContext.cancel()
-    }
-
-    private fun reloadLocalDevices() {
-        if (DEBUG) Log.d(TAG, "reloadLocalDevices")
-
-        BluetoothUtils.headsetA2DPDevices.filter { device ->
-            context?.let { BluetoothUtils.isDeviceMetadataSet(it, device) } == true
-        }.forEach { device ->
-            addOrUpdatePreference(device)
-        }
-    }
-
-    private fun fetchBatteryInfo(device: BluetoothDevice) {
-        coroutineScope.launch {
-            val result = manager.runCatching { request(device, batteryInfo()) }.getOrElse { it }
-
-            updateUI { addOrUpdatePreference(device, result) }
-        }
+        mmaManager.unregisterConnectionListener(mmaListener)
+        nearbyDeviceScanner.unregisterNearbyListener(nearbyDeviceListener)
     }
 
     private fun updateUI(action: () -> Unit) {
@@ -109,42 +87,61 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun addOrUpdatePreference(device: BluetoothDevice, result: Any? = null) {
-        if (DEBUG) Log.d(TAG, "Adding or updating preference for: $device")
+    private fun updateMMADevice(device: BluetoothDevice, connected: Boolean) {
+        if (connected) {
+            mmaDevices.add(device)
+        } else {
+            mmaDevices.remove(device)
+        }
 
-        val earbudsPreference = findPreference(device.address) ?: addPreference(device)
-        updatePreference(earbudsPreference, device, result)
+        updateDevicePreferences()
     }
 
-    private fun addPreference(device: BluetoothDevice): Preference {
-        val preference = Preference(requireContext()).apply {
-            title = device.alias
-            key = device.address
-            intent = Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO).apply {
-                putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-                setPackage(requireContext().packageName)
+    private fun updateNearbyDevices(devices: Set<NearbyDevice>) {
+        if (DEBUG) Log.d(TAG, "updateNearbyDevices: ${devices.size} devices found")
+
+        nearbyDevices.clear()
+        nearbyDevices.addAll(devices.map { it.device })
+
+        updateDevicePreferences()
+    }
+
+    private fun updateDevicePreferences() {
+        updateUI { earbudsListCategory.removeAll() }
+
+        val localDevices = BluetoothUtils.headsetA2DPDevices
+            .filter { device -> BluetoothUtils.isDeviceMetadataSet(requireContext(), device) }
+        val devices = (mmaDevices + nearbyDevices + localDevices).toSet()
+
+        devices.forEach { device ->
+            val state = determineDeviceState(device)
+            if (state == EarbudsState.NEARBY || state == EarbudsState.UNKNOWN) {
+                return@forEach
+            }
+
+            updateUI {
+                val preference = EarbudsPreference(requireContext(), device).apply {
+                    this.state = state
+                }
+                earbudsListCategory.addPreference(preference)
             }
         }
-        earbudsListCategory.addPreference(preference)
 
         updateEmptyState()
-        return preference
     }
 
-    private fun updatePreference(
-        preference: Preference,
-        device: BluetoothDevice,
-        result: Any? = null
-    ) {
-        preference.isSelectable = result is Earbuds
-        preference.summary = if (device.isConnected) {
-            if (result != null) {
-                if (result is Earbuds) result.readableString else result.toString()
-            } else {
-                getString(R.string.earbuds_list_device_connecting)
-            }
-        } else {
-            getString(R.string.earbuds_list_device_disconnected)
+    private fun determineDeviceState(device: BluetoothDevice): EarbudsState {
+        val isMMA = device in mmaDevices
+        val isNearby = device in nearbyDevices
+        val isBonded = device.bondState == BluetoothDevice.BOND_BONDED
+
+        return when {
+            isNearby && isMMA -> EarbudsState.NEARBY_CONNECTED
+            isNearby && isBonded -> EarbudsState.NEARBY_BONDED
+            isMMA -> EarbudsState.CONNECTED
+            isNearby -> EarbudsState.NEARBY
+            isBonded -> EarbudsState.BONDED
+            else -> EarbudsState.UNKNOWN
         }
     }
 
