@@ -15,11 +15,13 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.nearby.NearbyDevice
+import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
+import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.HeadsetManager
 import org.lineageos.xiaomi_tws.utils.MediaManager
 import org.lineageos.xiaomi_tws.utils.MediaManager.MediaPlayingListener
-import org.lineageos.xiaomi_tws.utils.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
@@ -56,8 +58,8 @@ class EarbudsService : Service() {
         override fun onAnyMediaPlaying() = tryConnectNearbyDevice()
     }
 
-    private val nearbyDeviceListener = object : NearbyDeviceScanner.NearbyDeviceListener {
-        override fun onDevicesChanged(devices: Set<NearbyDeviceScanner.NearbyDevice>) {
+    private val nearbyDeviceListener = object : NearbyDeviceListener {
+        override fun onDevicesChanged(devices: Set<NearbyDevice>) {
             if (DEBUG) Log.d(TAG, "Nearby devices changed: ${devices.joinToString()}")
         }
     }
