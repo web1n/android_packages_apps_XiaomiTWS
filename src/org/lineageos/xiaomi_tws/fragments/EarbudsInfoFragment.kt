@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.configs.BaseConfigController
@@ -85,8 +86,9 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
 
     private fun reloadConfig() {
         if (DEBUG) Log.d(TAG, "reloadConfig")
+        val controllers = configControllers.toList()
 
-        configControllers.forEach { controller ->
+        controllers.forEach { controller ->
             findPreference(controller)?.let {
                 controller.preInitView(it)
                 it.isVisible = true
@@ -94,7 +96,9 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
         }
 
         coroutineScope.launch {
-            configControllers.forEach { controller ->
+            controllers.forEach { controller ->
+                if (!isActive) return@launch
+
                 val success = controller
                     .runCatching { initData(manager) }
                     .onFailure {
