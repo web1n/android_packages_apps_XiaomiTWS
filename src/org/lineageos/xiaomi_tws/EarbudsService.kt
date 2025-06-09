@@ -40,7 +40,7 @@ class EarbudsService : Service() {
         override fun onDeviceEvent(event: DeviceEvent) {
             when (event) {
                 is DeviceEvent.Connected -> updateStatus(event.device)
-                is DeviceEvent.Disconnected -> cancelNotification(event.device)
+                is DeviceEvent.Disconnected -> clearDevice(event.device)
                 is DeviceEvent.BatteryChanged -> updateBattery(event.battery)
                 is DeviceEvent.InEarStateChanged ->
                     switchMediaDevice(event.device, event.left, event.right)
@@ -163,13 +163,14 @@ class EarbudsService : Service() {
         headsetManager.sendSwitchDeviceAllowed(device, settingsUtils.isSwitchDeviceAllowed(device))
     }
 
-    private fun cancelNotification(device: BluetoothDevice) {
+    private fun clearDevice(device: BluetoothDevice) {
         NotificationUtils.cancelEarbudsNotification(this, device)
+        BluetoothUtils.updateDeviceBatteryMetadata(device, null)
     }
 
     private fun updateBattery(earbuds: Earbuds) {
         BluetoothUtils.updateDeviceTypeMetadata(this, earbuds.device)
-        BluetoothUtils.updateDeviceBatteryMetadata(earbuds)
+        BluetoothUtils.updateDeviceBatteryMetadata(earbuds.device, earbuds)
 
         if (settingsUtils.enableNotification) {
             NotificationUtils.updateEarbudsNotification(this, earbuds)

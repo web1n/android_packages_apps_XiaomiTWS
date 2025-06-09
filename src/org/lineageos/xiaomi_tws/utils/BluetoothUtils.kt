@@ -68,16 +68,16 @@ object BluetoothUtils {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_PRIVILEGED)
-    fun updateDeviceBatteryMetadata(earbuds: Earbuds) {
-        mapOf<Int, Any>(
-            BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING to earbuds.left.charging,
-            BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING to earbuds.right.charging,
-            BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING to earbuds.case.charging,
-            BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY to earbuds.left.battery,
-            BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY to earbuds.right.battery,
-            BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY to earbuds.case.battery,
-        ).forEach {
-            earbuds.device.setMetadata(it.key, it.value)
+    fun updateDeviceBatteryMetadata(device: BluetoothDevice, earbuds: Earbuds?) {
+        mapOf<Int, Any?>(
+            BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING to earbuds?.left?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING to earbuds?.right?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING to earbuds?.case?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY to earbuds?.left?.battery,
+            BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY to earbuds?.right?.battery,
+            BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY to earbuds?.case?.battery,
+        ).forEach { key, value ->
+            device.setMetadata(key, value ?: "")
         }
     }
 
