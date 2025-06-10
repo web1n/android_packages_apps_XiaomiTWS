@@ -146,7 +146,9 @@ class EarbudsService : Service() {
     }
 
     private fun tryConnectNearbyDevice() {
-        val anyDeviceConnected = BluetoothUtils.connectedHeadsetA2DPDevices.isNotEmpty()
+        val anyDeviceConnected = BluetoothUtils.bondedDevices.any {
+            it.isConnected && (BluetoothUtils.isA2dpDevice(it) || BluetoothUtils.isHeadsetDevice(it))
+        }
         if (anyDeviceConnected) return
 
         val device = nearbyDeviceScanner.devices

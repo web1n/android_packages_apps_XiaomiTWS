@@ -109,7 +109,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     private fun updateDevicePreferences() {
         updateUI { earbudsListCategory.removeAll() }
 
-        val localDevices = BluetoothUtils.headsetA2DPDevices
+        val localDevices = BluetoothUtils.bondedDevices
             .filter { device -> BluetoothUtils.isDeviceMetadataSet(requireContext(), device) }
         val devices = (mmaDevices + nearbyDevices + localDevices).toSet()
 

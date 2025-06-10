@@ -15,24 +15,20 @@ object BluetoothUtils {
     private val TAG = BluetoothUtils::class.java.simpleName
 //    private const val DEBUG = true
 
-    val connectedHeadsetA2DPDevices: List<BluetoothDevice>
+    val bondedDevices: Set<BluetoothDevice>
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = headsetA2DPDevices.filter { it.isConnected }.toList()
-
-    val headsetA2DPDevices: List<BluetoothDevice>
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = BluetoothAdapter.getDefaultAdapter()?.bondedDevices
-            ?.filter { isHeadsetA2DPDevice(it) }?.toList().orEmpty()
+        get() = BluetoothAdapter.getDefaultAdapter()?.bondedDevices ?: emptySet()
 
     fun getBluetoothDevice(mac: String): BluetoothDevice {
         return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac)
     }
 
-    fun isHeadsetA2DPDevice(device: BluetoothDevice): Boolean {
-        return device.bluetoothClass?.run {
-            doesClassMatch(BluetoothClass.PROFILE_A2DP)
-                    && doesClassMatch(BluetoothClass.PROFILE_HEADSET)
-        } == true
+    fun isA2dpDevice(device: BluetoothDevice): Boolean {
+        return device.bluetoothClass?.doesClassMatch(BluetoothClass.PROFILE_A2DP) == true
+    }
+
+    fun isHeadsetDevice(device: BluetoothDevice): Boolean {
+        return device.bluetoothClass?.doesClassMatch(BluetoothClass.PROFILE_HEADSET) == true
     }
 
     fun Context.getBluetoothAdapter(): BluetoothAdapter {

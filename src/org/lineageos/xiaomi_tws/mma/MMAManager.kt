@@ -247,7 +247,9 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private fun processConnectedDevices() {
-        BluetoothUtils.connectedHeadsetA2DPDevices.forEach { handleDeviceConnected(it) }
+        BluetoothUtils.bondedDevices
+            .filter { it.isConnected && BluetoothUtils.isHeadsetDevice(it) }
+            .forEach { handleDeviceConnected(it) }
     }
 
     fun registerConnectionListener(listener: MMAListener) {
