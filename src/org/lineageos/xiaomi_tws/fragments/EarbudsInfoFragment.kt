@@ -55,8 +55,6 @@ class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.setStorageDeviceProtected()
-
         addPreferencesFromResource(R.xml.earbuds_settings)
     }
 

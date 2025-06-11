@@ -8,7 +8,7 @@ import androidx.preference.PreferenceManager
 class SettingsUtils private constructor(context: Context) {
 
     private val sharedPreferences: SharedPreferences =
-        PreferenceManager.getDefaultSharedPreferences(context.createDeviceProtectedStorageContext())
+        PreferenceManager.getDefaultSharedPreferences(context)
 
     private fun getBoolean(key: String, defaultValue: Boolean): Boolean {
         return sharedPreferences.getBoolean(key, defaultValue)

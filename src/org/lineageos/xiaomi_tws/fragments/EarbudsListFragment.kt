@@ -45,8 +45,6 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     private val nearbyDevices = mutableSetOf<BluetoothDevice>()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.setStorageDeviceProtected()
-
         addPreferencesFromResource(R.xml.earbuds_list)
     }
 
