@@ -2,9 +2,9 @@ package org.lineageos.xiaomi_tws.utils
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothClass
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothUuid
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.BleSliceProvider.Companion.generateSliceUri
@@ -23,12 +23,14 @@ object BluetoothUtils {
         return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac)
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun isA2dpDevice(device: BluetoothDevice): Boolean {
-        return device.bluetoothClass?.doesClassMatch(BluetoothClass.PROFILE_A2DP) == true
+        return device.uuids?.contains(BluetoothUuid.A2DP_SINK) == true
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun isHeadsetDevice(device: BluetoothDevice): Boolean {
-        return device.bluetoothClass?.doesClassMatch(BluetoothClass.PROFILE_HEADSET) == true
+        return device.uuids?.contains(BluetoothUuid.HFP) == true
     }
 
     fun Context.getBluetoothAdapter(): BluetoothAdapter {
