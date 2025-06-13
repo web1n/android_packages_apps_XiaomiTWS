@@ -162,6 +162,7 @@ class EarbudsService : Service() {
     }
 
     private fun updateStatus(device: BluetoothDevice) {
+        BluetoothUtils.updateDeviceTypeMetadata(this, device)
         headsetManager.sendSwitchDeviceAllowed(device, settingsUtils.isSwitchDeviceAllowed(device))
     }
 
@@ -171,7 +172,6 @@ class EarbudsService : Service() {
     }
 
     private fun updateBattery(earbuds: Earbuds) {
-        BluetoothUtils.updateDeviceTypeMetadata(this, earbuds.device)
         BluetoothUtils.updateDeviceBatteryMetadata(earbuds.device, earbuds)
 
         if (settingsUtils.enableNotification) {
