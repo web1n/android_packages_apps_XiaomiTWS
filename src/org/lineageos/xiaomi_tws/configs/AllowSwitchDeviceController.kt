@@ -20,9 +20,6 @@ class AllowSwitchDeviceController(preferenceKey: String, device: BluetoothDevice
     override fun postUpdateValue(preference: SwitchPreference) {
         preference.isChecked = SettingsUtils.getInstance(preference.context)
             .isSwitchDeviceAllowed(device)
-
-        preference.parent?.findPreference<SwitchPreference>("multi_connect")
-            ?.isEnabled = !preference.isChecked
     }
 
     override suspend fun onPreferenceChange(
