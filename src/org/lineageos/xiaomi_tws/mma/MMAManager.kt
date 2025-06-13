@@ -22,6 +22,7 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
@@ -80,7 +81,7 @@ class MMAManager private constructor(private val context: Context) {
             mmaDevices[device.address] = mma
 
             startReading(device)
-            dispatchEvent(DeviceEvent.Connected(device))
+            checkConnectionState(device)
         }.onFailure {
             Log.e(TAG, "Failed to connect device: ${device.address}", it)
             mma.close()
@@ -192,6 +193,18 @@ class MMAManager private constructor(private val context: Context) {
     private fun getDevice(device: BluetoothDevice): MMADevice {
         return checkNotNull(mmaDevices[device.address]) {
             "Device not connected: ${device.address}"
+        }
+    }
+
+    private fun checkConnectionState(device: BluetoothDevice) = coroutineScope.launch {
+        runCatching {
+            request(device, batteryInfo())
+        }.onSuccess { battery ->
+            dispatchEvent(DeviceEvent.Connected(device))
+            dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
+        }.onFailure { e ->
+            Log.w(TAG, "Failed to verify device connection: ${device.address}", e)
+            handleDeviceDisconnected(device)
         }
     }
 
