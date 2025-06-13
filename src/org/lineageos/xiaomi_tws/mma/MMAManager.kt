@@ -145,14 +145,11 @@ class MMAManager private constructor(private val context: Context) {
 
         when (notifyType) {
             XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
-                check(value.size == 3) { "Battery report length not 3, actual: ${value.size}" }
+                check(value.size >= 3) { "Not valid battery report length: ${value.size}" }
 
-                dispatchEvent(
-                    DeviceEvent.BatteryChanged(
-                        response.device,
-                        Earbuds.fromBytes(response.device.address, value[0], value[1], value[2])
-                    )
-                )
+                val battery =
+                    Earbuds.fromBytes(response.device.address, value[0], value[1], value[2])
+                dispatchEvent(DeviceEvent.BatteryChanged(response.device, battery))
             }
 
             else -> if (DEBUG) Log.d(
