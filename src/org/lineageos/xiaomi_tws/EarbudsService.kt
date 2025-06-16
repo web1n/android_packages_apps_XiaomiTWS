@@ -21,6 +21,7 @@ import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.HeadsetManager
 import org.lineageos.xiaomi_tws.utils.MediaManager
+import org.lineageos.xiaomi_tws.utils.MediaManager.Companion.isSelected
 import org.lineageos.xiaomi_tws.utils.MediaManager.MediaPlayingListener
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
@@ -146,10 +147,8 @@ class EarbudsService : Service() {
     }
 
     private fun tryConnectNearbyDevice() {
-        val anyDeviceConnected = BluetoothUtils.bondedDevices.any {
-            it.isConnected && (BluetoothUtils.isA2dpDevice(it) || BluetoothUtils.isHeadsetDevice(it))
-        }
-        if (anyDeviceConnected) return
+        val builtinDevice = mediaManager.getBuiltinMediaDevice() ?: return
+        if (!builtinDevice.isSelected()) return
 
         val device = nearbyDeviceScanner.devices
             .filter { it.device.bondState == BluetoothDevice.BOND_BONDED }
@@ -188,13 +187,29 @@ class EarbudsService : Service() {
             return
         }
 
-        if (leftInEar or rightInEar) {
-            mediaManager.getBluetoothMediaDevice(device)?.let { mediaManager.connectDevice(it) }
+        val builtinDevice = mediaManager.getBuiltinMediaDevice() ?: return
+        val bluetoothDevice = mediaManager.getBluetoothMediaDevice(device) ?: return
 
-            if (leftInEar and rightInEar) mediaManager.playMedia()
+        if (leftInEar or rightInEar) {
+            if (builtinDevice.isSelected()) {
+                if (DEBUG) Log.d(TAG, "Switching media device to ${bluetoothDevice.name}")
+                mediaManager.connectDevice(bluetoothDevice)
+            }
+
+            if (leftInEar and rightInEar) {
+                if (bluetoothDevice.isSelected()) {
+                    mediaManager.playMedia()
+                } else {
+                    if (DEBUG) Log.d(TAG, "Media device ${bluetoothDevice.name} not selected")
+                }
+            }
         } else {
-            mediaManager.pauseMedia()
-            mediaManager.getBuiltinMediaDevice()?.let { mediaManager.connectDevice(it) }
+            if (bluetoothDevice.isSelected()) {
+                mediaManager.pauseMedia()
+                mediaManager.connectDevice(builtinDevice)
+            } else {
+                if (DEBUG) Log.d(TAG, "Media device ${bluetoothDevice.name} not selected")
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import android.media.session.PlaybackState.STATE_PLAYING
 import android.util.Log
 import com.android.settingslib.media.BluetoothMediaDevice
 import com.android.settingslib.media.LocalMediaManager
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_SELECTED
 import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE
 import java.util.concurrent.ConcurrentHashMap
@@ -186,6 +187,7 @@ class MediaManager(context: Context) : LocalMediaManager.DeviceCallback, MediaCo
         private const val DEBUG = true
 
         private fun MediaController.isPlaying() = playbackState?.state == STATE_PLAYING
+        fun MediaDevice.isSelected() = state == STATE_SELECTED
     }
 
 }
