@@ -4,13 +4,18 @@ import android.bluetooth.BluetoothDevice
 import androidx.preference.SwitchPreference
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.utils.HeadsetManager.Companion.SUPPORT_XIAOMI_AT_COMMAND
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 class AutoConnectDeviceController(preferenceKey: String, device: BluetoothDevice) :
     BaseConfigController<SwitchPreference>(preferenceKey, device),
     BaseConfigController.OnPreferenceChangeListener<SwitchPreference, Boolean> {
 
-    override suspend fun initData(manager: MMAManager) {}
+    override suspend fun initData(manager: MMAManager) {
+        if (!SUPPORT_XIAOMI_AT_COMMAND) {
+            throw NotImplementedError("Xiaomi AT command not supported")
+        }
+    }
 
     override fun preInitView(preference: SwitchPreference) {
         super.preInitView(preference)
