@@ -42,7 +42,7 @@ class EarbudsService : Service() {
             when (event) {
                 is DeviceEvent.Connected -> updateStatus(event.device)
                 is DeviceEvent.Disconnected -> clearDevice(event.device)
-                is DeviceEvent.BatteryChanged -> updateBattery(event.battery)
+                is DeviceEvent.BatteryChanged -> updateBattery(event.device, event.battery)
                 is DeviceEvent.InEarStateChanged ->
                     switchMediaDevice(event.device, event.left, event.right)
 
@@ -170,11 +170,11 @@ class EarbudsService : Service() {
         BluetoothUtils.updateDeviceBatteryMetadata(device, null)
     }
 
-    private fun updateBattery(earbuds: Earbuds) {
-        BluetoothUtils.updateDeviceBatteryMetadata(earbuds.device, earbuds)
+    private fun updateBattery(device: BluetoothDevice, earbuds: Earbuds) {
+        BluetoothUtils.updateDeviceBatteryMetadata(device, earbuds)
 
         if (settingsUtils.enableNotification) {
-            NotificationUtils.updateEarbudsNotification(this, earbuds)
+            NotificationUtils.updateEarbudsNotification(this, device, earbuds)
         }
     }
 

@@ -60,7 +60,7 @@ class DeviceInfoRequestBuilder {
 
         fun batteryInfo(): MMARequestBuilder<Earbuds> {
             return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_BATTERY, 5) {
-                Earbuds.fromBytes(it.device.address, it.data[2], it.data[3], it.data[4])
+                Earbuds.fromBytes(it.data[2], it.data[3], it.data[4])
             }
         }
 

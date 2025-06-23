@@ -39,13 +39,13 @@ object NotificationUtils {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.POST_NOTIFICATIONS]
     )
-    fun updateEarbudsNotification(context: Context, earbuds: Earbuds) {
+    fun updateEarbudsNotification(context: Context, device: BluetoothDevice, earbuds: Earbuds) {
         createEarbudsNotificationChannel(context)
 
         if (earbuds.case.valid) {
-            createEarbudsNotification(context, earbuds)
+            createEarbudsNotification(context, device, earbuds)
         } else {
-            cancelEarbudsNotification(context, earbuds.device)
+            cancelEarbudsNotification(context, device)
         }
     }
 
@@ -54,7 +54,11 @@ object NotificationUtils {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.POST_NOTIFICATIONS]
     )
-    private fun createEarbudsNotification(context: Context, earbuds: Earbuds) = earbuds.run {
+    private fun createEarbudsNotification(
+        context: Context,
+        device: BluetoothDevice,
+        earbuds: Earbuds
+    ) = earbuds.run {
         val pendingIntent = Intent(ACTION_EARBUDS_INFO).apply {
             putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             setPackage(context.packageName)
@@ -73,7 +77,7 @@ object NotificationUtils {
         }.build()
 
         context.getSystemService(NotificationManager::class.java)
-            .notify(address.hashCode(), notification)
+            .notify(device.address.hashCode(), notification)
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
