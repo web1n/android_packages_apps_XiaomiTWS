@@ -37,12 +37,14 @@ import kotlin.coroutines.suspendCoroutine
 @SuppressLint("MissingPermission")
 class MMAManager private constructor(private val context: Context) {
 
+    private enum class DeviceStatus { Connected, Authing, Disconnected }
+
     private sealed class RequestResponse {
         data class Success(val packet: MMAPacket?) : RequestResponse()
         data class Error(val error: Throwable) : RequestResponse()
     }
 
-    private val mmaDevices = HashMap<String, MMADevice>()
+    private val mmaDevices = HashMap<String, Pair<MMADevice, DeviceStatus>>()
     private val responseFlows = ConcurrentHashMap<String, MutableSharedFlow<RequestResponse>>()
     private val connectionListeners = mutableListOf<MMAListener>()
 
@@ -76,7 +78,7 @@ class MMAManager private constructor(private val context: Context) {
         mma.runCatching {
             connect()
         }.onSuccess {
-            mmaDevices[device.address] = mma
+            mmaDevices[device.address] = mma to DeviceStatus.Authing
 
             startReading(device)
             checkConnectionState(device)
@@ -86,8 +88,16 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
+    private fun getConnectStatus(device: BluetoothDevice): DeviceStatus {
+        return mmaDevices[device.address]?.second ?: DeviceStatus.Disconnected
+    }
+
+    private fun updateConnectStatus(device: BluetoothDevice, status: DeviceStatus) {
+        mmaDevices.computeIfPresent(device.address) { address, (mma) -> mma to status }
+    }
+
     private fun handleDeviceDisconnected(device: BluetoothDevice) {
-        mmaDevices.remove(device.address)?.let { mma ->
+        mmaDevices.remove(device.address)?.let { (mma) ->
             if (DEBUG) Log.d(TAG, "Device disconnected: ${device.address}")
             mma.close()
 
@@ -184,15 +194,19 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private fun getDevice(device: BluetoothDevice): MMADevice {
-        return checkNotNull(mmaDevices[device.address]) {
+        return checkNotNull(mmaDevices[device.address]?.first) {
             "Device not connected: ${device.address}"
         }
     }
 
     private fun checkConnectionState(device: BluetoothDevice) = coroutineScope.launch {
+        updateConnectStatus(device, DeviceStatus.Authing)
+
         runCatching {
             request(device, batteryInfo())
         }.onSuccess { battery ->
+            updateConnectStatus(device, DeviceStatus.Connected)
+
             dispatchEvent(DeviceEvent.Connected(device))
             dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
         }.onFailure { e ->
@@ -203,7 +217,7 @@ class MMAManager private constructor(private val context: Context) {
 
     private fun startReading(device: BluetoothDevice) = coroutineScope.launch {
         while (isMMADevice(device) && device.isConnected) {
-            val mma = mmaDevices[device.address] ?: break
+            val mma = runCatching { getDevice(device) }.getOrNull() ?: break
             if (!mma.isConnected) {
                 if (DEBUG) Log.d(TAG, "Reconnecting socket")
                 try {
@@ -260,8 +274,10 @@ class MMAManager private constructor(private val context: Context) {
             if (!connectionListeners.contains(listener)) {
                 connectionListeners.add(listener)
 
-                mmaDevices.values.forEach {
-                    listener.onDeviceEvent(DeviceEvent.Connected(it.device))
+                mmaDevices.filterValues { (_, status) ->
+                    status == DeviceStatus.Connected
+                }.values.forEach { (mma) ->
+                    listener.onDeviceEvent(DeviceEvent.Connected(mma.device))
                 }
             } else {
                 Log.w(TAG, "Listener already registered: $listener")
