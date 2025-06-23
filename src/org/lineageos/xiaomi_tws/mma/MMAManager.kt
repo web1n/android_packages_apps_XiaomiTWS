@@ -23,6 +23,8 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
+import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
+import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestNoResponseBuilder
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
@@ -36,12 +38,8 @@ import kotlin.coroutines.suspendCoroutine
 class MMAManager private constructor(private val context: Context) {
 
     private sealed class RequestResponse {
-        abstract val requestId: String
-
-        data class Success(override val requestId: String, val response: MMAResponse) :
-            RequestResponse()
-
-        data class Error(override val requestId: String, val error: Throwable) : RequestResponse()
+        data class Success(val packet: MMAPacket?) : RequestResponse()
+        data class Error(val error: Throwable) : RequestResponse()
     }
 
     private val mmaDevices = HashMap<String, MMADevice>()
@@ -99,50 +97,47 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private fun cancelAllRequests(device: BluetoothDevice) {
-        responseFlows.keys.filter {
-            it.startsWith(device.address)
-        }.forEach {
-            emitError(it, IOException("Device disconnected"))
-        }
+        responseFlows.keys
+            .filter { it.startsWith(device.address) }
+            .forEach { emitError(it, IOException("Device disconnected")) }
     }
 
     private fun notifyResponse(device: BluetoothDevice, raw: ByteArray) {
-        val response = try {
-            MMAResponse.fromPacket(device, raw)
+        val packet = try {
+            MMAPacket.fromPacket(raw)
         } catch (e: Exception) {
             Log.w(TAG, "Unknown response: ${raw.size} ${raw.toHexString()}", e)
             return
         }
 
-        val requestId = "${device.address}-${response.opCodeSN}"
+        val requestId = "${device.address}-${packet.opCodeSN}"
 
         val flow = responseFlows[requestId]
         if (flow != null) {
-            flow.tryEmit(RequestResponse.Success(requestId, response))
+            flow.tryEmit(RequestResponse.Success(packet))
             responseFlows.remove(requestId)
-        } else if (response.type == 1 && response.flag == 1) {
+        } else {
             runCatching {
-                when (response.opCode) {
-                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(response)
-                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG -> handleNotifyDeviceConfig(response)
-                    else -> Log.w(TAG, "Unknown notify opCode: $requestId $response")
+                when (packet.opCode) {
+                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(device, packet)
+                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG ->
+                        handleNotifyDeviceConfig(device, packet)
+
+                    else -> Log.w(TAG, "Unknown notify: $packet")
                 }
             }.onFailure {
-                Log.w(TAG, "Failed to handle notify: $requestId $response", it)
+                Log.w(TAG, "Failed to handle notify: $packet", it)
             }
-        } else {
-            Log.w(TAG, "Unknown flow for request: $requestId $response")
         }
     }
 
-    private fun handleNotifyDeviceInfo(response: MMAResponse) {
-        if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: $response")
-        check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO)
-        check(response.type == 1 && response.flag == 1)
-        check(response.data.size >= 2) { "Invalid device info data length" }
+    private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket) {
+        if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
+        require(packet is MMAPacket.Request)
+        require(packet.data.size >= 2) { "Invalid device info data length" }
 
-        val notifyType = response.data[0]
-        val value = response.data.drop(1).toByteArray()
+        val notifyType = packet.data[0]
+        val value = packet.data.drop(1).toByteArray()
 
         when (notifyType) {
             XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
@@ -159,14 +154,13 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun handleNotifyDeviceConfig(response: MMAResponse) {
-        if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: $response")
-        check(response.opCode == XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG)
-        check(response.type == 1 && response.flag == 1)
-        check(response.data.size >= 3) { "Invalid device config data length" }
+    private fun handleNotifyDeviceConfig(device: BluetoothDevice, packet: MMAPacket) {
+        if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: ${device.address} $packet")
+        require(packet is MMAPacket.Request)
+        check(packet.data.size >= 3) { "Invalid device config data length" }
 
-        val config = bytesToInt(response.data[0], response.data[1])
-        val value = response.data.drop(2).toByteArray()
+        val config = bytesToInt(packet.data[0], packet.data[1])
+        val value = packet.data.drop(2).toByteArray()
 
         if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
             check(value.size == 1) { "In ear report length not 1, actual: ${value.size}" }
@@ -174,15 +168,15 @@ class MMAManager private constructor(private val context: Context) {
             val left = value[0].toInt() and (1 shl 3) != 0
             val right = value[0].toInt() and (1 shl 2) != 0
 
-            dispatchEvent(DeviceEvent.InEarStateChanged(response.device, left, right))
+            dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
         }
 
-        dispatchEvent(DeviceEvent.ConfigChanged(response.device, config, value))
+        dispatchEvent(DeviceEvent.ConfigChanged(device, config, value))
     }
 
     private fun emitError(requestId: String, throwable: Throwable) {
         responseFlows.remove(requestId)
-            ?.tryEmit(RequestResponse.Error(requestId, throwable))
+            ?.tryEmit(RequestResponse.Error(throwable))
     }
 
     private fun isMMADevice(device: BluetoothDevice): Boolean {
@@ -299,59 +293,79 @@ class MMAManager private constructor(private val context: Context) {
 
     private suspend fun sendRequestSuspend(
         device: BluetoothDevice,
-        builder: MMARequest
-    ): RequestResponse = suspendCoroutine { continuation ->
-        val (requestId, responseFlow) = prepareAndSendRequest(device, builder)
+        packet: MMAPacket
+    ): MMAPacket? = suspendCoroutine { continuation ->
+        if (packet is MMAPacket.Request) {
+            packet.opCodeSN = getDevice(device).newOpCodeSN
+        }
+        val requestId = "${device.address}-${packet.opCodeSN}"
+
+        val responseFlow = MutableSharedFlow<RequestResponse>(replay = 1)
+        responseFlows[requestId] = responseFlow
 
         coroutineScope.launch {
             runCatching {
-                withTimeout(TIMEOUT_MS_READ) {
-                    responseFlow.first { it.requestId == requestId }
+                withTimeout(TIMEOUT_MS_WRITE) {
+                    getDevice(device).sendPacket(packet)
+                }
+
+                if (!packet.needReply) {
+                    null
+                } else {
+                    waitForPacket(requestId)
                 }
             }.onSuccess {
                 responseFlows.remove(requestId)
                 continuation.resume(it)
             }.onFailure {
+                Log.e(TAG, "Failed to send packet: $device", it)
+
                 responseFlows.remove(requestId)
                 continuation.resumeWithException(it)
             }
         }
     }
 
-    private fun prepareAndSendRequest(
-        device: BluetoothDevice, request: MMARequest
-    ): Pair<String, MutableSharedFlow<RequestResponse>> {
-        require(isMMADevice(device)) { "Device not available: ${device.address}" }
+    private suspend fun waitForPacket(requestId: String): MMAPacket? {
+        requireNotNull(responseFlows[requestId]) { "Unknown response flow id $requestId" }
 
-        val newSN = getDevice(device).newOpCodeSN
-        val requestId = "${device.address}-$newSN"
-        val request = request.apply { opCodeSN = newSN }
+        return suspendCoroutine { continuation ->
+            coroutineScope.launch {
+                runCatching {
+                    withTimeout(TIMEOUT_MS_READ) {
+                        responseFlows[requestId]!!.first()
+                    }
+                }.onSuccess {
+                    responseFlows.remove(requestId)
 
-        val responseFlow = MutableSharedFlow<RequestResponse>(replay = 1)
-        responseFlows[requestId] = responseFlow
-
-        // Send the request
-        coroutineScope.launch {
-            runCatching {
-                withTimeout(TIMEOUT_MS_WRITE) {
-                    getDevice(device).sendRequest(request)
+                    when (it) {
+                        is RequestResponse.Success -> continuation.resume(it.packet)
+                        is RequestResponse.Error -> continuation.resumeWithException(it.error)
+                    }
+                }.onFailure {
+                    responseFlows.remove(requestId)
+                    continuation.resumeWithException(it)
                 }
-            }.onFailure {
-                Log.e(TAG, "Failed to send request: $device", it)
-                emitError(requestId, it)
             }
         }
-
-        return requestId to responseFlow
     }
 
-    suspend fun <T> request(device: BluetoothDevice, builder: MMARequestBuilder<T>): T {
-        val response = sendRequestSuspend(device, builder.request)
+    suspend fun <T> request(device: BluetoothDevice, builder: RequestBuilder<T>): T {
+        val packet = sendRequestSuspend(device, builder.request)
 
-        return when (response) {
-            is RequestResponse.Success -> builder.handler(response.response)
-            is RequestResponse.Error -> throw response.error
-        }
+        require(packet is MMAPacket.Response) { "Reply packet not response" }
+        return builder.handler(packet)
+    }
+
+    suspend fun request(device: BluetoothDevice, builder: RequestNoResponseBuilder) {
+        val request = builder.request
+        request.needReply = false
+
+        sendRequestSuspend(device, request)
+    }
+
+    suspend fun request(device: BluetoothDevice, response: MMAPacket.Response) {
+        sendRequestSuspend(device, response)
     }
 
     companion object {

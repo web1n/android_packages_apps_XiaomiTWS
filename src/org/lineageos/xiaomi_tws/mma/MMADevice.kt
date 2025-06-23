@@ -9,6 +9,7 @@ import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_SPP_UUIDS
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 
 internal class MMADevice(val device: BluetoothDevice) {
 
@@ -35,12 +36,11 @@ internal class MMADevice(val device: BluetoothDevice) {
             return opCodeSN!!
         }
 
-    fun sendRequest(request: MMARequest) {
+    fun sendPacket(packet: MMAPacket) {
+        if (DEBUG) Log.d(TAG, "sendPacket: $packet")
         checkConnected()
 
-        val data = request.toBytes()
-        if (DEBUG) Log.d(TAG, "sendRequest: ${data.contentToString()}")
-
+        val data = packet.toBytes()
         try {
             socket!!.outputStream.apply {
                 write(data)
