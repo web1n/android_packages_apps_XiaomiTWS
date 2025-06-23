@@ -2,7 +2,9 @@ package org.lineageos.xiaomi_tws.mma
 
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_CONFIG
-import org.lineageos.xiaomi_tws.utils.ByteUtils
+import org.lineageos.xiaomi_tws.mma.MMAPacket.Request
+import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
+import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.getHighByte
 import org.lineageos.xiaomi_tws.utils.ByteUtils.getLowByte
 import java.nio.ByteBuffer
@@ -12,11 +14,11 @@ abstract class ConfigRequestBuilder<T>(val configId: Int) {
     abstract fun bytesToValue(bytes: ByteArray): T
     abstract fun valueToBytes(value: T): ByteArray
 
-    fun get(): MMARequestBuilder<T> {
+    fun get(): RequestBuilder<T> {
         val requestData = encodeConfigIds(intArrayOf(configId))
-        val request = MMARequest(XIAOMI_MMA_OPCODE_GET_DEVICE_CONFIG, requestData)
+        val request = Request(XIAOMI_MMA_OPCODE_GET_DEVICE_CONFIG, requestData)
 
-        return MMARequestBuilder(request) { response ->
+        return RequestBuilder(request) { response ->
             val bytes = parseConfigResponse(response.data, configId)
             if (isNotSupportedBytes(bytes)) {
                 throw NotImplementedError()
@@ -26,7 +28,7 @@ abstract class ConfigRequestBuilder<T>(val configId: Int) {
         }
     }
 
-    fun set(value: T): MMARequestBuilder<Boolean> {
+    fun set(value: T): RequestBuilder<Boolean> {
         val bytes = valueToBytes(value)
 
         val requestData = buildList<Byte> {
@@ -36,8 +38,9 @@ abstract class ConfigRequestBuilder<T>(val configId: Int) {
             addAll(bytes.toList())
         }.toByteArray()
 
-        val request = MMARequest(XIAOMI_MMA_OPCODE_SET_DEVICE_CONFIG, requestData)
-        return MMARequestBuilder(request) { it.ok }
+        val request = Request(XIAOMI_MMA_OPCODE_SET_DEVICE_CONFIG, requestData)
+
+        return RequestBuilder(request) { it.ok }
     }
 
     companion object {
@@ -66,7 +69,7 @@ abstract class ConfigRequestBuilder<T>(val configId: Int) {
                 "Invalid config data length: $length"
             }
 
-            val actualConfig = ByteUtils.bytesToInt(buffer.get(), buffer.get())
+            val actualConfig = bytesToInt(buffer.get(), buffer.get())
             require(actualConfig == expectedConfig) {
                 "Config key mismatch. Expected: $expectedConfig, Actual: $actualConfig"
             }
