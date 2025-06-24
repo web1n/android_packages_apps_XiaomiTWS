@@ -29,6 +29,7 @@ import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
@@ -138,30 +139,42 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
+    private fun parseTLVMap(data: ByteArray): Map<Byte, ByteArray> {
+        val map = HashMap<Byte, ByteArray>()
+        val stream = ByteArrayInputStream(data)
+        while (stream.available() > 1) {
+            val length = stream.read()
+            if (stream.available() < length) break
+
+            val tlv = stream.readNBytes(length)
+            if (tlv.isEmpty()) continue
+            map[tlv[0]] = tlv.drop(1).toByteArray()
+        }
+        return map
+    }
+
     private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
         if (packet !is MMAPacket.Request || packet.data.size < 2) {
             Log.w(TAG, "Not valid device info packet")
         }
 
-        val notifyType = packet.data[0]
-        val value = packet.data.drop(1).toByteArray()
-
-        when (notifyType) {
-            XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
-                if (value.size < 3) {
-                    Log.w(TAG, "Not valid battery report length: ${value.size}")
-                    return
+        val typeValues = parseTLVMap(packet.data)
+        typeValues.forEach { type, value ->
+            when (type) {
+                XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
+                    if (value.size != 3) {
+                        Log.w(TAG, "Not valid battery report length: ${value.size}")
+                    }
+                    val battery = Earbuds.fromBytes(value[0], value[1], value[2])
+                    dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
                 }
 
-                val battery = Earbuds.fromBytes(value[0], value[1], value[2])
-                dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
+                else -> if (DEBUG) Log.d(
+                    TAG,
+                    "handleNotifyDeviceInfo: Unknown type: $type, value: ${value.toHexString()}"
+                )
             }
-
-            else -> if (DEBUG) Log.d(
-                TAG,
-                "handleNotifyDeviceInfo: Unknown type: $notifyType, value: ${value.toHexString()}"
-            )
         }
     }
 
