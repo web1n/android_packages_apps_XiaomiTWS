@@ -1,9 +1,26 @@
+cc_prebuilt_library_shared {
+    name: "libxm_bluetooth",
+    arch: {
+        arm: {
+            srcs: ["jniLibs/armeabi-v7a/libxm_bluetooth.so"],
+        },
+        arm64: {
+            srcs: ["jniLibs/arm64-v8a/libxm_bluetooth.so"],
+        },
+    },
+    strip: {
+        none: true,
+    },
+    check_elf_files: false,
+    stl: "none",
+}
+
 android_app {
     name: "XiaomiTWS",
 
     srcs: [
         "src/**/*.java",
-        "src/**/*.kt"
+        "src/**/*.kt",
     ],
     resource_dirs: ["res"],
     certificate: "platform",
@@ -22,4 +39,9 @@ android_app {
     optimize: {
         proguard_flags_files: ["proguard.flags"],
     },
+
+    jni_libs: [
+        "libxm_bluetooth",
+    ],
+    use_embedded_native_libs: true,
 }
