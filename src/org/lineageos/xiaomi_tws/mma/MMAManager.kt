@@ -19,8 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_AUTH
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
+import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SEND_AUTH
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
@@ -134,8 +136,48 @@ class MMAManager private constructor(private val context: Context) {
                 XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG ->
                     handleNotifyDeviceConfig(device, packet)
 
+                XIAOMI_MMA_OPCODE_NOTIFY_AUTH, XIAOMI_MMA_OPCODE_SEND_AUTH ->
+                    handleNotifyAuthData(device, packet)
+
                 else -> Log.w(TAG, "Unknown notify: $packet")
             }
+        }
+    }
+
+    private fun handleNotifyAuthData(device: BluetoothDevice, packet: MMAPacket) {
+        if (DEBUG) Log.d(TAG, "handleNotifyAuthData: $packet")
+        if (getConnectStatus(device) == DeviceStatus.Connected) {
+            return
+        }
+
+        if (packet is MMAPacket.Request) {
+            val data = when (packet.opCode) {
+                XIAOMI_MMA_OPCODE_SEND_AUTH ->
+                    AuthRequest.calcAuthRequestResponseData(packet)
+
+                XIAOMI_MMA_OPCODE_NOTIFY_AUTH -> {
+                    updateConnectStatus(device, DeviceStatus.Connected)
+                    dispatchEvent(DeviceEvent.Connected(device))
+                    byteArrayOf()
+                }
+
+                else -> {
+                    Log.w(TAG, "Unknown auth request: $packet")
+                    byteArrayOf()
+                }
+            }
+
+            coroutineScope.launch {
+                runCatching {
+                    val response = MMAPacket.Response.reply(packet, MMAPacket.Status.Ok, data)
+                    request(device, response)
+                }.onFailure {
+                    Log.w(TAG, "Failed to auth ${device.address}: $packet", it)
+                    handleDeviceDisconnected(device)
+                }
+            }
+        } else if (packet is MMAPacket.Response) {
+            Log.w(TAG, "Unknown auth response: $packet")
         }
     }
 
@@ -231,9 +273,17 @@ class MMAManager private constructor(private val context: Context) {
             request(device, batteryInfo())
         }.onSuccess { battery ->
             updateConnectStatus(device, DeviceStatus.Connected)
-
             dispatchEvent(DeviceEvent.Connected(device))
             dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
+
+            return@launch
+        }.onFailure {
+            Log.w(TAG, "Failed to get device info, maybe need auth", it)
+        }
+
+        runCatching {
+            request(device, AuthRequest.requireDeviceSideAuth())
+            request(device, AuthRequest.sendAuthStatus())
         }.onFailure { e ->
             Log.w(TAG, "Failed to verify device connection: ${device.address}", e)
             handleDeviceDisconnected(device)

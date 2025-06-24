@@ -16,6 +16,8 @@ object EarbudsConstants {
     const val XIAOMI_MMA_OPCODE_GET_DEVICE_CONFIG: Byte = 0xF3.toByte()
     const val XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO: Byte = 0x0E.toByte()
     const val XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG: Byte = 0xF4.toByte()
+    const val XIAOMI_MMA_OPCODE_SEND_AUTH: Byte = 0x50
+    const val XIAOMI_MMA_OPCODE_NOTIFY_AUTH: Byte = 0x51
 
     const val XIAOMI_MMA_MASK_GET_VERSION = 1
     const val XIAOMI_MMA_MASK_GET_VID_PID = 3
