@@ -128,31 +128,31 @@ class MMAManager private constructor(private val context: Context) {
             flow.tryEmit(RequestResponse.Success(packet))
             responseFlows.remove(requestId)
         } else {
-            runCatching {
-                when (packet.opCode) {
-                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(device, packet)
-                    XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG ->
-                        handleNotifyDeviceConfig(device, packet)
+            when (packet.opCode) {
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(device, packet)
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG ->
+                    handleNotifyDeviceConfig(device, packet)
 
-                    else -> Log.w(TAG, "Unknown notify: $packet")
-                }
-            }.onFailure {
-                Log.w(TAG, "Failed to handle notify: $packet", it)
+                else -> Log.w(TAG, "Unknown notify: $packet")
             }
         }
     }
 
     private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
-        require(packet is MMAPacket.Request)
-        require(packet.data.size >= 2) { "Invalid device info data length" }
+        if (packet !is MMAPacket.Request || packet.data.size < 2) {
+            Log.w(TAG, "Not valid device info packet")
+        }
 
         val notifyType = packet.data[0]
         val value = packet.data.drop(1).toByteArray()
 
         when (notifyType) {
             XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
-                check(value.size >= 3) { "Not valid battery report length: ${value.size}" }
+                if (value.size < 3) {
+                    Log.w(TAG, "Not valid battery report length: ${value.size}")
+                    return
+                }
 
                 val battery = Earbuds.fromBytes(value[0], value[1], value[2])
                 dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
@@ -167,8 +167,9 @@ class MMAManager private constructor(private val context: Context) {
 
     private fun handleNotifyDeviceConfig(device: BluetoothDevice, packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: ${device.address} $packet")
-        require(packet is MMAPacket.Request)
-        check(packet.data.size >= 3) { "Invalid device config data length" }
+        if (packet !is MMAPacket.Request || packet.data.size < 3) {
+            Log.w(TAG, "Not valid config info packet")
+        }
 
         val config = bytesToInt(packet.data[0], packet.data[1])
         val value = packet.data.drop(2).toByteArray()
