@@ -27,6 +27,7 @@ import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestNoResponseBuilder
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
+import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -173,11 +174,21 @@ class MMAManager private constructor(private val context: Context) {
         val value = packet.data.drop(2).toByteArray()
 
         if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
-            check(value.size == 1) { "In ear report length not 1, actual: ${value.size}" }
+            check(value.size == 2) {
+                "In ear report length not 2, actual: ${value.size}"
+            }
+            val status = value[1]
 
-            val left = value[0].toInt() and (1 shl 3) != 0
-            val right = value[0].toInt() and (1 shl 2) != 0
-
+            val left = when {
+                status.isBitSet(3) -> DeviceEvent.InEarState.InEar
+                status.isBitSet(1) -> DeviceEvent.InEarState.InCase
+                else -> DeviceEvent.InEarState.Outside
+            }
+            val right = when {
+                status.isBitSet(2) -> DeviceEvent.InEarState.InEar
+                status.isBitSet(0) -> DeviceEvent.InEarState.InCase
+                else -> DeviceEvent.InEarState.Outside
+            }
             dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
         }
 

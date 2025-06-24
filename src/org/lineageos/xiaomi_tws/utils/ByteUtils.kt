@@ -2,6 +2,8 @@ package org.lineageos.xiaomi_tws.utils
 
 object ByteUtils {
 
+    fun Byte.isBitSet(bit: Int) = (toInt() shr bit) and 1 != 0
+
     fun bytesToInt(highByte: Byte, lowByte: Byte, bigEndian: Boolean = true): Int {
         val high = highByte.toInt() and 0xFF
         val low = lowByte.toInt() and 0xFF

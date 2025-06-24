@@ -180,8 +180,8 @@ class EarbudsService : Service() {
 
     private fun switchMediaDevice(
         device: BluetoothDevice,
-        leftInEar: Boolean,
-        rightInEar: Boolean
+        left: DeviceEvent.InEarState,
+        right: DeviceEvent.InEarState
     ) {
         if (!settingsUtils.isAutoSwitchDeviceEnabled(device)) {
             return
@@ -190,6 +190,8 @@ class EarbudsService : Service() {
         val builtinDevice = mediaManager.getBuiltinMediaDevice() ?: return
         val bluetoothDevice = mediaManager.getBluetoothMediaDevice(device) ?: return
 
+        val leftInEar = left == DeviceEvent.InEarState.InEar
+        val rightInEar = right == DeviceEvent.InEarState.InEar
         if (leftInEar or rightInEar) {
             if (builtinDevice.isSelected()) {
                 if (DEBUG) Log.d(TAG, "Switching media device to ${bluetoothDevice.name}")
