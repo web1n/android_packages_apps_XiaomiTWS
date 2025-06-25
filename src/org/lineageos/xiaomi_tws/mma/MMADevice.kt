@@ -7,9 +7,11 @@ import android.bluetooth.BluetoothSocket
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_SPP_UUIDS
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
+import org.lineageos.xiaomi_tws.utils.ByteUtils.getHighByte
+import org.lineageos.xiaomi_tws.utils.ByteUtils.getLowByte
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
+import java.io.IOException
 
 internal class MMADevice(val device: BluetoothDevice) {
 
@@ -39,33 +41,58 @@ internal class MMADevice(val device: BluetoothDevice) {
     fun sendPacket(packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "sendPacket: $packet")
         checkConnected()
+        val stream = socket!!.outputStream
 
-        val data = packet.toBytes()
         try {
-            socket!!.outputStream.apply {
-                write(data)
-                flush()
+            // header
+            stream.write(PACKET_HEADER)
+
+            stream.write((packet.type.value + if (packet.needReply) 0x40 else 0x00))
+            stream.write(packet.opCode.toInt())
+
+            if (packet is MMAPacket.Request) {
+                val length = packet.data.size + 1 // add opCodeSN
+                stream.write(byteArrayOf(length.getHighByte(), length.getLowByte()))
+
+                stream.write(packet.opCodeSN.toInt())
+            } else if (packet is MMAPacket.Response) {
+                val length = packet.data.size + 2 // add opCodeSN & status
+                stream.write(byteArrayOf(length.getHighByte(), length.getLowByte()))
+
+                stream.write(packet.status.value.toInt())
+                stream.write(packet.opCodeSN.toInt())
             }
+
+            // data
+            stream.write(packet.data)
+
+            // footer
+            stream.write(PACKET_END)
+
+            stream.flush()
         } catch (e: IOException) {
             Log.e(TAG, "Failed to send request", e)
             throw e
         }
     }
 
-    fun getResponsePacket(): ByteArray {
+    fun getPacket(): MMAPacket? {
         findPacketStart()
+        val packet = readPacket()
+        checkPacketEnd()
 
-        return readPacketData()
+        return packet
     }
 
     private fun findPacketStart() {
+        checkConnected()
+        val inputStream = socket!!.inputStream
+
         val buffer = ByteArray(3)
         var filled = 0
 
-        while (true) {
-            checkConnected()
-
-            val current = readSingleByte()
+        while (isConnected) {
+            val current = inputStream.read().toByte()
 
             if (filled < 3) {
                 buffer[filled] = current
@@ -83,31 +110,58 @@ internal class MMADevice(val device: BluetoothDevice) {
         }
     }
 
-    private fun readPacketData(): ByteArray {
-        val packetData = ByteArrayOutputStream()
+    private fun checkPacketEnd() {
+        checkConnected()
+        val stream = socket!!.inputStream
 
-        while (true) {
-            checkConnected()
+        if (stream.available() < PACKET_END.size) {
+            Log.w(TAG, "Invalid packet end")
+            return
+        }
 
-            val current = readSingleByte()
-
-            // Check for end sequence EF
-            if (current == PACKET_END[0]) {
-                return packetData.toByteArray()
-            }
-
-            packetData.write(current.toInt())
+        val endBytes = stream.readNBytes(PACKET_END.size)
+        if (!endBytes.contentEquals(PACKET_END)) {
+            Log.w(TAG, "Invalid packet end: ${endBytes.toHexString()}")
         }
     }
 
-    private fun readSingleByte(): Byte {
-        val inputStream = socket!!.inputStream
-        val value = inputStream.read()
+    private fun readPacket(): MMAPacket? {
+        checkConnected()
 
-        if (value == -1) {
-            throw IOException("End of stream reached")
+        val stream = socket!!.inputStream
+        if (stream.available() < 5) {
+            Log.w(TAG, "Not valid packet data length: ${stream.available()}")
+            return null
         }
-        return value.toByte()
+
+        val byte1 = stream.read()
+        val type = if ((byte1 and 0x80) == 0) MMAPacket.Type.Response else MMAPacket.Type.Request
+        val needReply = (byte1 and 0x40) != 0
+        val opCode = stream.read().toByte()
+        val parameterLength = bytesToInt(stream.read().toByte(), stream.read().toByte())
+        if (stream.available() < parameterLength) {
+            Log.w(TAG, "Packet size not valid, need $parameterLength but ${stream.available()}")
+            return null
+        }
+
+        return when (type) {
+            MMAPacket.Type.Request -> {
+                val opCodeSN = stream.read().toByte()
+                val data = stream.readNBytes(parameterLength - 1)
+
+                MMAPacket.Request(opCode, data, opCodeSN, needReply)
+            }
+
+            MMAPacket.Type.Response -> {
+                val status = stream.read().let { status ->
+                    MMAPacket.Status.entries.find { it.value == status } ?: MMAPacket.Status.Unknown
+                }
+                val opCodeSN = stream.read().toByte()
+                val data = stream.readNBytes(parameterLength - 2)
+
+                MMAPacket.Response(opCode, opCodeSN, status, data)
+            }
+        }
     }
 
     @RequiresPermission(

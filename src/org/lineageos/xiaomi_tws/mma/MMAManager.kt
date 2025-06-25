@@ -116,14 +116,7 @@ class MMAManager private constructor(private val context: Context) {
             .forEach { emitError(it, IOException("Device disconnected")) }
     }
 
-    private fun notifyResponse(device: BluetoothDevice, raw: ByteArray) {
-        val packet = try {
-            MMAPacket.fromPacket(raw)
-        } catch (e: Exception) {
-            Log.w(TAG, "Unknown response: ${raw.size} ${raw.toHexString()}", e)
-            return
-        }
-
+    private fun notifyResponse(device: BluetoothDevice, packet: MMAPacket) {
         val requestId = "${device.address}-${packet.opCodeSN}"
 
         val flow = responseFlows[requestId]
@@ -304,9 +297,9 @@ class MMAManager private constructor(private val context: Context) {
             }
 
             mma.runCatching {
-                getResponsePacket()
+                getPacket()
             }.onSuccess {
-                notifyResponse(device, it)
+                if (it != null) notifyResponse(device, it)
             }.onFailure {
                 Log.w(TAG, "Failed to read: $device", it)
                 mma.close()

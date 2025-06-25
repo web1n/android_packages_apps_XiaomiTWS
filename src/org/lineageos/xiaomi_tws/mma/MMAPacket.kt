@@ -1,11 +1,6 @@
 package org.lineageos.xiaomi_tws.mma
 
-import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
-import org.lineageos.xiaomi_tws.utils.ByteUtils.getHighByte
-import org.lineageos.xiaomi_tws.utils.ByteUtils.getLowByte
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 
 sealed class MMAPacket protected constructor(
     val type: Type,
@@ -40,74 +35,8 @@ sealed class MMAPacket protected constructor(
         }
     }
 
-    fun toBytes(): ByteArray {
-        val outputStream = ByteArrayOutputStream()
-
-        // header
-        outputStream.write(0xFE)
-        outputStream.write(0xDC)
-        outputStream.write(0xBA)
-
-        outputStream.write((type.value + if (needReply) 0x40 else 0x00))
-        outputStream.write(opCode.toInt())
-
-        if (this is Request) {
-            val length = data.size + 1 // add opCodeSN
-            outputStream.write(byteArrayOf(length.getHighByte(), length.getLowByte()))
-
-            outputStream.write(opCodeSN.toInt())
-        } else if (this is Response) {
-            val length = data.size + 2 // add opCodeSN & status
-            outputStream.write(byteArrayOf(length.getHighByte(), length.getLowByte()))
-
-            outputStream.write(status.value.toInt())
-            outputStream.write(opCodeSN.toInt())
-        }
-
-        // data
-        outputStream.write(data)
-
-        // footer
-        outputStream.write(0xEF)
-
-        return outputStream.toByteArray()
-    }
-
     override fun toString(): String {
         return "MMAPacket{type=${type.name}, needReply=$needReply, " +
                 "opCode=$opCode, opCodeSN=$opCodeSN, data=${data.toHexString()}}"
-    }
-
-    companion object {
-        fun fromPacket(packet: ByteArray): MMAPacket {
-            val stream = ByteArrayInputStream(packet)
-            require(stream.available() > 3) { "Packet too short" }
-
-            val byte1 = stream.read()
-            val type = if ((byte1 and 0x80) == 0) Type.Response else Type.Request
-            val needReply = (byte1 and 0x40) != 0
-            val opCode = stream.read().toByte()
-            val parameterLength = bytesToInt(stream.read().toByte(), stream.read().toByte())
-            require(parameterLength == stream.available()) { "Packet size not valid" }
-
-            return when (type) {
-                Type.Request -> {
-                    val opCodeSN = stream.read().toByte()
-                    val data = stream.readAllBytes()
-
-                    Request(opCode, data, opCodeSN, needReply)
-                }
-
-                Type.Response -> {
-                    val status = stream.read().let { status ->
-                        Status.entries.find { it.value == status } ?: Status.Unknown
-                    }
-                    val opCodeSN = stream.read().toByte()
-                    val data = stream.readAllBytes()
-
-                    Response(opCode, opCodeSN, status, data)
-                }
-            }
-        }
     }
 }
