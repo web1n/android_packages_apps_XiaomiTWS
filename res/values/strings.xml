@@ -57,6 +57,8 @@
     <string name="treble_click_right">Triple Click Right Ear</string>
     <string name="long_press_left">Long Press Left Ear</string>
     <string name="long_press_right">Long Press Right Ear</string>
+    <string name="swipe_left">Swipe Left Ear</string>
+    <string name="swipe_right">Swipe Right Ear</string>
     <string name="function_disabled">Disabled</string>
     <string name="function_voice_assistant">Voice Assistant</string>
     <string name="function_play_pause">Play/Pause</string>
@@ -66,6 +68,7 @@
     <string name="function_volume_down">Volume Down</string>
     <string name="function_noise_control">Switch Noise Control</string>
     <string name="function_screenshot">Screenshot</string>
+    <string name="function_volume_control">Volume Control</string>
 
     <string name="find_earbuds">Find Earbuds</string>
     <string name="find_earbuds_off">Tap to Find, the earbuds will play a sound (Please make sure the earbuds are not in your ears)</string>

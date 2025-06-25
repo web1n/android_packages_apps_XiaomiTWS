@@ -12,7 +12,8 @@ class Gesture :
         SingleClick(TYPE_SINGLE_CLICK),
         DoubleClick(TYPE_DOUBLE_CLICK),
         TrebleClick(TYPE_TREBLE_CLICK),
-        LongPress(TYPE_LONG_PRESS);
+        LongPress(TYPE_LONG_PRESS),
+        Swipe(TYPE_SWIPE);
 
         companion object {
             fun fromByte(value: Byte) = entries.find { it.value == value }
@@ -28,7 +29,8 @@ class Gesture :
         VolumeUp(FUNCTION_VOLUME_UP),
         VolumeDown(FUNCTION_VOLUME_DOWN),
         NoiseControl(FUNCTION_NOISE_CONTROL),
-        Screenshot(FUNCTION_SCREENSHOT);
+        Screenshot(FUNCTION_SCREENSHOT),
+        VolumeControl(FUNCTION_VOLUME_CONTROL);
 
         companion object {
             internal fun fromValue(value: Byte) = entries.find { it.value == value }
@@ -81,6 +83,7 @@ class Gesture :
         private const val TYPE_DOUBLE_CLICK: Byte = 0x01
         private const val TYPE_TREBLE_CLICK: Byte = 0x02
         private const val TYPE_LONG_PRESS: Byte = 0x03
+        private const val TYPE_SWIPE: Byte = 0x05
 
         private const val FUNCTION_DISABLED: Byte = 0x08
         private const val FUNCTION_VOICE_ASSISTANT: Byte = 0x00
@@ -91,7 +94,35 @@ class Gesture :
         private const val FUNCTION_VOLUME_DOWN: Byte = 0x05
         private const val FUNCTION_NOISE_CONTROL: Byte = 0x06
         private const val FUNCTION_SCREENSHOT: Byte = 0x09
+        private const val FUNCTION_VOLUME_CONTROL: Byte = 0x0B
         private const val FUNCTION_NOT_MODIFY: Byte = -1
+
+        private val CLICK_SUPPORTED_FUNCTIONS = setOf(
+            Function.Disabled,
+            Function.PlayPause,
+            Function.PreviousTrack,
+            Function.NextTrack,
+            Function.VolumeUp,
+            Function.VolumeDown,
+            Function.Screenshot,
+        )
+        private val LONG_PRESS_SUPPORTED_FUNCTIONS = setOf(
+            Function.Disabled,
+            Function.VoiceAssistant,
+            Function.NoiseControl,
+        )
+        private val SWIPE_SUPPORTED_FUNCTIONS = setOf(
+            Function.Disabled,
+            Function.VolumeControl
+        )
+
+        fun getSupportedFunctions(type: Type): Set<Function> {
+            return when (type) {
+                Type.SingleClick, Type.DoubleClick, Type.TrebleClick -> CLICK_SUPPORTED_FUNCTIONS
+                Type.LongPress -> LONG_PRESS_SUPPORTED_FUNCTIONS
+                Type.Swipe -> SWIPE_SUPPORTED_FUNCTIONS
+            }
+        }
     }
 
 }

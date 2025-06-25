@@ -91,6 +91,18 @@
             android:title="@string/long_press_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
+        <DropDownPreference
+            android:key="swipe_left"
+            android:title="@string/swipe_left"
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController"
+            app:useSimpleSummaryProvider="true" />
+
+        <DropDownPreference
+            android:key="swipe_right"
+            android:title="@string/swipe_right"
+            app:controller="org.lineageos.xiaomi_tws.configs.ButtonController"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

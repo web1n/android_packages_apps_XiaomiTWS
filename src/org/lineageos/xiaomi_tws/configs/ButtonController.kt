@@ -50,15 +50,17 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
         super.initData(manager)
 
         value = value?.filter { it.key == position to type }
+        require(!value.isNullOrEmpty())
     }
 
     override fun preInitView(preference: ListPreference) {
         super.preInitView(preference)
 
-        preference.entries = Function.entries
+        val functions = Gesture.getSupportedFunctions(type)
+        preference.entries = functions
             .map { functionToString(preference.context, it) }
             .toTypedArray()
-        preference.entryValues = Function.entries
+        preference.entryValues = functions
             .map { it.name }
             .toTypedArray()
         preference.summaryProvider = ListPreference.SimpleSummaryProvider.getInstance()
@@ -86,6 +88,7 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
             Function.VolumeDown -> R.string.function_volume_down
             Function.NoiseControl -> R.string.function_noise_control
             Function.Screenshot -> R.string.function_screenshot
+            Function.VolumeControl -> R.string.function_volume_control
         }
 
         return context.getString(stringRes)
