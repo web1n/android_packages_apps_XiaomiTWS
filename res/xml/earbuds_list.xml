@@ -32,6 +32,7 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="enable_ble_scan"
+            android:dependency="enable_system_integration"
             android:title="@string/earbuds_list_enable_ble_scan" />
 
     </PreferenceCategory>
