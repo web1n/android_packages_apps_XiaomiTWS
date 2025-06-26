@@ -456,8 +456,8 @@ class MMAManager private constructor(private val context: Context) {
         private val TAG = MMAManager::class.java.simpleName
         private const val DEBUG = true
 
-        private const val TIMEOUT_MS_READ: Long = 2000
-        private const val TIMEOUT_MS_WRITE: Long = 1000
+        private const val TIMEOUT_MS_READ: Long = 500
+        private const val TIMEOUT_MS_WRITE: Long = 500
 
         @SuppressLint("StaticFieldLeak")
         @Volatile
