@@ -290,6 +290,8 @@ class MMAManager private constructor(private val context: Context) {
                 if (DEBUG) Log.d(TAG, "Reconnecting socket")
                 try {
                     mma.connect()
+
+                    checkConnectionState(device)
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to reconnect socket", e)
                     break
