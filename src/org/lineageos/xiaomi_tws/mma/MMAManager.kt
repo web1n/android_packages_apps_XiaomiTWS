@@ -28,10 +28,9 @@ import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryIn
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestNoResponseBuilder
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
-import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
+import org.lineageos.xiaomi_tws.utils.ByteUtils.parseTLVMap
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
-import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
@@ -174,30 +173,16 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun parseTLVMap(data: ByteArray): Map<Byte, ByteArray> {
-        val map = HashMap<Byte, ByteArray>()
-        val stream = ByteArrayInputStream(data)
-        while (stream.available() > 1) {
-            val length = stream.read()
-            if (stream.available() < length) break
-
-            val tlv = stream.readNBytes(length)
-            if (tlv.isEmpty()) continue
-            map[tlv[0]] = tlv.drop(1).toByteArray()
-        }
-        return map
-    }
-
     private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
-        if (packet !is MMAPacket.Request || packet.data.size < 2) {
+        if (packet !is MMAPacket.Request) {
             Log.w(TAG, "Not valid device info packet")
         }
 
-        val typeValues = parseTLVMap(packet.data)
+        val typeValues = parseTLVMap(packet.data, true)
         typeValues.forEach { type, value ->
             when (type) {
-                XIAOMI_MMA_NOTIFY_TYPE_BATTERY -> {
+                XIAOMI_MMA_NOTIFY_TYPE_BATTERY.toInt() -> {
                     if (value.size != 3) {
                         Log.w(TAG, "Not valid battery report length: ${value.size}")
                     }
@@ -215,33 +200,33 @@ class MMAManager private constructor(private val context: Context) {
 
     private fun handleNotifyDeviceConfig(device: BluetoothDevice, packet: MMAPacket) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: ${device.address} $packet")
-        if (packet !is MMAPacket.Request || packet.data.size < 3) {
+        if (packet !is MMAPacket.Request) {
             Log.w(TAG, "Not valid config info packet")
         }
 
-        val config = bytesToInt(packet.data[0], packet.data[1])
-        val value = packet.data.drop(2).toByteArray()
+        val typeValues = parseTLVMap(packet.data, false)
+        typeValues.forEach { config, value ->
+            if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
+                check(value.size == 1) {
+                    "In ear report length not 1, actual: ${value.size}"
+                }
+                val status = value[0]
 
-        if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
-            check(value.size == 2) {
-                "In ear report length not 2, actual: ${value.size}"
+                val left = when {
+                    status.isBitSet(3) -> DeviceEvent.InEarState.InEar
+                    status.isBitSet(1) -> DeviceEvent.InEarState.InCase
+                    else -> DeviceEvent.InEarState.Outside
+                }
+                val right = when {
+                    status.isBitSet(2) -> DeviceEvent.InEarState.InEar
+                    status.isBitSet(0) -> DeviceEvent.InEarState.InCase
+                    else -> DeviceEvent.InEarState.Outside
+                }
+                dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
             }
-            val status = value[1]
 
-            val left = when {
-                status.isBitSet(3) -> DeviceEvent.InEarState.InEar
-                status.isBitSet(1) -> DeviceEvent.InEarState.InCase
-                else -> DeviceEvent.InEarState.Outside
-            }
-            val right = when {
-                status.isBitSet(2) -> DeviceEvent.InEarState.InEar
-                status.isBitSet(0) -> DeviceEvent.InEarState.InCase
-                else -> DeviceEvent.InEarState.Outside
-            }
-            dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
+            dispatchEvent(DeviceEvent.ConfigChanged(device, config, value))
         }
-
-        dispatchEvent(DeviceEvent.ConfigChanged(device, config, value))
     }
 
     private fun emitError(requestId: String, throwable: Throwable) {

@@ -1,5 +1,7 @@
 package org.lineageos.xiaomi_tws.utils
 
+import java.io.ByteArrayInputStream
+
 object ByteUtils {
 
     fun Byte.isBitSet(bit: Int) = (toInt() shr bit) and 1 != 0
@@ -44,6 +46,26 @@ object ByteUtils {
         }
 
         return bytes
+    }
+
+    fun parseTLVMap(data: ByteArray, singleByteTag: Boolean): Map<Int, ByteArray> {
+        val map = HashMap<Int, ByteArray>()
+        val stream = ByteArrayInputStream(data)
+
+        while (stream.available() > 1) {
+            val length = stream.read()
+            if (stream.available() < length) break
+
+            val tlv = stream.readNBytes(length)
+            if (singleByteTag) {
+                if (tlv.size < 1) break
+                map[tlv[0].toInt()] = tlv.drop(1).toByteArray()
+            } else {
+                if (tlv.size < 2) break
+                map[bytesToInt(tlv[0], tlv[1])] = tlv.drop(2).toByteArray()
+            }
+        }
+        return map
     }
 
 }
