@@ -122,62 +122,57 @@ class MMAManager private constructor(private val context: Context) {
         if (flow != null) {
             flow.tryEmit(RequestResponse.Success(packet))
             responseFlows.remove(requestId)
-        } else {
-            when (packet.opCode) {
-                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(device, packet)
-                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG ->
-                    handleNotifyDeviceConfig(device, packet)
-
-                XIAOMI_MMA_OPCODE_NOTIFY_AUTH, XIAOMI_MMA_OPCODE_SEND_AUTH ->
-                    handleNotifyAuthData(device, packet)
-
-                else -> Log.w(TAG, "Unknown notify: $packet")
-            }
-        }
-    }
-
-    private fun handleNotifyAuthData(device: BluetoothDevice, packet: MMAPacket) {
-        if (DEBUG) Log.d(TAG, "handleNotifyAuthData: $packet")
-        if (getConnectStatus(device) == DeviceStatus.Connected) {
             return
         }
 
         if (packet is MMAPacket.Request) {
-            val data = when (packet.opCode) {
-                XIAOMI_MMA_OPCODE_SEND_AUTH ->
-                    AuthRequest.calcAuthRequestResponseData(packet)
+            val responseData = when (packet.opCode) {
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO -> handleNotifyDeviceInfo(device, packet)
+                XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG -> handleNotifyDeviceConfig(device, packet)
+                XIAOMI_MMA_OPCODE_NOTIFY_AUTH, XIAOMI_MMA_OPCODE_SEND_AUTH ->
+                    handleNotifyAuthData(device, packet)
 
-                XIAOMI_MMA_OPCODE_NOTIFY_AUTH -> {
-                    updateConnectStatus(device, DeviceStatus.Connected)
-                    dispatchEvent(DeviceEvent.Connected(device))
-                    byteArrayOf()
-                }
-
-                else -> {
-                    Log.w(TAG, "Unknown auth request: $packet")
-                    byteArrayOf()
-                }
+                else -> Log.w(TAG, "Unknown notify: $packet")
+            }.let {
+                it as? ByteArray ?: byteArrayOf()
             }
 
-            coroutineScope.launch {
-                runCatching {
-                    val response = MMAPacket.Response.reply(packet, MMAPacket.Status.Ok, data)
-                    request(device, response)
-                }.onFailure {
-                    Log.w(TAG, "Failed to auth ${device.address}: $packet", it)
-                    handleDeviceDisconnected(device)
-                }
+            if (packet.needReply) coroutineScope.launch {
+                MMAPacket.Response.reply(packet, MMAPacket.Status.Ok, responseData)
+                    .runCatching { request(device, this) }
+                    .onFailure { e -> Log.e(TAG, "Failed to send response: $device", e) }
             }
-        } else if (packet is MMAPacket.Response) {
-            Log.w(TAG, "Unknown auth response: $packet")
+        } else {
+            Log.w(TAG, "Unknown notify: $packet")
         }
     }
 
-    private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket) {
-        if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
-        if (packet !is MMAPacket.Request) {
-            Log.w(TAG, "Not valid device info packet")
+    private fun handleNotifyAuthData(
+        device: BluetoothDevice,
+        packet: MMAPacket.Request
+    ): ByteArray {
+        if (DEBUG) Log.d(TAG, "handleNotifyAuthData: $packet")
+        if (getConnectStatus(device) == DeviceStatus.Connected) {
+            return byteArrayOf()
         }
+
+        return when (packet.opCode) {
+            XIAOMI_MMA_OPCODE_SEND_AUTH -> AuthRequest.calcAuthRequestResponseData(packet)
+            XIAOMI_MMA_OPCODE_NOTIFY_AUTH -> {
+                updateConnectStatus(device, DeviceStatus.Connected)
+                dispatchEvent(DeviceEvent.Connected(device))
+                byteArrayOf()
+            }
+
+            else -> {
+                Log.w(TAG, "Unknown auth request: $packet")
+                byteArrayOf()
+            }
+        }
+    }
+
+    private fun handleNotifyDeviceInfo(device: BluetoothDevice, packet: MMAPacket.Request) {
+        if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
 
         val typeValues = parseTLVMap(packet.data, true)
         typeValues.forEach { type, value ->
@@ -185,6 +180,7 @@ class MMAManager private constructor(private val context: Context) {
                 XIAOMI_MMA_NOTIFY_TYPE_BATTERY.toInt() -> {
                     if (value.size != 3) {
                         Log.w(TAG, "Not valid battery report length: ${value.size}")
+                        return@forEach
                     }
                     val battery = Earbuds.fromBytes(value[0], value[1], value[2])
                     dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
@@ -198,17 +194,15 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun handleNotifyDeviceConfig(device: BluetoothDevice, packet: MMAPacket) {
+    private fun handleNotifyDeviceConfig(device: BluetoothDevice, packet: MMAPacket.Request) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: ${device.address} $packet")
-        if (packet !is MMAPacket.Request) {
-            Log.w(TAG, "Not valid config info packet")
-        }
 
         val typeValues = parseTLVMap(packet.data, false)
         typeValues.forEach { config, value ->
             if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
-                check(value.size == 1) {
-                    "In ear report length not 1, actual: ${value.size}"
+                if (value.size != 1) {
+                    Log.w(TAG, "Not valid in ear report length: ${value.size}")
+                    return@forEach
                 }
                 val status = value[0]
 
