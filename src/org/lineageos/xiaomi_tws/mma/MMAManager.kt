@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
-import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_AUTH
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
@@ -27,8 +26,8 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestNoResponseBuilder
+import org.lineageos.xiaomi_tws.mma.configs.InEarState
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
-import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.parseTLVMap
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.io.IOException
@@ -199,23 +198,10 @@ class MMAManager private constructor(private val context: Context) {
 
         val typeValues = parseTLVMap(packet.data, false)
         typeValues.forEach { config, value ->
-            if (config == XIAOMI_MMA_CONFIG_EARBUDS_IN_EAR_MODE) {
-                if (value.size != 1) {
-                    Log.w(TAG, "Not valid in ear report length: ${value.size}")
-                    return@forEach
-                }
-                val status = value[0]
+            if (config == InEarState.CONFIG_ID) {
+                val (left, right) = runCatching { InEarState.parseConfigValue(value) }
+                    .getOrNull() ?: return@forEach
 
-                val left = when {
-                    status.isBitSet(3) -> DeviceEvent.InEarState.InEar
-                    status.isBitSet(1) -> DeviceEvent.InEarState.InCase
-                    else -> DeviceEvent.InEarState.Outside
-                }
-                val right = when {
-                    status.isBitSet(2) -> DeviceEvent.InEarState.InEar
-                    status.isBitSet(0) -> DeviceEvent.InEarState.InCase
-                    else -> DeviceEvent.InEarState.Outside
-                }
                 dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
             }
 

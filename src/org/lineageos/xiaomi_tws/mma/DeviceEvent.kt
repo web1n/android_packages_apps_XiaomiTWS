@@ -2,10 +2,9 @@ package org.lineageos.xiaomi_tws.mma
 
 import android.bluetooth.BluetoothDevice
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.mma.configs.InEarState
 
 sealed class DeviceEvent {
-
-    enum class InEarState { InEar, InCase, Outside }
 
     abstract val device: BluetoothDevice
 
@@ -22,7 +21,7 @@ sealed class DeviceEvent {
 
     data class InEarStateChanged(
         override val device: BluetoothDevice,
-        val left: InEarState,
-        val right: InEarState
+        val left: InEarState.State,
+        val right: InEarState.State
     ) : DeviceEvent()
 }
