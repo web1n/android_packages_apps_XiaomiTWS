@@ -17,10 +17,15 @@ object BluetoothUtils {
 
     val bondedDevices: Set<BluetoothDevice>
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = BluetoothAdapter.getDefaultAdapter()?.bondedDevices ?: emptySet()
+        get() = getBluetoothAdapter().bondedDevices ?: emptySet()
 
     fun getBluetoothDevice(mac: String): BluetoothDevice {
-        return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(mac)
+        return getBluetoothAdapter().getRemoteDevice(mac)
+    }
+
+    fun getBluetoothAdapter(): BluetoothAdapter {
+        @Suppress("DEPRECATION")
+        return BluetoothAdapter.getDefaultAdapter()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
