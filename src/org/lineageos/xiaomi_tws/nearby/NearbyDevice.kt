@@ -8,7 +8,7 @@ import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import kotlin.experimental.and
 
-data class NearbyDevice(val address: String, val vid: Int, val pid: Int) {
+data class NearbyDevice(val address: String, val accountKey: String, val vid: Int, val pid: Int) {
 
     val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address)
     val name = getDeviceName(vid, pid)
@@ -79,9 +79,10 @@ data class NearbyDevice(val address: String, val vid: Int, val pid: Int) {
             require(fastConnectData != null && fastConnectData.size == EXPECTED_DATA_LENGTH)
 
             val macAddress = extractMacAddress(manufacturerData)
+            val accountKey = extractAccountKey(fastConnectData)
             val (vid, pid) = extractVidPid(fastConnectData)
 
-            return NearbyDevice(macAddress, vid, pid)
+            return NearbyDevice(macAddress, accountKey, vid, pid)
         }
 
         private fun extractMacAddress(manufacturerData: ByteArray): String {
@@ -104,6 +105,10 @@ data class NearbyDevice(val address: String, val vid: Int, val pid: Int) {
             val pid = bytesToInt(serviceData[16], serviceData[17], false)
 
             return Pair(vid, pid)
+        }
+
+        private fun extractAccountKey(serviceData: ByteArray): String {
+            return serviceData.copyOfRange(6, 11).reversedArray().toHexString()
         }
     }
 }
