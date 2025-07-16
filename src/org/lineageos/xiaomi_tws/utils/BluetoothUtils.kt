@@ -5,7 +5,9 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothUuid
+import android.bluetooth.le.ScanRecord
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.BleSliceProvider.Companion.generateSliceUri
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
@@ -26,6 +28,15 @@ object BluetoothUtils {
     fun getBluetoothAdapter(): BluetoothAdapter {
         @Suppress("DEPRECATION")
         return BluetoothAdapter.getDefaultAdapter()
+    }
+
+    fun parseFromBytes(bytes: ByteArray): ScanRecord? {
+        val func = ScanRecord::class.java.getMethod("parseFromBytes", ByteArray::class.java)
+        return runCatching {
+            func.invoke(null, bytes) as ScanRecord?
+        }.onFailure {
+            Log.w(TAG, "Failed to parse scan record", it)
+        }.getOrNull()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

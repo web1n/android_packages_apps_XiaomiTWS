@@ -73,7 +73,7 @@ class EarbudsService : Service() {
         registerStateListener()
         registerFastConnectListener()
         registerMediaManager()
-        initHeadsetProxy()
+        registerHeadsetListener()
         registerMMAManager()
     }
 
@@ -84,7 +84,7 @@ class EarbudsService : Service() {
         unregisterStateListener()
         unregisterFastConnectListener()
         unregisterMediaManager()
-        closeHeadsetProxy()
+        unregisterHeadsetListener()
         unregisterMMAManager()
     }
 
@@ -119,8 +119,13 @@ class EarbudsService : Service() {
         mediaManager.stopScan()
     }
 
-    private fun initHeadsetProxy() = headsetManager.initProxy()
-    private fun closeHeadsetProxy() = headsetManager.closeProxy()
+    private fun registerHeadsetListener() {
+        headsetManager.registerListener()
+    }
+
+    private fun unregisterHeadsetListener() {
+        headsetManager.unregisterListener()
+    }
 
     private fun registerMMAManager() {
         mmaManager.registerConnectionListener(mmaListener)
