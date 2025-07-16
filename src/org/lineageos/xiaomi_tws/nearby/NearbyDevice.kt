@@ -1,16 +1,16 @@
 package org.lineageos.xiaomi_tws.nearby
 
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.ScanRecord
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.UUID_FAST_CONNECT
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.XIAOMI_MANUFACTURER_ID
+import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import kotlin.experimental.and
 
-data class NearbyDevice(val address: String, val accountKey: String, val vid: Int, val pid: Int) {
+data class NearbyDevice(val address: String?, val accountKey: String, val vid: Int, val pid: Int) {
 
-    val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address)
+    val device = address?.let { getBluetoothAdapter().getRemoteDevice(address) }
     val name = getDeviceName(vid, pid)
 
     companion object {
@@ -75,10 +75,10 @@ data class NearbyDevice(val address: String, val accountKey: String, val vid: In
         fun fromScanRecord(scanRecord: ScanRecord): NearbyDevice {
             val manufacturerData = scanRecord.getManufacturerSpecificData(XIAOMI_MANUFACTURER_ID)
             val fastConnectData = scanRecord.serviceData?.get(UUID_FAST_CONNECT)
-            require(manufacturerData != null && manufacturerData.size == EXPECTED_DATA_LENGTH)
+            require(manufacturerData == null || manufacturerData.size == EXPECTED_DATA_LENGTH)
             require(fastConnectData != null && fastConnectData.size == EXPECTED_DATA_LENGTH)
 
-            val macAddress = extractMacAddress(manufacturerData)
+            val macAddress = manufacturerData?.let { extractMacAddress(manufacturerData) }
             val accountKey = extractAccountKey(fastConnectData)
             val (vid, pid) = extractVidPid(fastConnectData)
 
