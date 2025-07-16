@@ -10,48 +10,62 @@ class SettingsUtils private constructor(context: Context) {
     private val sharedPreferences: SharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
-    private fun getBoolean(key: String, defaultValue: Boolean): Boolean {
-        return sharedPreferences.getBoolean(key, defaultValue)
+    private fun <T> get(key: String, defaultValue: T): T {
+        val value = when (defaultValue) {
+            is Boolean -> sharedPreferences.getBoolean(key, defaultValue)
+            is String -> sharedPreferences.getString(key, defaultValue)
+            else -> return defaultValue
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return value as T
     }
 
-    private fun putBoolean(key: String, value: Boolean) {
-        sharedPreferences.edit().putBoolean(key, value).apply()
+    private fun <T : Any> put(key: String, value: T) {
+        sharedPreferences.edit().apply {
+            when (value) {
+                is Boolean -> putBoolean(key, value)
+                is String -> putString(key, value)
+                else -> throw IllegalArgumentException("Unsupported type: ${value::class.java}")
+            }
+            apply()
+        }
     }
 
     var enableSystemIntegration: Boolean
-        get() = getBoolean(KEY_ENABLE_SYSTEM_INTEGRATION, true)
-        set(value) = putBoolean(KEY_ENABLE_SYSTEM_INTEGRATION, value)
+        get() = get(KEY_ENABLE_SYSTEM_INTEGRATION, true)
+        set(value) = put(KEY_ENABLE_SYSTEM_INTEGRATION, value)
 
     var enableNotification: Boolean
-        get() = getBoolean(KEY_ENABLE_NOTIFICATION, true)
-        set(value) = putBoolean(KEY_ENABLE_NOTIFICATION, value)
+        get() = get(KEY_ENABLE_NOTIFICATION, true)
+        set(value) = put(KEY_ENABLE_NOTIFICATION, value)
 
     var enableBleScan: Boolean
-        get() = getBoolean(KEY_ENABLE_BLE_SCAN, false)
-        set(value) = putBoolean(KEY_ENABLE_BLE_SCAN, value)
+        get() = get(KEY_ENABLE_BLE_SCAN, false)
+        set(value) = put(KEY_ENABLE_BLE_SCAN, value)
 
     fun isAutoSwitchDeviceEnabled(device: BluetoothDevice): Boolean {
-        return getBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", false)
+        return get("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", false)
     }
 
     fun setAutoSwitchDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
-        putBoolean("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", enabled)
+        put("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", enabled)
     }
 
     fun isSwitchDeviceAllowed(device: BluetoothDevice): Boolean {
-        return getBoolean("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", false)
+        return get("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", false)
     }
 
     fun setSwitchDeviceAllowed(device: BluetoothDevice, enabled: Boolean) {
-        putBoolean("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", enabled)
+        put("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", enabled)
     }
 
     fun isAutoConnectDeviceEnabled(device: BluetoothDevice): Boolean {
-        return getBoolean("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", false)
+        return get("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", false)
     }
 
     fun setAutoConnectDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
-        putBoolean("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", enabled)
+        put("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", enabled)
     }
 
     companion object {
