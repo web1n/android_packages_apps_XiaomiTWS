@@ -57,7 +57,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
 
         mmaDevices.clear()
         nearbyDevices.clear()
-        nearbyDevices.addAll(nearbyDeviceScanner.devices.map { it.device })
+        nearbyDevices.addAll(nearbyDeviceScanner.devices.mapNotNull { it.getDevice(requireContext()) })
 
         updateDevicePreferences()
 
@@ -99,7 +99,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
         if (DEBUG) Log.d(TAG, "updateNearbyDevices: ${devices.size} devices found")
 
         nearbyDevices.clear()
-        nearbyDevices.addAll(devices.map { it.device })
+        nearbyDevices.addAll(devices.mapNotNull { it.getDevice(requireContext()) })
 
         updateDevicePreferences()
     }
@@ -144,7 +144,7 @@ class EarbudsListFragment : PreferenceFragmentCompat() {
     private fun getDeviceName(device: BluetoothDevice): String {
         return device.alias
             ?: device.name
-            ?: nearbyDeviceScanner.devices.find { it.device == device }?.name
+            ?: nearbyDeviceScanner.devices.find { it.getDevice(requireContext()) == device }?.name
             ?: device.address
     }
 

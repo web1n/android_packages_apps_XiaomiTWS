@@ -1,12 +1,15 @@
 package org.lineageos.xiaomi_tws.nearby
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanRecord
+import android.content.Context
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.UUID_FAST_CONNECT
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.XIAOMI_MANUFACTURER_ID
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
+import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
-import kotlin.experimental.and
+import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 data class NearbyDevice(val address: String?, val accountKey: String, val vid: Int, val pid: Int) {
 
@@ -15,6 +18,14 @@ data class NearbyDevice(val address: String?, val accountKey: String, val vid: I
 
     fun isValidAccountKey(): Boolean {
         return accountKey != "0000000000"
+    }
+
+    fun getDevice(context: Context): BluetoothDevice? {
+        if (device != null) {
+            return device
+        }
+
+        return SettingsUtils.getInstance(context).getDeviceForAccountKey(accountKey)
     }
 
     companion object {
@@ -90,7 +101,7 @@ data class NearbyDevice(val address: String?, val accountKey: String, val vid: I
         }
 
         private fun extractMacAddress(manufacturerData: ByteArray): String {
-            val isEncrypted = (manufacturerData[7] and 0x01) != 0.toByte()
+            val isEncrypted = manufacturerData[7].isBitSet(0)
             val offset = if (isEncrypted) 18 else 11
 
             val addressBytes = byteArrayOf(

@@ -164,12 +164,12 @@ class EarbudsService : Service() {
         if (!builtinDevice.isSelected()) return
 
         val device = nearbyDeviceScanner.devices
-            .filter { it.device.bondState == BluetoothDevice.BOND_BONDED }
-            .filter { !it.device.isConnected }
-            .find { settingsUtils.isAutoConnectDeviceEnabled(it.device) }
-            ?.device ?: return
+            .mapNotNull { it.getDevice(this) }
+            .filter { it.bondState == BluetoothDevice.BOND_BONDED && !it.isConnected }
+            .find { settingsUtils.isAutoConnectDeviceEnabled(it) }
+            ?: return
 
-        if (DEBUG) Log.d(TAG, "Find bonded device, try connect: $device")
+        if (DEBUG) Log.d(TAG, "Find bonded nearby device, try connect: $device")
         device.runCatching { connect() }
     }
 
