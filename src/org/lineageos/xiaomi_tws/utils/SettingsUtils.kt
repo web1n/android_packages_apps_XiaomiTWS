@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
 
 class SettingsUtils private constructor(context: Context) {
 
@@ -68,6 +69,28 @@ class SettingsUtils private constructor(context: Context) {
         put("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", enabled)
     }
 
+    fun getDeviceForAccountKey(accountKey: String): BluetoothDevice? {
+        sharedPreferences.all.forEach { (key, value) ->
+            if (key.startsWith(KEY_ACCOUNT_KEY) && value == accountKey) {
+                val address = key.removePrefix("${KEY_ACCOUNT_KEY}_")
+
+                return getBluetoothAdapter().getRemoteDevice(address)
+            }
+        }
+
+        return null
+    }
+
+    fun getAccountKeyForDevice(device: BluetoothDevice): String? {
+        return get("${KEY_ACCOUNT_KEY}_${device.address}", "").let {
+            if (it.isEmpty()) null else it
+        }
+    }
+
+    fun putAccountKeyForDevice(device: BluetoothDevice, key: String) {
+        put("${KEY_ACCOUNT_KEY}_${device.address}", key)
+    }
+
     companion object {
         private const val KEY_ENABLE_SYSTEM_INTEGRATION = "enable_system_integration"
         private const val KEY_ENABLE_NOTIFICATION = "enable_notification"
@@ -76,6 +99,7 @@ class SettingsUtils private constructor(context: Context) {
         private const val KEY_ENABLE_AUTO_SWITCH_DEVICE = "enable_auto_switch_device"
         private const val KEY_ALLOW_SWITCH_DEVICE = "allow_switch_device"
         private const val KEY_ENABLE_AUTO_CONNECT_DEVICE = "enable_auto_connect_device"
+        private const val KEY_ACCOUNT_KEY = "account_key"
 
         @Volatile
         private var INSTANCE: SettingsUtils? = null
