@@ -66,6 +66,11 @@ class EarbudsService : Service() {
         }
     }
 
+    private val headsetDeviceListener = object : HeadsetManager.HeadsetDeviceListener {
+        override fun onDeviceChanged(device: BluetoothDevice, nearbyDevice: NearbyDevice) =
+            updateStatus(device, nearbyDevice)
+    }
+
     override fun onCreate() {
         super.onCreate()
         if (DEBUG) Log.d(TAG, "onCreate")
@@ -121,9 +126,11 @@ class EarbudsService : Service() {
 
     private fun registerHeadsetListener() {
         headsetManager.registerListener()
+        headsetManager.registerDeviceListener(headsetDeviceListener)
     }
 
     private fun unregisterHeadsetListener() {
+        headsetManager.unregisterDeviceListener(headsetDeviceListener)
         headsetManager.unregisterListener()
     }
 
@@ -164,6 +171,20 @@ class EarbudsService : Service() {
 
         if (DEBUG) Log.d(TAG, "Find bonded device, try connect: $device")
         device.runCatching { connect() }
+    }
+
+    private fun updateStatus(device: BluetoothDevice, nearbyDevice: NearbyDevice) {
+        if (DEBUG) Log.d(TAG, "Headset device changed: $device, $nearbyDevice")
+        if (!nearbyDevice.isValidAccountKey()) {
+            Log.w(TAG, "Invalid account key for device: $device")
+            return
+        }
+
+        val accountKey = nearbyDevice.accountKey
+        if (settingsUtils.getAccountKeyForDevice(device) != accountKey) {
+            if (DEBUG) Log.d(TAG, "Writing device account key: $device $accountKey")
+            settingsUtils.putAccountKeyForDevice(device, nearbyDevice.accountKey)
+        }
     }
 
     private fun updateStatus(device: BluetoothDevice) {

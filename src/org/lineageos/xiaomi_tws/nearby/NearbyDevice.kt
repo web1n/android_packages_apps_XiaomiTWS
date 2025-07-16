@@ -13,6 +13,10 @@ data class NearbyDevice(val address: String?, val accountKey: String, val vid: I
     val device = address?.let { getBluetoothAdapter().getRemoteDevice(address) }
     val name = getDeviceName(vid, pid)
 
+    fun isValidAccountKey(): Boolean {
+        return accountKey != "0000000000"
+    }
+
     companion object {
         private const val EXPECTED_DATA_LENGTH = 24
 
