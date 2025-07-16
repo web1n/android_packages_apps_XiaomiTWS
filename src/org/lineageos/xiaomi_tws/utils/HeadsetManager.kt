@@ -17,7 +17,9 @@ import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
 import org.lineageos.xiaomi_tws.utils.ByteUtils.hexToBytes
+import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
 
 class HeadsetManager private constructor(private val context: Context) {
 
@@ -152,6 +154,13 @@ class HeadsetManager private constructor(private val context: Context) {
             device,
             if (enabled) COMMAND_ENABLE_SWITCH_DEVICE else COMMAND_DISABLE_SWITCH_DEVICE
         )
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun sendDeviceNewAccountKey(device: BluetoothDevice): Boolean {
+        val randomBytes = byteArrayOf(0x04) + ByteArray(15).apply { Random.nextBytes(this) }
+
+        return sendXiaomiATCommand(device, "FF010201031103${randomBytes.toHexString()}FF")
     }
 
     companion object {

@@ -176,7 +176,9 @@ class EarbudsService : Service() {
     private fun updateStatus(device: BluetoothDevice, nearbyDevice: NearbyDevice) {
         if (DEBUG) Log.d(TAG, "Headset device changed: $device, $nearbyDevice")
         if (!nearbyDevice.isValidAccountKey()) {
-            Log.w(TAG, "Invalid account key for device: $device")
+            if (DEBUG) Log.d(TAG, "Invalid account key for device: $device, generate new")
+
+            headsetManager.sendDeviceNewAccountKey(device)
             return
         }
 
