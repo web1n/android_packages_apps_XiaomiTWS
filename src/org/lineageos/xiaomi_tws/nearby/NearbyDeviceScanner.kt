@@ -94,9 +94,11 @@ class NearbyDeviceScanner private constructor(context: Context) {
 
     private fun handleScanResults(results: List<ScanResult>) {
         val newDevices = results.mapNotNull {
-            NearbyDevice.runCatching { fromScanResult(it) }
-                .onFailure { Log.e(TAG, "Failed to parse scan result:", it) }
-                .getOrNull()
+            it.scanRecord?.let { scanRecord ->
+                runCatching { NearbyDevice.fromScanRecord(scanRecord) }
+                    .onFailure { Log.e(TAG, "Failed to parse scan result:", it) }
+                    .getOrNull()
+            }
         }.toSet()
 
         notifyNewDevices(newDevices)

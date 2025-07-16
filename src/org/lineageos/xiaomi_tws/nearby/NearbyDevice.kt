@@ -1,7 +1,7 @@
 package org.lineageos.xiaomi_tws.nearby
 
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanRecord
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.UUID_FAST_CONNECT
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.XIAOMI_MANUFACTURER_ID
 import org.lineageos.xiaomi_tws.utils.ByteUtils.bytesToInt
@@ -72,10 +72,9 @@ data class NearbyDevice(val address: String, val vid: Int, val pid: Int) {
             return DEVICE_NAMES[vid to pid] ?: "Unknown Device ($vid,$pid)"
         }
 
-        fun fromScanResult(scanResult: ScanResult): NearbyDevice {
-            val manufacturerData = scanResult.scanRecord
-                ?.getManufacturerSpecificData(XIAOMI_MANUFACTURER_ID)
-            val fastConnectData = scanResult.scanRecord?.serviceData?.get(UUID_FAST_CONNECT)
+        fun fromScanRecord(scanRecord: ScanRecord): NearbyDevice {
+            val manufacturerData = scanRecord.getManufacturerSpecificData(XIAOMI_MANUFACTURER_ID)
+            val fastConnectData = scanRecord.serviceData?.get(UUID_FAST_CONNECT)
             require(manufacturerData != null && manufacturerData.size == EXPECTED_DATA_LENGTH)
             require(fastConnectData != null && fastConnectData.size == EXPECTED_DATA_LENGTH)
 
