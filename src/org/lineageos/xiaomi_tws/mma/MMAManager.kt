@@ -47,6 +47,8 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private val mmaDevices = HashMap<String, Pair<MMADevice, DeviceStatus>>()
+    private val inEarStates = HashMap<String, Pair<InEarState.State, InEarState.State>>()
+
     private val responseFlows = ConcurrentHashMap<String, MutableSharedFlow<RequestResponse>>()
     private val connectionListeners = mutableListOf<MMAListener>()
 
@@ -103,6 +105,7 @@ class MMAManager private constructor(private val context: Context) {
             if (DEBUG) Log.d(TAG, "Device disconnected: ${device.address}")
             mma.close()
 
+            inEarStates.remove(device.address)
             cancelAllRequests(device)
             dispatchEvent(DeviceEvent.Disconnected(device))
         }
@@ -202,7 +205,10 @@ class MMAManager private constructor(private val context: Context) {
                 val (left, right) = runCatching { InEarState.parseConfigValue(value) }
                     .getOrNull() ?: return@forEach
 
-                dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
+                if (inEarStates[device.address] != left to right) {
+                    inEarStates[device.address] = left to right
+                    dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
+                }
             }
 
             dispatchEvent(DeviceEvent.ConfigChanged(device, config, value))
