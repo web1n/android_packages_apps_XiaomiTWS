@@ -16,8 +16,8 @@ class DeviceInfoRequestBuilder {
     companion object {
         private fun <T> createGetDeviceInfoRequest(
             mask: Int,
-            expectedSize: Int,
-            dataProcessor: (Response) -> T
+            expectedSize: (Int) -> Boolean,
+            dataProcessor: (ByteArray) -> T
         ): RequestBuilder<T> {
             val request = Request(
                 XIAOMI_MMA_OPCODE_GET_DEVICE_INFO,
@@ -25,8 +25,8 @@ class DeviceInfoRequestBuilder {
             )
 
             return RequestBuilder(request) { response ->
-                validateDeviceInfoResponse(response.data, mask, expectedSize)
-                dataProcessor(response)
+                val content = validateDeviceInfoResponse(response.data, mask, expectedSize)
+                dataProcessor(content)
             }
         }
 
@@ -47,35 +47,44 @@ class DeviceInfoRequestBuilder {
         private fun validateDeviceInfoResponse(
             data: ByteArray,
             expectedMask: Int,
-            expectedSize: Int
-        ) {
-            require(data.size == expectedSize) {
-                "Response data length mismatch. Expected: $expectedSize, Actual: ${data.size}"
+            expectedSize: (Int) -> Boolean
+        ): ByteArray {
+            require(data.size >= 2) {
+                "Response config data too short. Actual: ${data.size}"
             }
-            require(data[0].toInt() == data.size - 1) {
-                "Response config data length mismatch. Expected: ${data[0]}, Actual: ${data.size - 1}"
+            val length = data[0].toInt()
+            val mask = data[1].toInt()
+            val content = data.drop(2).toByteArray()
+
+            require(length == data.size - 1) {
+                "Response config data length mismatch. Expected: $length, Actual: ${data.size - 1}"
             }
-            require(data[1].toInt() == expectedMask) {
-                "Response config data mask mismatch. Expected: $expectedMask, Actual: ${data[1]}"
+            require(mask == expectedMask) {
+                "Response config data mask mismatch. Expected: $expectedMask, Actual: $mask"
             }
+            require(expectedSize(content.size)) {
+                "Response data length mismatch. Actual: ${content.size}"
+            }
+
+            return content
         }
 
         fun batteryInfo(): RequestBuilder<Earbuds> {
-            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_BATTERY, 5) {
-                Earbuds.fromBytes(it.data[2], it.data[3], it.data[4])
+            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_BATTERY, 3::equals) {
+                Earbuds.fromBytes(it[0], it[1], it[2])
             }
         }
 
         fun softwareVersion(): RequestBuilder<String> {
-            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VERSION, 4) {
-                Integer.toHexString(bytesToInt(it.data[2], it.data[3]))
+            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VERSION, setOf(2, 4)::contains) {
+                Integer.toHexString(bytesToInt(it[0], it[1]))
             }
         }
 
         fun vidPid(): RequestBuilder<Pair<Int, Int>> {
-            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VID_PID, 6) {
-                val vendorId = bytesToInt(it.data[2], it.data[3])
-                val productId = bytesToInt(it.data[4], it.data[5])
+            return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VID_PID, 4::equals) {
+                val vendorId = bytesToInt(it[0], it[1])
+                val productId = bytesToInt(it[2], it[3])
                 vendorId to productId
             }
         }
