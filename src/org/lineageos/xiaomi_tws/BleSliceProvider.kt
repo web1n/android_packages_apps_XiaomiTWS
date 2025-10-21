@@ -54,7 +54,7 @@ class BleSliceProvider : SliceProvider() {
         private val TAG = BleSliceProvider::class.java.simpleName
         private const val DEBUG = true
 
-        private const val AUTHORITY_BLE_SLICE = "org.lineageos.xiaomi_tws.ble-slice"
+        private const val AUTHORITY_BLE_SLICE = "org.lineageos.xiaomi_tws.ble_slice"
         private const val KEY_MAC_ADDRESS = "mac"
 
         private fun getBluetoothDevice(uri: Uri): BluetoothDevice {

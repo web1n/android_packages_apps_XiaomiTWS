@@ -52,7 +52,7 @@
 
         <provider
             android:name=".BleSliceProvider"
-            android:authorities="org.lineageos.xiaomi_tws.ble-slice"
+            android:authorities="org.lineageos.xiaomi_tws.ble_slice"
             android:exported="false" />
 
     </application>
