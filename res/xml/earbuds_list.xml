@@ -16,20 +16,20 @@
         android:key="settings"
         android:title="@string/earbuds_list_settings">
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="enable_system_integration"
             android:summary="@string/earbuds_list_enable_system_integration_summary"
             android:title="@string/earbuds_list_enable_system_integration" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="true"
             android:key="enable_notification"
             android:dependency="enable_system_integration"
             android:summary="@string/earbuds_list_enable_notification_summary"
             android:title="@string/earbuds_list_enable_notification" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:key="enable_ble_scan"
             android:dependency="enable_system_integration"

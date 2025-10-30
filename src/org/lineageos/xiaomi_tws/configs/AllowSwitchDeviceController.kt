@@ -1,15 +1,15 @@
 package org.lineageos.xiaomi_tws.configs
 
 import android.bluetooth.BluetoothDevice
-import androidx.preference.SwitchPreference
+import androidx.preference.TwoStatePreference
 import org.lineageos.xiaomi_tws.utils.HeadsetManager
 import org.lineageos.xiaomi_tws.utils.HeadsetManager.Companion.SUPPORT_XIAOMI_AT_COMMAND
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
 class AllowSwitchDeviceController(preferenceKey: String, device: BluetoothDevice) :
-    BaseConfigController<SwitchPreference>(preferenceKey, device),
-    BaseConfigController.OnPreferenceChangeListener<SwitchPreference, Boolean> {
+    BaseConfigController<TwoStatePreference>(preferenceKey, device),
+    BaseConfigController.OnPreferenceChangeListener<TwoStatePreference, Boolean> {
 
     override suspend fun initData(manager: MMAManager) {
         if (!SUPPORT_XIAOMI_AT_COMMAND) {
@@ -17,14 +17,14 @@ class AllowSwitchDeviceController(preferenceKey: String, device: BluetoothDevice
         }
     }
 
-    override fun postUpdateValue(preference: SwitchPreference) {
+    override fun postUpdateValue(preference: TwoStatePreference) {
         preference.isChecked = SettingsUtils.getInstance(preference.context)
             .isSwitchDeviceAllowed(device)
     }
 
     override suspend fun onPreferenceChange(
         manager: MMAManager,
-        preference: SwitchPreference,
+        preference: TwoStatePreference,
         newValue: Boolean
     ): Boolean {
         SettingsUtils.getInstance(preference.context)

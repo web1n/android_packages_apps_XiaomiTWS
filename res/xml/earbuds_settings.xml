@@ -13,7 +13,7 @@
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:key="enable_auto_switch_device"
             android:summary="@string/auto_switch_device_summary"
             android:title="@string/auto_switch_device"
@@ -109,19 +109,19 @@
         android:key="multi_devices"
         android:title="@string/earbuds_settings_multi_devices">
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:key="multi_connect"
             android:summary="@string/multi_connect_summary"
             android:title="@string/multi_connect"
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:key="allow_switch_device"
             android:summary="@string/allow_switch_device_summary"
             android:title="@string/allow_switch_device"
             app:controller="org.lineageos.xiaomi_tws.configs.AllowSwitchDeviceController" />
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:dependency="allow_switch_device"
             android:key="auto_connect_device"
             android:summary="@string/auto_connect_device_summary"
@@ -134,7 +134,7 @@
         android:key="advanced"
         android:title="@string/earbuds_settings_advanced">
 
-        <SwitchPreference
+        <SwitchPreferenceCompat
             android:key="find_earbuds"
             android:summaryOff="@string/find_earbuds_off"
             android:summaryOn="@string/find_earbuds_on"
