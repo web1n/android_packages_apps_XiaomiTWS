@@ -15,8 +15,6 @@ object PreferenceUtils {
     private const val NAME_KEY = "key"
     private const val NAME_CONTROLLER = "controller"
 
-    private const val PREFERENCE_TAG_SUFFIX = "Preference"
-
     fun createAllControllers(
         context: Context,
         @XmlRes xmlResId: Int,
@@ -31,14 +29,11 @@ object PreferenceUtils {
                     if (eventType != XmlPullParser.START_TAG) {
                         continue
                     }
-                    val tagName = parser.name ?: continue
                     val key = parser.getAttributeValue(NAMESPACE_ANDROID, NAME_KEY) ?: continue
                     val controller =
                         parser.getAttributeValue(NAMESPACE_APP, NAME_CONTROLLER) ?: continue
 
-                    if (isPreferenceTag(tagName)) {
-                        configControllers.add(createControllerInstance(controller, key, device))
-                    }
+                    configControllers.add(createControllerInstance(controller, key, device))
                 }
             }
 
@@ -48,10 +43,6 @@ object PreferenceUtils {
         }
 
         return configControllers
-    }
-
-    private fun isPreferenceTag(tagName: String): Boolean {
-        return tagName.endsWith(PREFERENCE_TAG_SUFFIX)
     }
 
     private fun createControllerInstance(
