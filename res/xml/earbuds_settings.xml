@@ -8,7 +8,7 @@
         android:key="general"
         android:title="@string/earbuds_settings_general">
 
-        <DropDownPreference
+        <ListPreference
             android:key="equalizer_mode"
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
@@ -25,7 +25,7 @@
         android:key="noise_cancellation_mode"
         android:title="@string/noise_cancellation_mode">
 
-        <DropDownPreference
+        <ListPreference
             android:key="switch_noise_cancellation_mode"
             android:title="@string/noise_cancellation_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.NoiseCancellationModeController" />
@@ -51,53 +51,53 @@
         android:title="@string/earbuds_settings_gestures"
         app:initialExpandedChildrenCount="2">
 
-        <DropDownPreference
+        <ListPreference
             android:key="single_click_left"
             android:title="@string/single_click_left"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="single_click_right"
             android:title="@string/single_click_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="double_click_left"
             android:title="@string/double_click_left"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="double_click_right"
             android:title="@string/double_click_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="treble_click_left"
             android:title="@string/treble_click_left"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="treble_click_right"
             android:title="@string/treble_click_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="long_press_left"
             android:title="@string/long_press_left"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="long_press_right"
             android:title="@string/long_press_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="swipe_left"
             android:title="@string/swipe_left"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController"
             app:useSimpleSummaryProvider="true" />
 
-        <DropDownPreference
+        <ListPreference
             android:key="swipe_right"
             android:title="@string/swipe_right"
             app:controller="org.lineageos.xiaomi_tws.configs.ButtonController"
