@@ -7,7 +7,7 @@ import android.util.Log
 import android.view.View
 import androidx.core.content.IntentCompat
 import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
+import com.android.settingslib.widget.SettingsBasePreferenceFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +23,7 @@ import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
 
 @SuppressLint("MissingPermission")
-class EarbudsInfoFragment : PreferenceFragmentCompat(), MMAListener {
+class EarbudsInfoFragment : SettingsBasePreferenceFragment(), MMAListener {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
 

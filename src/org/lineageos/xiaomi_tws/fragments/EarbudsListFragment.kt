@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceFragmentCompat
+import com.android.settingslib.widget.SettingsBasePreferenceFragment
 import org.lineageos.xiaomi_tws.PersistentApplication.Companion.enableSystemIntegration
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
@@ -18,7 +18,7 @@ import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.widgets.EarbudsPreference
 import org.lineageos.xiaomi_tws.widgets.EarbudsPreference.EarbudsState
 
-class EarbudsListFragment : PreferenceFragmentCompat() {
+class EarbudsListFragment : SettingsBasePreferenceFragment() {
 
     private val mmaManager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
     private val nearbyDeviceScanner by lazy { NearbyDeviceScanner.getInstance(requireContext()) }
