@@ -46,8 +46,8 @@ class MMAManager private constructor(private val context: Context) {
         data class Error(val error: Throwable) : RequestResponse()
     }
 
-    private val mmaDevices = HashMap<String, Pair<MMADevice, DeviceStatus>>()
-    private val inEarStates = HashMap<String, Pair<InEarState.State, InEarState.State>>()
+    private val mmaDevices = ConcurrentHashMap<String, Pair<MMADevice, DeviceStatus>>()
+    private val inEarStates = ConcurrentHashMap<String, Pair<InEarState.State, InEarState.State>>()
 
     private val responseFlows = ConcurrentHashMap<String, MutableSharedFlow<RequestResponse>>()
     private val connectionListeners = mutableListOf<MMAListener>()
