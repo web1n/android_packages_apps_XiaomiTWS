@@ -1,19 +1,20 @@
 package org.lineageos.xiaomi_tws.mma.configs
 
 import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
-import org.lineageos.xiaomi_tws.mma.configs.InEarState.State
+import org.lineageos.xiaomi_tws.mma.configs.InEarState.BothState
 import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 
-class InEarState : ConfigRequestBuilder<Pair<State, State>>(CONFIG_ID) {
+class InEarState : ConfigRequestBuilder<BothState>(CONFIG_ID) {
 
     enum class State { InEar, InCase, Outside }
+    data class BothState(val left: State, val right: State)
 
-    override fun bytesToValue(bytes: ByteArray): Pair<State, State> {
+    override fun bytesToValue(bytes: ByteArray): BothState {
         return parseConfigValue(bytes)
     }
 
-    override fun valueToBytes(value: Pair<State, State>): ByteArray {
+    override fun valueToBytes(value: BothState): ByteArray {
         throw NotImplementedError()
     }
 
@@ -21,7 +22,7 @@ class InEarState : ConfigRequestBuilder<Pair<State, State>>(CONFIG_ID) {
         const val CONFIG_ID = 0x000C
         private const val VALID_BYTES_LENGTH = 1
 
-        fun parseConfigValue(bytes: ByteArray): Pair<State, State> {
+        fun parseConfigValue(bytes: ByteArray): BothState {
             if (bytes.size != VALID_BYTES_LENGTH) {
                 throw NotImplementedError("Not supported value: ${bytes.toHexString()}")
             }
@@ -38,7 +39,7 @@ class InEarState : ConfigRequestBuilder<Pair<State, State>>(CONFIG_ID) {
                 else -> State.Outside
             }
 
-            return left to right
+            return BothState(left, right)
         }
     }
 

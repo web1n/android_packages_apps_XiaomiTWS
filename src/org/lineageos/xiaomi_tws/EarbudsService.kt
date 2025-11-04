@@ -15,7 +15,7 @@ import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.configs.InEarState.State
+import org.lineageos.xiaomi_tws.mma.configs.InEarState
 import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
@@ -45,7 +45,7 @@ class EarbudsService : Service() {
                 is DeviceEvent.Disconnected -> clearDevice(event.device)
                 is DeviceEvent.BatteryChanged -> updateBattery(event.device, event.battery)
                 is DeviceEvent.InEarStateChanged ->
-                    switchMediaDevice(event.device, event.left, event.right)
+                    switchMediaDevice(event.device, event.state)
 
                 else -> {}
             }
@@ -207,7 +207,7 @@ class EarbudsService : Service() {
         }
     }
 
-    private fun switchMediaDevice(device: BluetoothDevice, left: State, right: State) {
+    private fun switchMediaDevice(device: BluetoothDevice, state: InEarState.BothState) {
         if (!settingsUtils.isAutoSwitchDeviceEnabled(device)) {
             return
         }
@@ -215,8 +215,8 @@ class EarbudsService : Service() {
         val builtinDevice = mediaManager.getBuiltinMediaDevice() ?: return
         val bluetoothDevice = mediaManager.getBluetoothMediaDevice(device) ?: return
 
-        val leftInEar = left == State.InEar
-        val rightInEar = right == State.InEar
+        val leftInEar = state.left == InEarState.State.InEar
+        val rightInEar = state.right == InEarState.State.InEar
         if (leftInEar or rightInEar) {
             if (builtinDevice.isSelected()) {
                 if (DEBUG) Log.d(TAG, "Switching media device to ${bluetoothDevice.name}")

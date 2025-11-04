@@ -47,7 +47,7 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private val mmaDevices = ConcurrentHashMap<String, Pair<MMADevice, DeviceStatus>>()
-    private val inEarStates = ConcurrentHashMap<String, Pair<InEarState.State, InEarState.State>>()
+    private val inEarStates = ConcurrentHashMap<String, InEarState.BothState>()
 
     private val responseFlows = ConcurrentHashMap<String, MutableSharedFlow<RequestResponse>>()
     private val connectionListeners = mutableListOf<MMAListener>()
@@ -202,12 +202,11 @@ class MMAManager private constructor(private val context: Context) {
         val typeValues = parseTLVMap(packet.data, false)
         typeValues.forEach { config, value ->
             if (config == InEarState.CONFIG_ID) {
-                val (left, right) = runCatching { InEarState.parseConfigValue(value) }
+                val state = runCatching { InEarState.parseConfigValue(value) }
                     .getOrNull() ?: return@forEach
 
-                if (inEarStates[device.address] != left to right) {
-                    inEarStates[device.address] = left to right
-                    dispatchEvent(DeviceEvent.InEarStateChanged(device, left, right))
+                if (inEarStates.put(device.address, state) != state) {
+                    dispatchEvent(DeviceEvent.InEarStateChanged(device, state))
                 }
             }
 

@@ -21,7 +21,6 @@ sealed class DeviceEvent {
 
     data class InEarStateChanged(
         override val device: BluetoothDevice,
-        val left: InEarState.State,
-        val right: InEarState.State
+        val state: InEarState.BothState,
     ) : DeviceEvent()
 }
