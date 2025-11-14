@@ -9,12 +9,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import androidx.core.content.IntentCompat
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_NOTIFY_TYPE_BATTERY
@@ -32,27 +31,22 @@ import org.lineageos.xiaomi_tws.utils.ByteUtils.parseTLVMap
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("MissingPermission")
 class MMAManager private constructor(private val context: Context) {
 
     private enum class DeviceStatus { Connected, Authing, Disconnected }
 
-    private sealed class RequestResponse {
-        data class Success(val packet: MMAPacket?) : RequestResponse()
-        data class Error(val error: Throwable) : RequestResponse()
-    }
+    private data class RequestId(val deviceAddress: String, val opCodeSN: Byte)
 
     private val mmaDevices = ConcurrentHashMap<String, Pair<MMADevice, DeviceStatus>>()
     private val inEarStates = ConcurrentHashMap<String, InEarState.BothState>()
 
-    private val responseFlows = ConcurrentHashMap<String, MutableSharedFlow<RequestResponse>>()
+    private val pendingResponses = ConcurrentHashMap<RequestId, CompletableDeferred<MMAPacket?>>()
     private val connectionListeners = mutableListOf<MMAListener>()
 
-    private val coroutineScope = CoroutineScope(Dispatchers.IO + Job())
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + job)
 
     private val bluetoothStateReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -112,18 +106,14 @@ class MMAManager private constructor(private val context: Context) {
     }
 
     private fun cancelAllRequests(device: BluetoothDevice) {
-        responseFlows.keys
-            .filter { it.startsWith(device.address) }
-            .forEach { emitError(it, IOException("Device disconnected")) }
+        pendingResponses.keys.toList()
+            .filter { it.deviceAddress == device.address }
+            .forEach { completeResponse(it, IOException("Device disconnected")) }
     }
 
     private fun notifyResponse(device: BluetoothDevice, packet: MMAPacket) {
-        val requestId = "${device.address}-${packet.opCodeSN}"
-
-        val flow = responseFlows[requestId]
-        if (flow != null) {
-            flow.tryEmit(RequestResponse.Success(packet))
-            responseFlows.remove(requestId)
+        val requestId = RequestId(device.address, packet.opCodeSN)
+        if (completeResponse(requestId, packet)) {
             return
         }
 
@@ -214,13 +204,23 @@ class MMAManager private constructor(private val context: Context) {
         }
     }
 
-    private fun emitError(requestId: String, throwable: Throwable) {
-        responseFlows.remove(requestId)
-            ?.tryEmit(RequestResponse.Error(throwable))
+    private fun completeResponse(requestId: RequestId, content: Any): Boolean {
+        val prev = pendingResponses.remove(requestId)
+        if (prev != null && !prev.isCompleted) {
+            if (content is Throwable) {
+                prev.completeExceptionally(content)
+            } else if (content is MMAPacket) {
+                prev.complete(content)
+            }
+
+            return true
+        }
+
+        return false
     }
 
     private fun isMMADevice(device: BluetoothDevice): Boolean {
-        return mmaDevices.contains(device.address)
+        return mmaDevices.containsKey(device.address)
     }
 
     private fun getDevice(device: BluetoothDevice): MMADevice {
@@ -300,7 +300,7 @@ class MMAManager private constructor(private val context: Context) {
 
         context.unregisterReceiver(bluetoothStateReceiver)
         clearConnectionListeners()
-        coroutineScope.coroutineContext.cancel()
+        job.cancelChildren()
     }
 
     private fun processConnectedDevices() {
@@ -350,59 +350,29 @@ class MMAManager private constructor(private val context: Context) {
     private suspend fun sendRequestSuspend(
         device: BluetoothDevice,
         packet: MMAPacket
-    ): MMAPacket? = suspendCoroutine { continuation ->
+    ): MMAPacket? {
         if (packet is MMAPacket.Request) {
             packet.opCodeSN = getDevice(device).newOpCodeSN
         }
-        val requestId = "${device.address}-${packet.opCodeSN}"
+        val requestId = RequestId(device.address, packet.opCodeSN)
 
-        val responseFlow = MutableSharedFlow<RequestResponse>(replay = 1)
-        responseFlows[requestId] = responseFlow
+        val deferred = CompletableDeferred<MMAPacket?>()
+        pendingResponses[requestId] = deferred
 
-        coroutineScope.launch {
-            runCatching {
-                withTimeout(TIMEOUT_MS_WRITE) {
-                    getDevice(device).sendPacket(packet)
-                }
-
-                if (!packet.needReply) {
-                    null
-                } else {
-                    waitForPacket(requestId)
-                }
-            }.onSuccess {
-                responseFlows.remove(requestId)
-                continuation.resume(it)
-            }.onFailure {
-                Log.e(TAG, "Failed to send packet: $device", it)
-
-                responseFlows.remove(requestId)
-                continuation.resumeWithException(it)
+        try {
+            withTimeout(TIMEOUT_MS_WRITE) {
+                getDevice(device).sendPacket(packet)
             }
-        }
-    }
 
-    private suspend fun waitForPacket(requestId: String): MMAPacket? {
-        requireNotNull(responseFlows[requestId]) { "Unknown response flow id $requestId" }
-
-        return suspendCoroutine { continuation ->
-            coroutineScope.launch {
-                runCatching {
-                    withTimeout(TIMEOUT_MS_READ) {
-                        responseFlows[requestId]!!.first()
-                    }
-                }.onSuccess {
-                    responseFlows.remove(requestId)
-
-                    when (it) {
-                        is RequestResponse.Success -> continuation.resume(it.packet)
-                        is RequestResponse.Error -> continuation.resumeWithException(it.error)
-                    }
-                }.onFailure {
-                    responseFlows.remove(requestId)
-                    continuation.resumeWithException(it)
+            return if (!packet.needReply) {
+                null
+            } else {
+                withTimeout(TIMEOUT_MS_READ) {
+                    deferred.await()
                 }
             }
+        } finally {
+            pendingResponses.remove(requestId)
         }
     }
 
