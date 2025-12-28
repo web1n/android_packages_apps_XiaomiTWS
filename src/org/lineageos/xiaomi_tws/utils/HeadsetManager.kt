@@ -2,6 +2,7 @@ package org.lineageos.xiaomi_tws.utils
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAssignedNumbers
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT
@@ -174,7 +175,7 @@ class HeadsetManager private constructor(private val context: Context) {
         private const val COMMAND_DISABLE_SWITCH_DEVICE = "FF01020103020E00FF"
 
         val SUPPORT_XIAOMI_AT_COMMAND = runCatching {
-            BluetoothHeadset::class.java.getField("VENDOR_SPECIFIC_HEADSET_EVENT_XIAOMI")
+            BluetoothAssignedNumbers::class.java.getField("XIAOMI")
         }.isSuccess
 
         @SuppressLint("StaticFieldLeak")
