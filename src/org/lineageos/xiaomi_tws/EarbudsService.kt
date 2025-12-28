@@ -20,7 +20,7 @@ import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
-import org.lineageos.xiaomi_tws.utils.HeadsetManager
+import org.lineageos.xiaomi_tws.headset.HeadsetManager
 import org.lineageos.xiaomi_tws.utils.MediaManager
 import org.lineageos.xiaomi_tws.utils.MediaManager.Companion.isSelected
 import org.lineageos.xiaomi_tws.utils.MediaManager.MediaPlayingListener

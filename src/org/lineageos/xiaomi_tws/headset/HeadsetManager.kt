@@ -1,4 +1,4 @@
-package org.lineageos.xiaomi_tws.utils
+package org.lineageos.xiaomi_tws.headset
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
+import org.lineageos.xiaomi_tws.utils.BluetoothUtils.parseFromBytes
 import org.lineageos.xiaomi_tws.utils.ByteUtils.hexToBytes
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import java.util.concurrent.ConcurrentHashMap
@@ -63,7 +64,7 @@ class HeadsetManager private constructor(private val context: Context) {
 
             val nearbyDevice = runCatching {
                 val scanRecordBytes = arg.substring(14, arg.length - 2).hexToBytes()
-                val scanRecord = BluetoothUtils.parseFromBytes(scanRecordBytes) ?: return
+                val scanRecord = parseFromBytes(scanRecordBytes) ?: return
                 NearbyDevice.fromScanRecord(scanRecord)
             }.getOrNull() ?: return
 

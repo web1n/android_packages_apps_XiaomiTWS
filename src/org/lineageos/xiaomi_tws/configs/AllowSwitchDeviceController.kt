@@ -2,8 +2,8 @@ package org.lineageos.xiaomi_tws.configs
 
 import android.bluetooth.BluetoothDevice
 import androidx.preference.TwoStatePreference
-import org.lineageos.xiaomi_tws.utils.HeadsetManager
-import org.lineageos.xiaomi_tws.utils.HeadsetManager.Companion.SUPPORT_XIAOMI_AT_COMMAND
+import org.lineageos.xiaomi_tws.headset.HeadsetManager
+import org.lineageos.xiaomi_tws.headset.HeadsetManager.Companion.SUPPORT_XIAOMI_AT_COMMAND
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
