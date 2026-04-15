@@ -13,12 +13,6 @@
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
-        <SwitchPreferenceCompat
-            android:key="enable_auto_switch_device"
-            android:summary="@string/auto_switch_device_summary"
-            android:title="@string/auto_switch_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AutoSwitchDeviceController" />
-
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -114,19 +108,6 @@
             android:summary="@string/multi_connect_summary"
             android:title="@string/multi_connect"
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
-
-        <SwitchPreferenceCompat
-            android:key="allow_switch_device"
-            android:summary="@string/allow_switch_device_summary"
-            android:title="@string/allow_switch_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AllowSwitchDeviceController" />
-
-        <SwitchPreferenceCompat
-            android:dependency="allow_switch_device"
-            android:key="auto_connect_device"
-            android:summary="@string/auto_connect_device_summary"
-            android:title="@string/auto_connect_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AutoConnectDeviceController" />
 
     </PreferenceCategory>
 

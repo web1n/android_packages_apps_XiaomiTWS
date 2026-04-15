@@ -16,6 +16,10 @@
     <string name="tws_service_category_system">System</string>
     <string name="tws_service_enable_system_integration">Enable System Integration</string>
     <string name="tws_service_enable_system_integration_summary">When disabled, all TWS related functions will be turned off, including TWS status detection, battery reporting and device config. Restart required to take effect</string>
+    <string name="tws_service_auto_connect_device">Auto Connect to Earbuds</string>
+    <string name="tws_service_auto_connect_device_summary">Automatically connect to paired earbuds when media is playing</string>
+    <string name="tws_service_auto_switch_device">Auto Switch Device</string>
+    <string name="tws_service_auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
     <string name="tws_service_enable_notification">Enable Notification</string>
     <string name="tws_service_enable_notification_summary">Send notification when status changes</string>
     <string name="tws_service_enable_ble_scan">Enable BLE Scan</string>
@@ -49,9 +53,6 @@
     <string name="equalizer_mode_volume_boost">Volume boost</string>
     <string name="equalizer_mode_harman">Harman</string>
     <string name="equalizer_mode_harman_master">Harman Master</string>
-
-    <string name="auto_switch_device">Auto switch media device</string>
-    <string name="auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
 
     <string name="noise_cancellation_mode">Noise cancellation mode</string>
     <string name="noise_cancellation_mode_off">Off</string>
@@ -91,16 +92,28 @@
     <string name="allow_switch_device">Allow other devices to connect</string>
     <string name="allow_switch_device_summary">Allow other paired devices to take over this earbuds connection</string>
 
-    <string name="auto_connect_device">Auto connect to earbuds</string>
-    <string name="auto_connect_device_summary">Automatically take over earbuds connection when playing media</string>
-    <string name="auto_connect_device_summary_ble_scan_disabled">Ble scan disabled</string>
-
     <string name="device_info">Device Info</string>
 
     <string name="serial_number">Serial number</string>
 
     <string name="device_config_footer_tips">Headset may not support certain functions</string>
     <!-- Device config activity end -->
+
+    <!-- Auto connect device activity start -->
+    <string name="auto_connect_device_title">Auto Connect to Earbuds</string>
+    <string name="auto_connect_device_summary">Automatically connect to paired earbuds when media is playing</string>
+    <string name="auto_connect_device_list">Available Devices</string>
+    <string name="auto_connect_device_empty">No Supported Device Found</string>
+    <string name="auto_connect_device_footer_tips">Paired earbuds that support auto connect will appear here</string>
+    <!-- Auto connect device activity end -->
+
+    <!-- Auto switch device activity start -->
+    <string name="auto_switch_device_title">Auto Switch Media Device</string>
+    <string name="auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
+    <string name="auto_switch_device_list">Available Devices</string>
+    <string name="auto_switch_device_empty">No Supported Device Found</string>
+    <string name="auto_switch_device_footer_tips">Paired earbuds that support auto switch will appear here</string>
+    <!-- Auto switch device activity start -->
 
     <!-- Notification start -->
     <string name="notification_channel_device_info">Device Info</string>

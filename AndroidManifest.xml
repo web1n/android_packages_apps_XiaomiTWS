@@ -36,6 +36,28 @@
         </activity>
 
         <activity-alias
+            android:name=".activity.AutoConnectDeviceActivity"
+            android:exported="true"
+            android:label="@string/auto_connect_device_title"
+            android:targetActivity=".activity.ServiceActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_tws.action.AUTO_CONNECT_DEVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".activity.AutoSwitchDeviceActivity"
+            android:exported="true"
+            android:label="@string/auto_switch_device_title"
+            android:targetActivity=".activity.ServiceActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_tws.action.AUTO_SWITCH_DEVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
             android:name=".activity.DeviceListActivity"
             android:exported="true"
             android:label="@string/device_list_title"

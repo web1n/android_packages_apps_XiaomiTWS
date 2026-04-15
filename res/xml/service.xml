@@ -22,6 +22,26 @@
         android:key="function"
         android:title="@string/tws_service_category_function">
 
+        <Preference
+            android:dependency="system_integration_status"
+            android:key="auto_connect_device"
+            android:title="@string/tws_service_auto_connect_device"
+            android:summary="@string/tws_service_auto_connect_device_summary">
+            <intent
+                android:action="org.lineageos.xiaomi_tws.action.AUTO_CONNECT_DEVICE"
+                android:targetPackage="org.lineageos.xiaomi_tws" />
+        </Preference>
+
+        <Preference
+            android:dependency="system_integration_status"
+            android:key="auto_switch_device"
+            android:title="@string/tws_service_auto_switch_device"
+            android:summary="@string/tws_service_auto_switch_device_summary">
+            <intent
+                android:action="org.lineageos.xiaomi_tws.action.AUTO_SWITCH_DEVICE"
+                android:targetPackage="org.lineageos.xiaomi_tws" />
+        </Preference>
+
         <SwitchPreferenceCompat
             android:defaultValue="true"
             android:dependency="system_integration_status"

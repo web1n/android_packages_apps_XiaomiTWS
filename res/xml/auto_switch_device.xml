@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:persistent="false"
+    android:title="@string/auto_switch_device_title">
+
+    <PreferenceCategory
+        android:key="auto_switch_device_list"
+        android:title="@string/auto_switch_device_list" />
+
+    <com.android.settingslib.widget.BannerMessagePreference
+        android:key="auto_switch_device_empty"
+        android:title="@string/auto_switch_device_empty" />
+
+    <com.android.settingslib.widget.FooterPreference
+        android:key="footer_tips"
+        android:selectable="false"
+        android:title="@string/auto_switch_device_footer_tips" />
+
+</PreferenceScreen>
