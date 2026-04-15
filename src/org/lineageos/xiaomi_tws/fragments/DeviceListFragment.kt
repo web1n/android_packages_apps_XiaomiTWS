@@ -18,7 +18,7 @@ import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.widgets.EarbudsPreference
 import org.lineageos.xiaomi_tws.widgets.EarbudsPreference.EarbudsState
 
-class EarbudsListFragment : SettingsBasePreferenceFragment() {
+class DeviceListFragment : SettingsBasePreferenceFragment() {
 
     private val mmaManager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
     private val nearbyDeviceScanner by lazy { NearbyDeviceScanner.getInstance(requireContext()) }
@@ -36,16 +36,16 @@ class EarbudsListFragment : SettingsBasePreferenceFragment() {
     }
 
     private val earbudsListCategory: PreferenceCategory
-        get() = findPreference(KEY_EARBUDS_LIST)!!
+        get() = findPreference(KEY_DEVICE_LIST)!!
 
     private val emptyStatePreference: Preference
-        get() = findPreference(KEY_EARBUDS_LIST_EMPTY)!!
+        get() = findPreference(KEY_DEVICE_LIST_EMPTY)!!
 
     private val mmaDevices = mutableSetOf<BluetoothDevice>()
     private val nearbyDevices = mutableSetOf<BluetoothDevice>()
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.earbuds_list)
+        addPreferencesFromResource(R.xml.device_list)
     }
 
     override fun onResume() {
@@ -148,10 +148,10 @@ class EarbudsListFragment : SettingsBasePreferenceFragment() {
     }
 
     companion object {
-        private val TAG = EarbudsListFragment::class.java.simpleName
+        private val TAG = DeviceListFragment::class.java.simpleName
         private const val DEBUG = true
 
-        private const val KEY_EARBUDS_LIST = "earbuds_list"
-        private const val KEY_EARBUDS_LIST_EMPTY = "earbuds_list_empty"
+        private const val KEY_DEVICE_LIST = "device_list"
+        private const val KEY_DEVICE_LIST_EMPTY = "device_list_empty"
     }
 }

@@ -21,16 +21,16 @@
     <string name="tws_service_enable_ble_scan">Enable BLE Scan</string>
     <!-- Service activity end -->
 
-    <!-- Earbuds list activity start -->
-    <string name="earbuds_list_title">Xiaomi Earbuds</string>
-    <string name="earbuds_list_category">Earbuds list</string>
-    <string name="earbuds_list_device_disconnected">Disconnected</string>
-    <string name="earbuds_list_device_connected">Connected</string>
-    <string name="earbuds_list_device_nearby">Nearby, not bonded</string>
-    <string name="earbuds_list_device_nearby_bonded">Nearby, not connected</string>
-    <string name="earbuds_list_empty">No earbuds found</string>
-    <string name="earbuds_list_empty_summary">Please make sure your Xiaomi earbuds using MMA protocol are paired and connected</string>
-    <!-- Earbuds list activity end -->
+    <!-- Device list activity start -->
+    <string name="device_list_title">Xiaomi TWS</string>
+    <string name="device_list_category">Device List</string>
+    <string name="device_list_device_disconnected">Disconnected</string>
+    <string name="device_list_device_connected">Connected</string>
+    <string name="device_list_device_nearby">Nearby, not bonded</string>
+    <string name="device_list_device_nearby_bonded">Nearby, not connected</string>
+    <string name="device_list_empty">No Device Found</string>
+    <string name="device_list_empty_summary">Make sure your TWS are paired and connected</string>
+    <!-- Device list activity end -->
 
     <!-- Earbuds settings activity start -->
     <string name="earbuds_settings_title">Earbuds Settings</string>

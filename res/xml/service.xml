@@ -13,7 +13,7 @@
         android:key="device_list"
         android:title="@string/tws_service_device_list">
         <intent
-            android:action="org.lineageos.xiaomi_tws.action.EARBUDS_LIST"
+            android:action="org.lineageos.xiaomi_tws.action.DEVICE_LIST"
             android:targetPackage="org.lineageos.xiaomi_tws" />
     </Preference>
 

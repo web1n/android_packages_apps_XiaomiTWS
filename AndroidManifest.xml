@@ -36,12 +36,12 @@
         </activity>
 
         <activity-alias
-            android:name=".activity.EarbudsListActivity"
+            android:name=".activity.DeviceListActivity"
             android:exported="true"
-            android:label="@string/earbuds_list_title"
+            android:label="@string/device_list_title"
             android:targetActivity=".activity.ServiceActivity">
             <intent-filter>
-                <action android:name="org.lineageos.xiaomi_tws.action.EARBUDS_LIST" />
+                <action android:name="org.lineageos.xiaomi_tws.action.DEVICE_LIST" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>

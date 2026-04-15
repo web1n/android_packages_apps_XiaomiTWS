@@ -36,10 +36,10 @@ class EarbudsPreference(context: Context, private val device: BluetoothDevice) :
 
     private fun updateSummary() {
         val summaryResId = when {
-            state.isConnected -> R.string.earbuds_list_device_connected
-            state.isNearby && state.isBonded -> R.string.earbuds_list_device_nearby_bonded
-            state.isNearby -> R.string.earbuds_list_device_nearby
-            else -> R.string.earbuds_list_device_disconnected
+            state.isConnected -> R.string.device_list_device_connected
+            state.isNearby && state.isBonded -> R.string.device_list_device_nearby_bonded
+            state.isNearby -> R.string.device_list_device_nearby
+            else -> R.string.device_list_device_disconnected
         }
 
         setSummary(summaryResId)

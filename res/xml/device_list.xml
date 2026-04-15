@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:persistent="false"
+    android:title="@string/device_list_title">
+
+    <PreferenceCategory
+        android:key="device_list"
+        android:title="@string/device_list_category" />
+
+    <com.android.settingslib.widget.BannerMessagePreference
+        android:key="device_list_empty"
+        android:summary="@string/device_list_empty_summary"
+        android:title="@string/device_list_empty" />
+
+</PreferenceScreen>
