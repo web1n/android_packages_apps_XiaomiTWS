@@ -8,8 +8,9 @@ import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
 import com.android.settingslib.collapsingtoolbar.R
 import org.lineageos.xiaomi_tws.fragments.EarbudsInfoFragment
 import org.lineageos.xiaomi_tws.fragments.EarbudsListFragment
+import org.lineageos.xiaomi_tws.fragments.ServiceFragment
 
-class EarbudsActivity : CollapsingToolbarBaseActivity() {
+class ServiceActivity : CollapsingToolbarBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +28,7 @@ class EarbudsActivity : CollapsingToolbarBaseActivity() {
         )?.activityInfo?.name
 
         val fragmentClass: Class<*> =
-            FRAGMENTS.getOrDefault(activityName, EarbudsListFragment::class.java)
+            FRAGMENTS.getOrDefault(activityName, ServiceFragment::class.java)
         if (DEBUG) Log.d(TAG, "createFragment: class: $fragmentClass")
 
         try {
@@ -38,11 +39,12 @@ class EarbudsActivity : CollapsingToolbarBaseActivity() {
     }
 
     companion object {
-        private val TAG = EarbudsActivity::class.java.simpleName
+        private val TAG = ServiceActivity::class.java.simpleName
         private const val DEBUG = true
 
         private val FRAGMENTS = mapOf<String, Class<out Fragment>>(
-            "org.lineageos.xiaomi_tws.activity.EarbudsInfoActivity" to EarbudsInfoFragment::class.java
+            "org.lineageos.xiaomi_tws.activity.EarbudsInfoActivity" to EarbudsInfoFragment::class.java,
+            "org.lineageos.xiaomi_tws.activity.EarbudsListActivity" to EarbudsListFragment::class.java,
         )
 
         private const val TAG_EARBUDS = "earbuds"

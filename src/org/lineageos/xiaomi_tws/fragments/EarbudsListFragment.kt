@@ -50,10 +50,7 @@ class EarbudsListFragment : SettingsBasePreferenceFragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!enableSystemIntegration) {
-            updateEmptyState()
-            return
-        }
+        if (!enableSystemIntegration) return
 
         mmaDevices.clear()
         nearbyDevices.clear()
@@ -67,9 +64,7 @@ class EarbudsListFragment : SettingsBasePreferenceFragment() {
 
     override fun onPause() {
         super.onPause()
-        if (!enableSystemIntegration) {
-            return
-        }
+        if (!enableSystemIntegration) return
 
         mmaManager.unregisterConnectionListener(mmaListener)
         nearbyDeviceScanner.unregisterNearbyListener(nearbyDeviceListener)
@@ -150,10 +145,6 @@ class EarbudsListFragment : SettingsBasePreferenceFragment() {
 
     private fun updateEmptyState() {
         emptyStatePreference.isVisible = earbudsListCategory.preferenceCount == 0
-        if (!enableSystemIntegration) {
-            emptyStatePreference.summary =
-                getString(R.string.earbuds_list_empty_summary_system_integration_disabled)
-        }
     }
 
     companion object {
