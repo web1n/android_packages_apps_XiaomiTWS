@@ -47,12 +47,12 @@
         </activity-alias>
 
         <activity-alias
-            android:name=".activity.EarbudsInfoActivity"
+            android:name=".activity.DeviceConfigActivity"
             android:exported="true"
-            android:label="@string/earbuds_settings_title"
+            android:label="@string/device_config_title"
             android:targetActivity=".activity.ServiceActivity">
             <intent-filter>
-                <action android:name="org.lineageos.xiaomi_tws.action.EARBUDS_INFO" />
+                <action android:name="org.lineageos.xiaomi_tws.action.DEVICE_CONFIG" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>

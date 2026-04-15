@@ -6,7 +6,7 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
 import com.android.settingslib.collapsingtoolbar.R
-import org.lineageos.xiaomi_tws.fragments.EarbudsInfoFragment
+import org.lineageos.xiaomi_tws.fragments.DeviceConfigFragment
 import org.lineageos.xiaomi_tws.fragments.DeviceListFragment
 import org.lineageos.xiaomi_tws.fragments.ServiceFragment
 
@@ -43,7 +43,7 @@ class ServiceActivity : CollapsingToolbarBaseActivity() {
         private const val DEBUG = true
 
         private val FRAGMENTS = mapOf<String, Class<out Fragment>>(
-            "org.lineageos.xiaomi_tws.activity.EarbudsInfoActivity" to EarbudsInfoFragment::class.java,
+            "org.lineageos.xiaomi_tws.activity.DeviceConfigActivity" to DeviceConfigFragment::class.java,
             "org.lineageos.xiaomi_tws.activity.DeviceListActivity" to DeviceListFragment::class.java,
         )
 

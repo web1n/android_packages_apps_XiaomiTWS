@@ -11,7 +11,7 @@ import android.content.Intent
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
-import org.lineageos.xiaomi_tws.fragments.EarbudsInfoFragment.Companion.ACTION_EARBUDS_INFO
+import org.lineageos.xiaomi_tws.fragments.DeviceConfigFragment.Companion.ACTION_DEVICE_CONFIG
 
 object NotificationUtils {
 
@@ -20,7 +20,7 @@ object NotificationUtils {
     private fun createEarbudsNotificationChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID_EARBUDS_INFO,
-            context.getString(R.string.notification_channel_earbuds_info),
+            context.getString(R.string.notification_channel_device_info),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             isBlockable = true
@@ -59,7 +59,7 @@ object NotificationUtils {
         device: BluetoothDevice,
         earbuds: Earbuds
     ) = earbuds.run {
-        val pendingIntent = Intent(ACTION_EARBUDS_INFO).apply {
+        val pendingIntent = Intent(ACTION_DEVICE_CONFIG).apply {
             putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             setPackage(context.packageName)
         }.let {

@@ -32,13 +32,14 @@
     <string name="device_list_empty_summary">Make sure your TWS are paired and connected</string>
     <!-- Device list activity end -->
 
-    <!-- Earbuds settings activity start -->
-    <string name="earbuds_settings_title">Earbuds Settings</string>
+    <!-- Device config activity start -->
+    <string name="device_config_title">Device Configuration</string>
 
-    <string name="earbuds_settings_general">General</string>
-    <string name="earbuds_settings_gestures">Gestures</string>
-    <string name="earbuds_settings_multi_devices">Multi Devices</string>
-    <string name="earbuds_settings_advanced">Advanced</string>
+    <string name="device_config_general">General</string>
+    <string name="device_config_noise_cancellation_mode">Noise Cancellation Mode</string>
+    <string name="device_config_gestures">Gestures</string>
+    <string name="device_config_multi_devices">Multi Devices</string>
+    <string name="device_config_advanced">Advanced</string>
 
     <string name="equalizer_mode">Equalizer mode</string>
     <string name="equalizer_mode_default">Default</string>
@@ -98,11 +99,11 @@
 
     <string name="serial_number">Serial number</string>
 
-    <string name="settings_footer_tips">Earbuds may not support certain functions</string>
-    <!-- Earbuds settings activity end -->
+    <string name="device_config_footer_tips">Headset may not support certain functions</string>
+    <!-- Device config activity end -->
 
     <!-- Notification start -->
-    <string name="notification_channel_earbuds_info">Earbuds Info</string>
+    <string name="notification_channel_device_info">Device Info</string>
     <!-- Notification end -->
 
 </resources>

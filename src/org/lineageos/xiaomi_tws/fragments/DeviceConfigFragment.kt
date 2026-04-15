@@ -23,7 +23,7 @@ import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
 
 @SuppressLint("MissingPermission")
-class EarbudsInfoFragment : SettingsBasePreferenceFragment(), MMAListener {
+class DeviceConfigFragment : SettingsBasePreferenceFragment(), MMAListener {
 
     private val manager: MMAManager by lazy { MMAManager.getInstance(requireContext()) }
 
@@ -55,7 +55,7 @@ class EarbudsInfoFragment : SettingsBasePreferenceFragment(), MMAListener {
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        addPreferencesFromResource(R.xml.earbuds_settings)
+        addPreferencesFromResource(R.xml.device_config)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -121,7 +121,7 @@ class EarbudsInfoFragment : SettingsBasePreferenceFragment(), MMAListener {
     private fun bindPreferenceControllers() {
         if (DEBUG) Log.d(TAG, "bindPreferenceControllers")
 
-        createAllControllers(requireContext(), R.xml.earbuds_settings, device).onEach {
+        createAllControllers(requireContext(), R.xml.device_config, device).onEach {
             bindControllerToPreference(it)
         }.also {
             configControllers.addAll(it)
@@ -243,9 +243,9 @@ class EarbudsInfoFragment : SettingsBasePreferenceFragment(), MMAListener {
     }
 
     companion object {
-        private val TAG = EarbudsInfoFragment::class.java.simpleName
+        private val TAG = DeviceConfigFragment::class.java.simpleName
         private const val DEBUG = true
 
-        const val ACTION_EARBUDS_INFO = "org.lineageos.xiaomi_tws.action.EARBUDS_INFO"
+        const val ACTION_DEVICE_CONFIG = "org.lineageos.xiaomi_tws.action.DEVICE_CONFIG"
     }
 }
