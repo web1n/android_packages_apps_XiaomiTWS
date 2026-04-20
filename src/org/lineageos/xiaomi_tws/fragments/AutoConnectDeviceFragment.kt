@@ -1,8 +1,9 @@
 package org.lineageos.xiaomi_tws.fragments
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import org.lineageos.xiaomi_tws.headset.HeadsetManager
-import org.lineageos.xiaomi_tws.headset.commands.notify.AutoSwitchDevice
+import org.lineageos.xiaomi_tws.headset.CommandData.Notify.AutoSwitchDevice
 import org.lineageos.xiaomi_tws.R
 
 class AutoConnectDeviceFragment : BaseDeviceListFragment() {
@@ -14,19 +15,17 @@ class AutoConnectDeviceFragment : BaseDeviceListFragment() {
     override val logTag: String = TAG
 
     override fun isDeviceSupported(device: BluetoothDevice): Boolean {
-        // return settingsUtils.isAutoConnectDeviceSupported(device)
-        return false // TODO
+        return settingsUtils.isAutoConnectDeviceSupported(device)
     }
 
     override fun isDeviceEnabled(device: BluetoothDevice): Boolean {
-        // return settingsUtils.isAutoConnectDeviceEnabled(device)
-        return false // TODO
+        return settingsUtils.isAutoConnectDeviceEnabled(device)
     }
 
-    override fun setDeviceEnabled(headsetManager: HeadsetManager, device: BluetoothDevice, enabled: Boolean) {
-        // settingsUtils.setAutoConnectDeviceEnabled(device, enabled)
-        // headsetManager.sendATCommand(device, AutoSwitchDevice(enabled))
-        // TODO
+    @SuppressLint("MissingPermission")
+    override fun setDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
+        settingsUtils.setAutoConnectDeviceEnabled(device, enabled)
+        headsetManager.sendATCommand(device, AutoSwitchDevice(enabled))
     }
 
     companion object {

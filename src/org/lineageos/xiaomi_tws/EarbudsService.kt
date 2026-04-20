@@ -9,8 +9,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.PowerManager
 import android.util.Log
+import android.widget.Toast
 import org.lineageos.xiaomi_tws.earbuds.Earbuds
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
@@ -21,8 +23,12 @@ import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 import org.lineageos.xiaomi_tws.headset.HeadsetManager
+import org.lineageos.xiaomi_tws.headset.CommandData
+import org.lineageos.xiaomi_tws.headset.CommandData.FastConnect
+import org.lineageos.xiaomi_tws.headset.CommandData.Notify.AutoSwitchDevice
+import org.lineageos.xiaomi_tws.headset.CommandData.Notify.SwitchDevice
+import org.lineageos.xiaomi_tws.headset.CommandData.Status
 import org.lineageos.xiaomi_tws.utils.MediaManager
-import org.lineageos.xiaomi_tws.utils.MediaManager.Companion.isSelected
 import org.lineageos.xiaomi_tws.utils.MediaManager.MediaPlayingListener
 import org.lineageos.xiaomi_tws.utils.NotificationUtils
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
@@ -39,16 +45,12 @@ class EarbudsService : Service() {
     private val settingsUtils: SettingsUtils by lazy { SettingsUtils.getInstance(this) }
 
     private val mmaListener = object : MMAListener {
-        override fun onDeviceEvent(event: DeviceEvent) {
-            when (event) {
-                is DeviceEvent.Connected -> updateStatus(event.device)
-                is DeviceEvent.Disconnected -> clearDevice(event.device)
-                is DeviceEvent.BatteryChanged -> updateBattery(event.device, event.battery)
-                is DeviceEvent.InEarStateChanged ->
-                    switchMediaDevice(event.device, event.state)
+        override fun onDeviceEvent(event: DeviceEvent) = when (event) {
+            is DeviceEvent.Connected -> updateStatus(event.device)
+            is DeviceEvent.Disconnected if (!headsetManager.containsDevice(event.device)) ->
+                clearDevice(event.device)
 
-                else -> {}
-            }
+            else -> {}
         }
     }
 
@@ -67,8 +69,15 @@ class EarbudsService : Service() {
     }
 
     private val headsetDeviceListener = object : HeadsetManager.HeadsetDeviceListener {
-        override fun onDeviceChanged(device: BluetoothDevice, nearbyDevice: NearbyDevice) =
-            updateStatus(device, nearbyDevice)
+        override fun onDeviceConnected(device: BluetoothDevice) = updateStatus(device)
+        override fun onDeviceDisconnected(device: BluetoothDevice) = clearDevice(device)
+        override fun onDeviceChanged(device: BluetoothDevice, value: CommandData) {
+            updateDeviceFeature(device, value)
+            handleParsedCommand(device, value)
+        }
+
+        override fun onBatteryChanged(device: BluetoothDevice, battery: Earbuds) =
+            updateBattery(device, battery)
     }
 
     override fun onCreate() {
@@ -173,8 +182,40 @@ class EarbudsService : Service() {
         device.runCatching { connect() }
     }
 
-    private fun updateStatus(device: BluetoothDevice, nearbyDevice: NearbyDevice) {
-        if (DEBUG) Log.d(TAG, "Headset device changed: $device, $nearbyDevice")
+    private fun updateDeviceFeature(device: BluetoothDevice, command: CommandData) {
+        if (DEBUG) Log.d(TAG, "updateDeviceFeature: $device, $command")
+
+        when (command) {
+            is FastConnect -> updateDeviceAccountKey(device, command.nearbyDevice)
+
+            is AutoSwitchDevice if !settingsUtils.isAutoConnectDeviceSupported(device) -> {
+                if (DEBUG) Log.d(TAG, "Mark device as auto connect supported: $device")
+                settingsUtils.setAutoConnectDeviceSupported(device, true)
+            }
+
+            is Status if command.inEar != null && !settingsUtils.isAutoSwitchDeviceSupported(device) -> {
+                if (DEBUG) Log.d(TAG, "Mark device as auto switch supported: $device")
+                settingsUtils.setAutoSwitchDeviceSupported(device, true)
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun handleParsedCommand(device: BluetoothDevice, command: CommandData) {
+        if (DEBUG) Log.d(TAG, "handleParsedCommand: $device, $command")
+
+        when (command) {
+            is Status -> {
+                if (command.inEar != null) switchMediaDevice(device, command.inEar)
+                if (command.anc != null) showMessage("Current Mode: ${command.anc.name}")
+            }
+
+            else -> if (DEBUG) Log.d(TAG, "No handler for command: $command")
+        }
+    }
+
+    private fun updateDeviceAccountKey(device: BluetoothDevice, nearbyDevice: NearbyDevice) {
         if (!nearbyDevice.isValidAccountKey()) {
             if (DEBUG) Log.d(TAG, "Invalid account key for device: $device, generate new")
 
@@ -191,7 +232,11 @@ class EarbudsService : Service() {
 
     private fun updateStatus(device: BluetoothDevice) {
         BluetoothUtils.updateDeviceTypeMetadata(this, device)
-        headsetManager.sendSwitchDeviceAllowed(device, settingsUtils.isSwitchDeviceAllowed(device))
+
+        val autoConnectEnabled = settingsUtils.isAutoConnectDeviceEnabled(device)
+        val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
+        headsetManager.sendATCommand(device, AutoSwitchDevice(autoConnectEnabled))
+        headsetManager.sendATCommand(device, SwitchDevice(deviceName))
     }
 
     private fun clearDevice(device: BluetoothDevice) {
@@ -238,6 +283,10 @@ class EarbudsService : Service() {
                 if (DEBUG) Log.d(TAG, "Media device ${bluetoothDevice.name} not selected")
             }
         }
+    }
+
+    private fun showMessage(content: String) {
+        Toast.makeText(this, content, Toast.LENGTH_SHORT).show()
     }
 
     companion object {

@@ -13,18 +13,15 @@ class AutoSwitchDeviceFragment : BaseDeviceListFragment() {
     override val logTag: String = TAG
 
     override fun isDeviceSupported(device: BluetoothDevice): Boolean {
-        // return settingsUtils.isAutoSwitchDeviceSupported(device)
-        return false // TODO
+        return settingsUtils.isAutoSwitchDeviceSupported(device)
     }
 
     override fun isDeviceEnabled(device: BluetoothDevice): Boolean {
-        // return settingsUtils.isAutoSwitchDeviceEnabled(device)
-        return false // TODO
+        return settingsUtils.isAutoSwitchDeviceEnabled(device)
     }
 
-    override fun setDeviceEnabled(headsetManager: HeadsetManager, device: BluetoothDevice, enabled: Boolean) {
-        // settingsUtils.setAutoSwitchDeviceEnabled(device, enabled)
-        // TODO
+    override fun setDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
+        settingsUtils.setAutoSwitchDeviceEnabled(device, enabled)
     }
 
     companion object {

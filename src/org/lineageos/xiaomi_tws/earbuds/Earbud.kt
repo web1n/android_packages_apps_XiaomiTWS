@@ -11,7 +11,7 @@ data class Earbud(val raw: Byte) {
     init {
         val battery = raw.toInt() and EARBUDS_BATTERY_LEVEL_MASK
         val charging = (raw.toInt() and EARBUDS_CHARGING_BIT_MASK) != 0
-        val valid = battery <= 100
+        val valid = battery in 1..100
 
         this.battery = if (valid) battery else META_INT_ERROR
         this.charging = charging and valid

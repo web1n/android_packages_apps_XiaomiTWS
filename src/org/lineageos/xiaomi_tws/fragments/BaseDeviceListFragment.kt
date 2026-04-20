@@ -39,7 +39,7 @@ abstract class BaseDeviceListFragment : SettingsBasePreferenceFragment() {
 
     protected abstract fun isDeviceSupported(device: BluetoothDevice): Boolean
     protected abstract fun isDeviceEnabled(device: BluetoothDevice): Boolean
-    protected abstract fun setDeviceEnabled(headsetManager: HeadsetManager, device: BluetoothDevice, enabled: Boolean)
+    protected abstract fun setDeviceEnabled(device: BluetoothDevice, enabled: Boolean)
 
     protected open fun getDeviceSummary(device: BluetoothDevice): String {
         return device.address
@@ -76,7 +76,7 @@ abstract class BaseDeviceListFragment : SettingsBasePreferenceFragment() {
 
                     setOnPreferenceChangeListener { _, newValue ->
                         val enabled = newValue as Boolean
-                        setDeviceEnabled(headsetManager, device, enabled)
+                        setDeviceEnabled(device, enabled)
                         if (DEBUG) {
                             Log.d(logTag, "$preferenceKeyPrefix ${if (enabled) "enabled" else "disabled"} for ${device.address}")
                         }
@@ -99,6 +99,6 @@ abstract class BaseDeviceListFragment : SettingsBasePreferenceFragment() {
     }
 
     companion object {
-        private const val DEBUG = true
+        const val DEBUG = true
     }
 }

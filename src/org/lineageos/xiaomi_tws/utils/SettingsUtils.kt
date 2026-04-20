@@ -53,12 +53,12 @@ class SettingsUtils private constructor(context: Context) {
         put("${KEY_ENABLE_AUTO_SWITCH_DEVICE}_${device.address}", enabled)
     }
 
-    fun isSwitchDeviceAllowed(device: BluetoothDevice): Boolean {
-        return get("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", false)
+    fun isAutoSwitchDeviceSupported(device: BluetoothDevice): Boolean {
+        return get("${KEY_AUTO_SWITCH_DEVICE_SUPPORTED}_${device.address}", false)
     }
 
-    fun setSwitchDeviceAllowed(device: BluetoothDevice, enabled: Boolean) {
-        put("${KEY_ALLOW_SWITCH_DEVICE}_${device.address}", enabled)
+    fun setAutoSwitchDeviceSupported(device: BluetoothDevice, supported: Boolean) {
+        put("${KEY_AUTO_SWITCH_DEVICE_SUPPORTED}_${device.address}", supported)
     }
 
     fun isAutoConnectDeviceEnabled(device: BluetoothDevice): Boolean {
@@ -67,6 +67,14 @@ class SettingsUtils private constructor(context: Context) {
 
     fun setAutoConnectDeviceEnabled(device: BluetoothDevice, enabled: Boolean) {
         put("${KEY_ENABLE_AUTO_CONNECT_DEVICE}_${device.address}", enabled)
+    }
+
+    fun isAutoConnectDeviceSupported(device: BluetoothDevice): Boolean {
+        return get("${KEY_AUTO_CONNECT_DEVICE_SUPPORTED}_${device.address}", false)
+    }
+
+    fun setAutoConnectDeviceSupported(device: BluetoothDevice, supported: Boolean) {
+        put("${KEY_AUTO_CONNECT_DEVICE_SUPPORTED}_${device.address}", supported)
     }
 
     fun getDeviceForAccountKey(accountKey: String): BluetoothDevice? {
@@ -97,8 +105,9 @@ class SettingsUtils private constructor(context: Context) {
         private const val KEY_ENABLE_BLE_SCAN = "enable_ble_scan"
 
         private const val KEY_ENABLE_AUTO_SWITCH_DEVICE = "enable_auto_switch_device"
-        private const val KEY_ALLOW_SWITCH_DEVICE = "allow_switch_device"
+        private const val KEY_AUTO_SWITCH_DEVICE_SUPPORTED = "auto_switch_device_supported"
         private const val KEY_ENABLE_AUTO_CONNECT_DEVICE = "enable_auto_connect_device"
+        private const val KEY_AUTO_CONNECT_DEVICE_SUPPORTED = "auto_connect_device_supported"
         private const val KEY_ACCOUNT_KEY = "account_key"
 
         @Volatile
