@@ -234,8 +234,11 @@ class EarbudsService : Service() {
         BluetoothUtils.updateDeviceTypeMetadata(this, device)
 
         val autoConnectEnabled = settingsUtils.isAutoConnectDeviceEnabled(device)
+        val autoConnectNewValue = settingsUtils.isAutoConnectDeviceNewValue(device)
         val deviceName = "${Build.MANUFACTURER} ${Build.MODEL}"
-        headsetManager.sendATCommand(device, AutoSwitchDevice(autoConnectEnabled))
+        headsetManager.sendATCommand(
+            device, AutoSwitchDevice(autoConnectEnabled, autoConnectNewValue)
+        )
         headsetManager.sendATCommand(device, SwitchDevice(deviceName))
     }
 
