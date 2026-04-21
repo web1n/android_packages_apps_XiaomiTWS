@@ -1,7 +1,3 @@
 -keep class org.lineageos.xiaomi_tws.** {
   *;
 }
-
--keep class com.xiaomi.aivsbluetoothsdk.impl.BluetoothAuth {
-  *;
-}

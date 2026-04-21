@@ -29,7 +29,12 @@ A comprehensive Android application that seamlessly integrates Xiaomi TWS (True 
 
 ## Integration Steps
 
-1. Clone `android_packages_apps_XiaomiTWS` into the AOSP: `[AOSP code path]/packages/apps/XiaomiTWS/`.
+1. Add into local_manifest:
+```
+    <remote name="web1n" fetch="https://github.com/web1n/" />
+    <project path="packages/apps/XiaomiTWS" name="android_packages_apps_XiaomiTWS" remote="web1n" revision="main" />
+    <project path="packages/apps/XiaomiTWS/xiaomi-sdk" name="android_packages_apps_XiaomiTWS_xiaomi-sdk" remote="web1n" revision="main" />
+```
 2. Add `XiaomiTWS` to your device tree:
    ```makefile
    PRODUCT_PACKAGES += \

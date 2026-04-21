@@ -1,20 +1,3 @@
-cc_prebuilt_library_shared {
-    name: "libxm_bluetooth",
-    arch: {
-        arm: {
-            srcs: ["jniLibs/armeabi-v7a/libxm_bluetooth.so"],
-        },
-        arm64: {
-            srcs: ["jniLibs/arm64-v8a/libxm_bluetooth.so"],
-        },
-    },
-    strip: {
-        none: true,
-    },
-    check_elf_files: false,
-    stl: "none",
-}
-
 android_app {
     name: "XiaomiTWS",
 
@@ -34,6 +17,7 @@ android_app {
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
         "androidx.slice_slice-builders",
+        "com.xiaomi.aivsbluetoothsdk",
     ],
 
     optimize: {
