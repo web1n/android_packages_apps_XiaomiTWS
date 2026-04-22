@@ -2,8 +2,8 @@ package org.lineageos.xiaomi_tws.headset
 
 import android.bluetooth.BluetoothDevice
 import org.lineageos.xiaomi_tws.features.DeviceBattery
-import org.lineageos.xiaomi_tws.mma.configs.InEarState.BothState
-import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode
+import org.lineageos.xiaomi_tws.mma.ConfigData.InEarState
+import org.lineageos.xiaomi_tws.mma.ConfigData.NoiseCancellationMode
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -13,7 +13,7 @@ object DeviceStatus {
 
     init {
         registerType<NoiseCancellationMode.Mode>()
-        registerType<BothState>()
+        registerType<InEarState>()
         registerType<DeviceBattery>()
     }
 

@@ -1,54 +1,39 @@
 package org.lineageos.xiaomi_tws.mma.configs
 
-import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
+import org.lineageos.xiaomi_tws.mma.Config
+import org.lineageos.xiaomi_tws.mma.ConfigData.NoiseCancellationList
+import org.lineageos.xiaomi_tws.mma.ConfigData.NoiseCancellationMode.Mode
 
-class NoiseCancellationList :
-    ConfigRequestBuilder<Map<NoiseCancellationList.Position, List<NoiseCancellationList.Mode>>>
-        (CONFIG_ID) {
+object NoiseCancellationList :
+    Config<NoiseCancellationList>(), Config.Encoder<NoiseCancellationList> {
 
-    enum class Position { Left, Right; }
+    private const val MODES_NOT_MODIFY: Byte = -1
 
-    enum class Mode(internal val value: Int) {
-        Off(MODE_OFF),
-        On(MODE_ON),
-        Transparency(MODE_TRANSPARENCY);
+    override val configId = 0x000A
+    override val validBytesLength = 2
+
+    override fun decode(bytes: ByteArray): NoiseCancellationList {
+        val (leftByte, rightByte) = bytes
+
+        val left = getModes(leftByte)
+        val right = getModes(rightByte)
+        return NoiseCancellationList(left, right)
     }
 
-    override fun bytesToValue(bytes: ByteArray): Map<Position, List<Mode>> {
-        if (bytes.size != VALID_BYTES_LENGTH) {
-            throw NotImplementedError()
-        }
-
-        return mapOf(
-            Position.Left to getModesFromByte(bytes[0]),
-            Position.Right to getModesFromByte(bytes[1])
-        )
-    }
-
-    private fun getModesFromByte(byte: Byte): List<Mode> {
-        return Mode.entries.filter { mode -> (byte.toInt() and (1 shl mode.value)) != 0 }
-    }
-
-    override fun valueToBytes(value: Map<Position, List<Mode>>): ByteArray {
-        val leftByte = value[Position.Left]
-            ?.fold(0) { acc, mode -> acc or (1 shl mode.value) }
+    override fun encode(value: NoiseCancellationList): ByteArray {
+        val leftByte = value.left
+            ?.fold(0) { acc, mode -> acc or (1 shl mode.value.toInt()) }
+            ?.toByte()
             ?: MODES_NOT_MODIFY
-        val rightByte = value[Position.Right]
-            ?.fold(0) { acc, mode -> acc or (1 shl mode.value) }
+        val rightByte = value.right
+            ?.fold(0) { acc, mode -> acc or (1 shl mode.value.toInt()) }
+            ?.toByte()
             ?: MODES_NOT_MODIFY
 
-        return byteArrayOf(leftByte.toByte(), rightByte.toByte())
+        return byteArrayOf(leftByte, rightByte)
     }
 
-    companion object {
-
-        private const val CONFIG_ID = 0x000A
-        private const val VALID_BYTES_LENGTH = 2
-
-        private const val MODE_OFF = 0x00
-        private const val MODE_ON = 0x01
-        private const val MODE_TRANSPARENCY = 0x02
-        private const val MODES_NOT_MODIFY: Byte = -1
+    private fun getModes(byte: Byte): List<Mode> {
+        return Mode.entries.filter { mode -> (byte.toInt() and (1 shl mode.value.toInt())) != 0 }
     }
-
 }

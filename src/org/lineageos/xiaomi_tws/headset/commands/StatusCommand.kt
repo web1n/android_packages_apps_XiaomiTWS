@@ -24,11 +24,10 @@ object StatusCommand : Command<Status>() {
         val raw = tlvMap.mapKeys { it.key.toByte() }.toMutableMap()
 
         val anc = raw.remove(StatusType.ANC)
-            ?.firstOrNull()
-            ?.let { NoiseCancellationMode.Mode.fromByte(it) }
+            ?.let { NoiseCancellationMode.decode(it).value }
 
         val inEar = raw.remove(StatusType.IN_EAR)
-            ?.let { runCatching { InEarState.parseConfigValue(it) }.getOrNull() }
+            ?.let { runCatching { InEarState.decode(it) }.getOrNull() }
 
         if (raw.isNotEmpty()) {
             val valueString = raw.entries

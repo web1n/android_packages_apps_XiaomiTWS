@@ -4,17 +4,18 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.Gesture
-import org.lineageos.xiaomi_tws.mma.configs.Gesture.Function
-import org.lineageos.xiaomi_tws.mma.configs.Gesture.Position
-import org.lineageos.xiaomi_tws.mma.configs.Gesture.Type
+import org.lineageos.xiaomi_tws.mma.ConfigData
+import org.lineageos.xiaomi_tws.mma.MMAManager
+import org.lineageos.xiaomi_tws.mma.ConfigData.Gesture.Function
+import org.lineageos.xiaomi_tws.mma.ConfigData.Gesture.Position
+import org.lineageos.xiaomi_tws.mma.ConfigData.Gesture.Type
 
 class ButtonController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<ListPreference, String, Map<Pair<Position, Type>, Function>>
+    ConfigController<ListPreference, String, ConfigData.Gesture>
         (preferenceKey, device) {
 
-    override val config = Gesture()
+    override val config = Gesture
 
     private val type: Type
     private val position: Position
@@ -49,8 +50,9 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
     override suspend fun initData(manager: MMAManager) {
         super.initData(manager)
 
-        value = value?.filter { it.key == position to type }
-        require(!value.isNullOrEmpty())
+        require(value?.value?.any { it.key == position to type } ?: false) {
+            "Gesture not supported for this position and type: $position, $type"
+        }
     }
 
     override fun preInitView(preference: ListPreference) {
@@ -69,12 +71,12 @@ class ButtonController(preferenceKey: String, device: BluetoothDevice) :
     override fun postUpdateValue(preference: ListPreference) {
         if (value == null) return
 
-        val function = value!![position to type] ?: Function.Disabled
+        val function = value?.value[position to type] ?: Function.Disabled
         preference.value = function.name
     }
 
-    override fun preferenceValueToValue(value: String): Map<Pair<Position, Type>, Function> {
-        return mapOf((position to type) to Function.valueOf(value))
+    override fun preferenceValueToValue(value: String): ConfigData.Gesture {
+        return ConfigData.Gesture(mapOf((position to type) to Function.valueOf(value)))
     }
 
     private fun functionToString(context: Context, function: Function): String {

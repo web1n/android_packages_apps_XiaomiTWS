@@ -9,9 +9,9 @@ import org.lineageos.xiaomi_tws.mma.MMAManager
 class DeviceInfoController(preferenceKey: String, device: BluetoothDevice) :
     BaseConfigController<Preference>(preferenceKey, device) {
 
-    var vid: Int? = null
-    var pid: Int? = null
-    var softwareVersion: String? = null
+    private var vid: Int? = null
+    private var pid: Int? = null
+    private var softwareVersion: String? = null
 
     override suspend fun initData(manager: MMAManager) {
         val (vid, pid) = manager.request(device, vidPid())

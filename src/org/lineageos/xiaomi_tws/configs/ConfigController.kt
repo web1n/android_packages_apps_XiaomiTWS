@@ -1,21 +1,22 @@
 package org.lineageos.xiaomi_tws.configs
 
-import android.bluetooth.BluetoothDevice
 import android.util.Log
+import android.bluetooth.BluetoothDevice
 import androidx.preference.Preference
-import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
+import org.lineageos.xiaomi_tws.mma.Config
+import org.lineageos.xiaomi_tws.mma.ConfigData
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 
-abstract class ConfigController<T : Preference, U, R>(
+abstract class ConfigController<T : Preference, U, R : ConfigData>(
     preferenceKey: String,
     device: BluetoothDevice
 ) :
     BaseConfigController<T>(preferenceKey, device), MMAListener,
     BaseConfigController.OnPreferenceChangeListener<T, U> {
 
-    protected abstract val config: ConfigRequestBuilder<R>
+    protected abstract val config: Config<R>
     protected var value: R? = null
 
     protected abstract fun preferenceValueToValue(value: U): R
@@ -31,17 +32,12 @@ abstract class ConfigController<T : Preference, U, R>(
     }
 
     override fun onDeviceEvent(event: DeviceEvent) {
-        if (event !is DeviceEvent.ConfigChanged || event.config != config.configId) {
+        if (event !is DeviceEvent.ConfigChanged || event.configId != config.configId) {
             return
         }
 
-        config.runCatching {
-            bytesToValue(event.value)
-        }.onSuccess {
-            value = it
-        }.onFailure {
-            Log.w(TAG, "Failed to parse config value", it)
-        }
+        @Suppress("UNCHECKED_CAST")
+        value = event.value as R?
     }
 
     final override suspend fun onPreferenceChange(
@@ -53,13 +49,13 @@ abstract class ConfigController<T : Preference, U, R>(
 
         val result = manager
             .runCatching { request(device, config.set(realValue)) }
+            .onFailure { Log.e(TAG, "Failed to set config $config $realValue") }
             .getOrElse { false }
         if (result) value = realValue
         return result
     }
 
     companion object {
-        private val TAG = ConfigController::class.java.simpleName
+        private val TAG = ConfigController::class.simpleName
     }
-
 }

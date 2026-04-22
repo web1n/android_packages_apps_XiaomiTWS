@@ -1,51 +1,28 @@
 package org.lineageos.xiaomi_tws.mma.configs
 
-import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
+import org.lineageos.xiaomi_tws.mma.Config
+import org.lineageos.xiaomi_tws.mma.ConfigData.FindEarbuds
+import org.lineageos.xiaomi_tws.mma.ConfigData.FindEarbuds.Position
 
-class FindEarbuds : ConfigRequestBuilder<Pair<Boolean, List<FindEarbuds.Position>>>(CONFIG_ID) {
+object FindEarbuds : Config<FindEarbuds>(), Config.Encoder<FindEarbuds> {
+    private const val VALUE_ENABLED: Byte = 0x01
+    private const val VALUE_DISABLED: Byte = 0x00
 
-    enum class Position(internal val value: Int) {
-        Left(POSITION_LEFT),
-        Right(POSITION_RIGHT);
-    }
+    override val configId = 0x0009
+    override val validBytesLength = 2
 
-    private enum class Type(val value: Byte) {
-        Enabled(TYPE_ENABLED),
-        Disabled(TYPE_DISABLED);
-    }
-
-    override fun bytesToValue(bytes: ByteArray): Pair<Boolean, List<Position>> {
-        if (bytes.size != VALID_BYTES_LENGTH) {
-            throw NotImplementedError()
-        }
-
-        val type = Type.entries
-            .find { it.value == bytes[0] }
-            ?: throw NotImplementedError()
+    override fun decode(bytes: ByteArray): FindEarbuds {
+        val enabled = bytes[0] == VALUE_ENABLED
         val positions = Position.entries
             .filter { (it.value and bytes[1].toInt()) != 0 }
 
-        return (type == Type.Enabled) to positions
+        return FindEarbuds(enabled, positions)
     }
 
-    override fun valueToBytes(value: Pair<Boolean, List<Position>>): ByteArray {
-        val (enabled, positions) = value
-
-        val typeByte = if (enabled) Type.Enabled.value else Type.Disabled.value
-        val positionByte = positions.fold(0) { acc, position -> acc or position.value }
-
-        return byteArrayOf(typeByte, positionByte.toByte())
+    override fun encode(value: FindEarbuds): ByteArray {
+        return byteArrayOf(
+            if (value.enabled) VALUE_ENABLED else VALUE_DISABLED,
+            value.positions.fold(0) { acc, position -> acc or position.value }.toByte()
+        )
     }
-
-    companion object {
-        private const val CONFIG_ID = 0x0009
-        private const val VALID_BYTES_LENGTH = 2
-
-        private const val POSITION_LEFT = 0x01
-        private const val POSITION_RIGHT = 0x02
-
-        private const val TYPE_DISABLED: Byte = 0x00
-        private const val TYPE_ENABLED: Byte = 0x01
-    }
-
 }

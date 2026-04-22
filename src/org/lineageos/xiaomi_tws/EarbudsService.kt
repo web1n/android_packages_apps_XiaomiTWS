@@ -17,7 +17,7 @@ import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.configs.InEarState
+import org.lineageos.xiaomi_tws.mma.ConfigData.InEarState
 import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceListener
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner
@@ -255,7 +255,7 @@ class EarbudsService : Service() {
         }
     }
 
-    private fun switchMediaDevice(device: BluetoothDevice, state: InEarState.BothState) {
+    private fun switchMediaDevice(device: BluetoothDevice, state: InEarState) {
         if (!settingsUtils.isAutoSwitchDeviceEnabled(device)) {
             return
         }

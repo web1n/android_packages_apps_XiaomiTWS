@@ -1,7 +1,7 @@
 package org.lineageos.xiaomi_tws.headset
 
-import org.lineageos.xiaomi_tws.mma.configs.InEarState
-import org.lineageos.xiaomi_tws.mma.configs.NoiseCancellationMode
+import org.lineageos.xiaomi_tws.mma.ConfigData.InEarState
+import org.lineageos.xiaomi_tws.mma.ConfigData.NoiseCancellationMode.Mode
 import org.lineageos.xiaomi_tws.nearby.NearbyDevice
 
 sealed interface CommandData {
@@ -9,8 +9,8 @@ sealed interface CommandData {
     data class FastConnect(val nearbyDevice: NearbyDevice) : CommandData
 
     data class Status(
-        val anc: NoiseCancellationMode.Mode?,
-        val inEar: InEarState.BothState?,
+        val anc: Mode?,
+        val inEar: InEarState?,
         val raw: Map<Byte, ByteArray>
     ) : CommandData
 

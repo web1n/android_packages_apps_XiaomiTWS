@@ -40,7 +40,6 @@ class MMAManager private constructor(private val context: Context) {
     private data class RequestId(val deviceAddress: String, val opCodeSN: Byte)
 
     private val mmaDevices = ConcurrentHashMap<String, Pair<MMADevice, DeviceStatus>>()
-    private val inEarStates = ConcurrentHashMap<String, InEarState.BothState>()
 
     private val pendingResponses = ConcurrentHashMap<RequestId, CompletableDeferred<MMAPacket?>>()
     private val connectionListeners = mutableListOf<MMAListener>()
@@ -99,7 +98,6 @@ class MMAManager private constructor(private val context: Context) {
             if (DEBUG) Log.d(TAG, "Device disconnected: ${device.address}")
             mma.close()
 
-            inEarStates.remove(device.address)
             cancelAllRequests(device)
             dispatchEvent(DeviceEvent.Disconnected(device))
         }
@@ -167,7 +165,7 @@ class MMAManager private constructor(private val context: Context) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceInfo: ${device.address} $packet")
 
         val typeValues = parseTLVMap(packet.data, true)
-        typeValues.forEach { type, value ->
+        typeValues.forEach { (type, value) ->
             when (type) {
                 XIAOMI_MMA_NOTIFY_TYPE_BATTERY.toInt() -> {
                     if (value.size != 3) {
@@ -191,17 +189,16 @@ class MMAManager private constructor(private val context: Context) {
         if (DEBUG) Log.d(TAG, "handleNotifyDeviceConfig: ${device.address} $packet")
 
         val typeValues = parseTLVMap(packet.data, false)
-        typeValues.forEach { config, value ->
-            if (config == InEarState.CONFIG_ID) {
-                val state = runCatching { InEarState.parseConfigValue(value) }
-                    .getOrNull() ?: return@forEach
-
-                if (inEarStates.put(device.address, state) != state) {
-                    dispatchEvent(DeviceEvent.InEarStateChanged(device, state))
-                }
+        typeValues.forEach { (configId, raw) ->
+            val value = Config
+                .runCatching { decode(configId, raw) }
+                .onFailure { Log.e(TAG, "Failed to decode config value", it) }
+                .getOrNull()
+            if (value != null) {
+                dispatchEvent(DeviceEvent.ConfigChanged(device, configId, value))
+            } else {
+                dispatchEvent(DeviceEvent.RawConfigChanged(device, configId, raw))
             }
-
-            dispatchEvent(DeviceEvent.ConfigChanged(device, config, value))
         }
     }
 

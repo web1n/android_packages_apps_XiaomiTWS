@@ -2,7 +2,6 @@ package org.lineageos.xiaomi_tws.mma
 
 import android.bluetooth.BluetoothDevice
 import org.lineageos.xiaomi_tws.features.DeviceBattery
-import org.lineageos.xiaomi_tws.mma.configs.InEarState
 
 sealed class DeviceEvent {
 
@@ -13,14 +12,15 @@ sealed class DeviceEvent {
     data class BatteryChanged(override val device: BluetoothDevice, val battery: DeviceBattery) :
         DeviceEvent()
 
-    data class ConfigChanged(
+    data class RawConfigChanged(
         override val device: BluetoothDevice,
-        val config: Int,
+        val configId: Int,
         val value: ByteArray
     ) : DeviceEvent()
 
-    data class InEarStateChanged(
+    data class ConfigChanged(
         override val device: BluetoothDevice,
-        val state: InEarState.BothState,
+        val configId: Int,
+        val value: ConfigData
     ) : DeviceEvent()
 }

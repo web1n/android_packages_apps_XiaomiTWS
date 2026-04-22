@@ -4,17 +4,18 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.ListPreference
 import org.lineageos.xiaomi_tws.R
+import org.lineageos.xiaomi_tws.mma.ConfigData
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.vidPid
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
-import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode.Mode
+import org.lineageos.xiaomi_tws.mma.ConfigData.EqualizerMode.Mode
 
 class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
-    ConfigController<ListPreference, String, Mode>(preferenceKey, device) {
+    ConfigController<ListPreference, String, ConfigData.EqualizerMode>(preferenceKey, device) {
 
     data class EqualizerDevice(val vendorId: Int, val productId: Int, val supportedModes: Set<Int>)
 
-    override val config = EqualizerMode()
+    override val config = EqualizerMode
 
     private var vid: Int = 0
     private var pid: Int = 0
@@ -46,20 +47,20 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
     }
 
     override fun postUpdateValue(preference: ListPreference) {
-        if (value == null) return
-
-        preference.value = value!!.name
+        value?.let {
+            preference.value = it.mode.name
+        }
     }
 
-    override fun preferenceValueToValue(value: String): Mode {
-        return Mode.valueOf(value)
+    override fun preferenceValueToValue(value: String): ConfigData.EqualizerMode {
+        return ConfigData.EqualizerMode(Mode.valueOf(value))
     }
 
     private fun getSupportedModes(): Set<Mode> {
         return DEVICE_SUPPORTED_MODES
             .find { it.vendorId == vid && it.productId == pid }
             ?.supportedModes
-            ?.mapNotNull { Mode.fromValue(it.toByte()) }
+            ?.mapNotNull { value -> Mode.entries.find { it.value == value.toByte() } }
             ?.toSet()
             ?: return setOf(Mode.Default)
     }

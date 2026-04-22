@@ -3,7 +3,7 @@ package org.lineageos.xiaomi_tws.mma
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Request
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Response
 
-abstract class MMAPacketBuilder() {
+abstract class MMAPacketBuilder {
     abstract val packet: MMAPacket
 
     open class RequestBuilder<T>(

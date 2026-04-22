@@ -1,25 +1,15 @@
 package org.lineageos.xiaomi_tws.mma.configs
 
-import org.lineageos.xiaomi_tws.mma.ConfigRequestBuilder
-import java.nio.charset.StandardCharsets
+import org.lineageos.xiaomi_tws.mma.Config
+import org.lineageos.xiaomi_tws.mma.ConfigData.SerialNumber
 
-class SerialNumber : ConfigRequestBuilder<String>(CONFIG_ID) {
+object SerialNumber : Config<SerialNumber>() {
 
-    override fun bytesToValue(bytes: ByteArray): String {
-        if (bytes.size != VALID_BYTES_LENGTH) {
-            throw NotImplementedError()
-        }
+    override val configId = 0x0027
+    override val validBytesLength = 20
 
-        return String(bytes, StandardCharsets.UTF_8)
+    override fun decode(bytes: ByteArray): SerialNumber {
+        val result = String(bytes, Charsets.UTF_8)
+        return SerialNumber(result)
     }
-
-    override fun valueToBytes(value: String): ByteArray {
-        throw NotImplementedError()
-    }
-
-    companion object {
-        private const val CONFIG_ID = 0x0027
-        private const val VALID_BYTES_LENGTH = 20
-    }
-
 }
