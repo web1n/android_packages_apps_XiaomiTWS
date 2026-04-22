@@ -3,32 +3,47 @@
     <!-- app name -->
     <string name="app_name">Xiaomi TWS Service</string>
 
-    <!-- Earbuds list activity start -->
-    <string name="earbuds_list_title">Xiaomi Earbuds</string>
-    <string name="earbuds_list_category">Earbuds list</string>
-    <string name="earbuds_list_device_disconnected">Disconnected</string>
-    <string name="earbuds_list_device_connected">Connected</string>
-    <string name="earbuds_list_device_nearby">Nearby, not bonded</string>
-    <string name="earbuds_list_device_nearby_bonded">Nearby, not connected</string>
-    <string name="earbuds_list_empty">No earbuds found</string>
-    <string name="earbuds_list_empty_summary">Please make sure your Xiaomi earbuds using MMA protocol are paired and connected</string>
-    <string name="earbuds_list_empty_summary_system_integration_disabled">System integration is disabled</string>
+    <!-- Service activity start -->
+    <string name="tws_service_title">Xiaomi TWS Service</string>
+    <string name="tws_service_system_integration_disabled">System Integration Disabled</string>
+    <string name="tws_service_system_integration_disabled_summary">All Xiaomi TWS system integration is disabled</string>
+    <string name="tws_service_device_list">Device List</string>
 
-    <string name="earbuds_list_settings">Settings</string>
-    <string name="earbuds_list_enable_system_integration">Enable system integration</string>
-    <string name="earbuds_list_enable_system_integration_summary">When disabled, all Xiaomi earbuds related functions will be turned off, including earbuds status detection, battery reporting and earbuds management. Restart required to take effect</string>
-    <string name="earbuds_list_enable_notification">Enable notification</string>
-    <string name="earbuds_list_enable_notification_summary">Send notification when earbuds status changes</string>
-    <string name="earbuds_list_enable_ble_scan">Enable ble scan</string>
-    <!-- Earbuds list activity end -->
+    <string name="tws_service_category_function">Function</string>
+    <string name="tws_service_enable_battery_notification">Enable Battery Notification</string>
+    <string name="tws_service_enable_battery_notification_summary">Send notification when earbuds status changes</string>
 
-    <!-- Earbuds settings activity start -->
-    <string name="earbuds_settings_title">Earbuds Settings</string>
+    <string name="tws_service_category_system">System</string>
+    <string name="tws_service_enable_system_integration">Enable System Integration</string>
+    <string name="tws_service_enable_system_integration_summary">When disabled, all TWS related functions will be turned off, including TWS status detection, battery reporting and device config. Restart required to take effect</string>
+    <string name="tws_service_auto_connect_device">Auto Connect to Earbuds</string>
+    <string name="tws_service_auto_connect_device_summary">Automatically connect to paired earbuds when media is playing</string>
+    <string name="tws_service_auto_switch_device">Auto Switch Device</string>
+    <string name="tws_service_auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
+    <string name="tws_service_enable_notification">Enable Notification</string>
+    <string name="tws_service_enable_notification_summary">Send notification when status changes</string>
+    <string name="tws_service_enable_ble_scan">Enable BLE Scan</string>
+    <!-- Service activity end -->
 
-    <string name="earbuds_settings_general">General</string>
-    <string name="earbuds_settings_gestures">Gestures</string>
-    <string name="earbuds_settings_multi_devices">Multi Devices</string>
-    <string name="earbuds_settings_advanced">Advanced</string>
+    <!-- Device list activity start -->
+    <string name="device_list_title">Xiaomi TWS</string>
+    <string name="device_list_category">Device List</string>
+    <string name="device_list_device_disconnected">Disconnected</string>
+    <string name="device_list_device_connected">Connected</string>
+    <string name="device_list_device_nearby">Nearby, not bonded</string>
+    <string name="device_list_device_nearby_bonded">Nearby, not connected</string>
+    <string name="device_list_empty">No Device Found</string>
+    <string name="device_list_empty_summary">Make sure your TWS are paired and connected</string>
+    <!-- Device list activity end -->
+
+    <!-- Device config activity start -->
+    <string name="device_config_title">Device Configuration</string>
+
+    <string name="device_config_general">General</string>
+    <string name="device_config_noise_cancellation_mode">Noise Cancellation Mode</string>
+    <string name="device_config_gestures">Gestures</string>
+    <string name="device_config_multi_devices">Multi Devices</string>
+    <string name="device_config_advanced">Advanced</string>
 
     <string name="equalizer_mode">Equalizer mode</string>
     <string name="equalizer_mode_default">Default</string>
@@ -38,9 +53,6 @@
     <string name="equalizer_mode_volume_boost">Volume boost</string>
     <string name="equalizer_mode_harman">Harman</string>
     <string name="equalizer_mode_harman_master">Harman Master</string>
-
-    <string name="auto_switch_device">Auto switch media device</string>
-    <string name="auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
 
     <string name="noise_cancellation_mode">Noise cancellation mode</string>
     <string name="noise_cancellation_mode_off">Off</string>
@@ -80,19 +92,31 @@
     <string name="allow_switch_device">Allow other devices to connect</string>
     <string name="allow_switch_device_summary">Allow other paired devices to take over this earbuds connection</string>
 
-    <string name="auto_connect_device">Auto connect to earbuds</string>
-    <string name="auto_connect_device_summary">Automatically take over earbuds connection when playing media</string>
-    <string name="auto_connect_device_summary_ble_scan_disabled">Ble scan disabled</string>
-
     <string name="device_info">Device Info</string>
 
     <string name="serial_number">Serial number</string>
 
-    <string name="settings_footer_tips">Earbuds may not support certain functions</string>
-    <!-- Earbuds settings activity end -->
+    <string name="device_config_footer_tips">Headset may not support certain functions</string>
+    <!-- Device config activity end -->
+
+    <!-- Auto connect device activity start -->
+    <string name="auto_connect_device_title">Auto Connect to Earbuds</string>
+    <string name="auto_connect_device_summary">Automatically connect to paired earbuds when media is playing</string>
+    <string name="auto_connect_device_list">Available Devices</string>
+    <string name="auto_connect_device_empty">No Supported Device Found</string>
+    <string name="auto_connect_device_footer_tips">Paired earbuds that support auto connect will appear here</string>
+    <!-- Auto connect device activity end -->
+
+    <!-- Auto switch device activity start -->
+    <string name="auto_switch_device_title">Auto Switch Media Device</string>
+    <string name="auto_switch_device_summary">Switch audio to phone when both earbuds are removed, switch to earbuds when either one is worn</string>
+    <string name="auto_switch_device_list">Available Devices</string>
+    <string name="auto_switch_device_empty">No Supported Device Found</string>
+    <string name="auto_switch_device_footer_tips">Paired earbuds that support auto switch will appear here</string>
+    <!-- Auto switch device activity start -->
 
     <!-- Notification start -->
-    <string name="notification_channel_earbuds_info">Earbuds Info</string>
+    <string name="notification_channel_device_info">Device Info</string>
     <!-- Notification end -->
 
 </resources>

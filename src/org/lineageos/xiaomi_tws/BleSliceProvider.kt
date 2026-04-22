@@ -12,7 +12,7 @@ import androidx.slice.Slice
 import androidx.slice.SliceProvider
 import androidx.slice.builders.ListBuilder
 import androidx.slice.builders.SliceAction
-import org.lineageos.xiaomi_tws.fragments.EarbudsInfoFragment
+import org.lineageos.xiaomi_tws.fragments.DeviceConfigFragment
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils
 
 class BleSliceProvider : SliceProvider() {
@@ -30,7 +30,7 @@ class BleSliceProvider : SliceProvider() {
     }
 
     private fun createSettingsActionBuilder(device: BluetoothDevice): ListBuilder.RowBuilder {
-        val pendingIntent = Intent(EarbudsInfoFragment.ACTION_EARBUDS_INFO).apply {
+        val pendingIntent = Intent(DeviceConfigFragment.ACTION_DEVICE_CONFIG).apply {
             putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             setPackage(requireContext().packageName)
         }.let {
@@ -46,7 +46,7 @@ class BleSliceProvider : SliceProvider() {
         )
 
         return ListBuilder.RowBuilder()
-            .setTitle(requireContext().getString(R.string.earbuds_settings_title))
+            .setTitle(requireContext().getString(R.string.device_config_title))
             .setPrimaryAction(sliceAction)
     }
 

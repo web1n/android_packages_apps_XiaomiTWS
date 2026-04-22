@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.preference.Preference
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.fragments.EarbudsInfoFragment.Companion.ACTION_EARBUDS_INFO
+import org.lineageos.xiaomi_tws.fragments.DeviceConfigFragment.Companion.ACTION_DEVICE_CONFIG
 
 class EarbudsPreference(context: Context, private val device: BluetoothDevice) :
     Preference(context) {
@@ -36,10 +36,10 @@ class EarbudsPreference(context: Context, private val device: BluetoothDevice) :
 
     private fun updateSummary() {
         val summaryResId = when {
-            state.isConnected -> R.string.earbuds_list_device_connected
-            state.isNearby && state.isBonded -> R.string.earbuds_list_device_nearby_bonded
-            state.isNearby -> R.string.earbuds_list_device_nearby
-            else -> R.string.earbuds_list_device_disconnected
+            state.isConnected -> R.string.device_list_device_connected
+            state.isNearby && state.isBonded -> R.string.device_list_device_nearby_bonded
+            state.isNearby -> R.string.device_list_device_nearby
+            else -> R.string.device_list_device_disconnected
         }
 
         setSummary(summaryResId)
@@ -48,7 +48,7 @@ class EarbudsPreference(context: Context, private val device: BluetoothDevice) :
     override fun onClick() {
         when {
             state.isConnected -> {
-                val intent = Intent(ACTION_EARBUDS_INFO).apply {
+                val intent = Intent(ACTION_DEVICE_CONFIG).apply {
                     putExtra(BluetoothDevice.EXTRA_DEVICE, device)
                     setPackage(this@EarbudsPreference.context.packageName)
                 }

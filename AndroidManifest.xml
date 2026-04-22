@@ -20,11 +20,11 @@
         android:persistent="true">
 
         <activity
-            android:name=".activity.EarbudsActivity"
+            android:name=".activity.ServiceActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:label="@string/earbuds_list_title"
+            android:label="@string/tws_service_title"
             android:theme="@style/Theme.SubSettingsBase">
             <intent-filter>
                 <action android:name="com.android.settings.action.IA_SETTINGS" />
@@ -36,12 +36,45 @@
         </activity>
 
         <activity-alias
-            android:name=".activity.EarbudsInfoActivity"
+            android:name=".activity.AutoConnectDeviceActivity"
             android:exported="true"
-            android:label="@string/earbuds_settings_title"
-            android:targetActivity=".activity.EarbudsActivity">
+            android:label="@string/auto_connect_device_title"
+            android:targetActivity=".activity.ServiceActivity">
             <intent-filter>
-                <action android:name="org.lineageos.xiaomi_tws.action.EARBUDS_INFO" />
+                <action android:name="org.lineageos.xiaomi_tws.action.AUTO_CONNECT_DEVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".activity.AutoSwitchDeviceActivity"
+            android:exported="true"
+            android:label="@string/auto_switch_device_title"
+            android:targetActivity=".activity.ServiceActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_tws.action.AUTO_SWITCH_DEVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".activity.DeviceListActivity"
+            android:exported="true"
+            android:label="@string/device_list_title"
+            android:targetActivity=".activity.ServiceActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_tws.action.DEVICE_LIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".activity.DeviceConfigActivity"
+            android:exported="true"
+            android:label="@string/device_config_title"
+            android:targetActivity=".activity.ServiceActivity">
+            <intent-filter>
+                <action android:name="org.lineageos.xiaomi_tws.action.DEVICE_CONFIG" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>

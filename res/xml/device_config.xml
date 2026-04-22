@@ -2,28 +2,22 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:persistent="false"
-    android:title="@string/earbuds_settings_title">
+    android:title="@string/device_config_title">
 
     <PreferenceCategory
         android:key="general"
-        android:title="@string/earbuds_settings_general">
+        android:title="@string/device_config_general">
 
         <ListPreference
             android:key="equalizer_mode"
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
-        <SwitchPreferenceCompat
-            android:key="enable_auto_switch_device"
-            android:summary="@string/auto_switch_device_summary"
-            android:title="@string/auto_switch_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AutoSwitchDeviceController" />
-
     </PreferenceCategory>
 
     <PreferenceCategory
         android:key="noise_cancellation_mode"
-        android:title="@string/noise_cancellation_mode">
+        android:title="@string/device_config_noise_cancellation_mode">
 
         <ListPreference
             android:key="switch_noise_cancellation_mode"
@@ -48,7 +42,7 @@
 
     <PreferenceCategory
         android:key="gestures"
-        android:title="@string/earbuds_settings_gestures"
+        android:title="@string/device_config_gestures"
         app:initialExpandedChildrenCount="2">
 
         <ListPreference
@@ -107,7 +101,7 @@
 
     <PreferenceCategory
         android:key="multi_devices"
-        android:title="@string/earbuds_settings_multi_devices">
+        android:title="@string/device_config_multi_devices">
 
         <SwitchPreferenceCompat
             android:key="multi_connect"
@@ -115,24 +109,11 @@
             android:title="@string/multi_connect"
             app:controller="org.lineageos.xiaomi_tws.configs.MultiConnectController" />
 
-        <SwitchPreferenceCompat
-            android:key="allow_switch_device"
-            android:summary="@string/allow_switch_device_summary"
-            android:title="@string/allow_switch_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AllowSwitchDeviceController" />
-
-        <SwitchPreferenceCompat
-            android:dependency="allow_switch_device"
-            android:key="auto_connect_device"
-            android:summary="@string/auto_connect_device_summary"
-            android:title="@string/auto_connect_device"
-            app:controller="org.lineageos.xiaomi_tws.configs.AutoConnectDeviceController" />
-
     </PreferenceCategory>
 
     <PreferenceCategory
         android:key="advanced"
-        android:title="@string/earbuds_settings_advanced">
+        android:title="@string/device_config_advanced">
 
         <SwitchPreferenceCompat
             android:key="find_earbuds"
@@ -158,6 +139,6 @@
     <com.android.settingslib.widget.FooterPreference
         android:key="footer_tips"
         android:selectable="false"
-        android:title="@string/settings_footer_tips" />
+        android:title="@string/device_config_footer_tips" />
 
 </PreferenceScreen>

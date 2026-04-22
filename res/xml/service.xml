@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/tws_service_title">
+
+    <com.android.settingslib.widget.BannerMessagePreference
+        android:key="system_integration_disabled"
+        android:summary="@string/tws_service_system_integration_disabled_summary"
+        android:title="@string/tws_service_system_integration_disabled" />
+
+    <Preference
+        android:dependency="system_integration_status"
+        android:key="device_list"
+        android:title="@string/tws_service_device_list">
+        <intent
+            android:action="org.lineageos.xiaomi_tws.action.DEVICE_LIST"
+            android:targetPackage="org.lineageos.xiaomi_tws" />
+    </Preference>
+
+    <PreferenceCategory
+        android:dependency="system_integration_status"
+        android:key="function"
+        android:title="@string/tws_service_category_function">
+
+        <Preference
+            android:dependency="system_integration_status"
+            android:key="auto_connect_device"
+            android:title="@string/tws_service_auto_connect_device"
+            android:summary="@string/tws_service_auto_connect_device_summary">
+            <intent
+                android:action="org.lineageos.xiaomi_tws.action.AUTO_CONNECT_DEVICE"
+                android:targetPackage="org.lineageos.xiaomi_tws" />
+        </Preference>
+
+        <Preference
+            android:dependency="system_integration_status"
+            android:key="auto_switch_device"
+            android:title="@string/tws_service_auto_switch_device"
+            android:summary="@string/tws_service_auto_switch_device_summary">
+            <intent
+                android:action="org.lineageos.xiaomi_tws.action.AUTO_SWITCH_DEVICE"
+                android:targetPackage="org.lineageos.xiaomi_tws" />
+        </Preference>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:dependency="system_integration_status"
+            android:key="enable_notification"
+            android:summary="@string/tws_service_enable_notification_summary"
+            android:title="@string/tws_service_enable_notification" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="system"
+        android:title="@string/tws_service_category_system"
+        app:initialExpandedChildrenCount="0">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:dependency="system_integration_status"
+            android:key="enable_ble_scan"
+            android:title="@string/tws_service_enable_ble_scan" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="enable_system_integration"
+            android:summary="@string/tws_service_enable_system_integration_summary"
+            android:title="@string/tws_service_enable_system_integration" />
+
+    </PreferenceCategory>
+
+    <SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:key="system_integration_status"
+        android:persistent="false"
+        app:isPreferenceVisible="false" />
+
+</PreferenceScreen>
