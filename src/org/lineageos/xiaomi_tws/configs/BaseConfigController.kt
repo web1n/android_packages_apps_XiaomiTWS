@@ -2,6 +2,8 @@ package org.lineageos.xiaomi_tws.configs
 
 import android.bluetooth.BluetoothDevice
 import androidx.preference.Preference
+import org.lineageos.xiaomi_tws.features.DeviceModel
+import org.lineageos.xiaomi_tws.features.DeviceModel.ProductID
 import org.lineageos.xiaomi_tws.mma.MMAManager
 
 abstract class BaseConfigController<T : Preference>(
@@ -12,7 +14,16 @@ abstract class BaseConfigController<T : Preference>(
         suspend fun onPreferenceChange(manager: MMAManager, preference: T, newValue: U): Boolean
     }
 
+    protected lateinit var productID: ProductID
+    protected val model: DeviceModel?
+        get() = DeviceModel.from(productID)
+
     abstract suspend fun initData(manager: MMAManager)
+
+    suspend fun initData(manager: MMAManager, productID: ProductID) {
+        this.productID = productID
+        initData(manager)
+    }
 
     open fun preInitView(preference: T) {
         preference.isSelectable = false

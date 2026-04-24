@@ -18,6 +18,7 @@ import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.configs.BaseConfigController
 import org.lineageos.xiaomi_tws.configs.BaseConfigController.OnPreferenceChangeListener
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
+import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.productID
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
 import org.lineageos.xiaomi_tws.utils.PreferenceUtils.createAllControllers
@@ -94,11 +95,16 @@ class DeviceConfigFragment : SettingsBasePreferenceFragment(), MMAListener {
         }
 
         coroutineScope.launch {
+            val productId = manager
+                .runCatching { request(device, productID()) }
+                .onFailure { Log.e(TAG, "Failed to get product id for $device", it) }
+                .getOrNull() ?: return@launch
+
             controllers.forEach { controller ->
                 if (!isActive) return@launch
 
                 val success = controller
-                    .runCatching { initData(manager) }
+                    .runCatching { initData(manager, productId) }
                     .onFailure {
                         Log.e(TAG, "controller ${controller.preferenceKey} init failed", it)
                     }

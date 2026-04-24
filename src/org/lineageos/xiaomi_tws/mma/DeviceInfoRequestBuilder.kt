@@ -7,6 +7,7 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_VID_PID
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_INFO
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_INFO
 import org.lineageos.xiaomi_tws.features.DeviceBattery
+import org.lineageos.xiaomi_tws.features.DeviceModel.ProductID
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Request
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Response
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
@@ -82,11 +83,11 @@ class DeviceInfoRequestBuilder {
             }
         }
 
-        fun vidPid(): RequestBuilder<Pair<Int, Int>> {
+        fun productID(): RequestBuilder<ProductID> {
             return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_VID_PID, 4::equals) {
                 val vendorId = bytesToInt(it[0], it[1])
                 val productId = bytesToInt(it[2], it[3])
-                vendorId to productId
+                ProductID(vendorId, productId)
             }
         }
 

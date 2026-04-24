@@ -3,30 +3,17 @@ package org.lineageos.xiaomi_tws.configs
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import androidx.preference.ListPreference
+import org.lineageos.xiaomi_tws.features.DeviceModel
+import org.lineageos.xiaomi_tws.features.DeviceModel.Companion.DEFAULT_EQUALIZER_MODES
 import org.lineageos.xiaomi_tws.R
 import org.lineageos.xiaomi_tws.mma.ConfigData
-import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.vidPid
-import org.lineageos.xiaomi_tws.mma.MMAManager
-import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
 import org.lineageos.xiaomi_tws.mma.ConfigData.EqualizerMode.Mode
+import org.lineageos.xiaomi_tws.mma.configs.EqualizerMode
 
 class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
     ConfigController<ListPreference, String, ConfigData.EqualizerMode>(preferenceKey, device) {
 
-    data class EqualizerDevice(val vendorId: Int, val productId: Int, val supportedModes: Set<Int>)
-
     override val config = EqualizerMode
-
-    private var vid: Int = 0
-    private var pid: Int = 0
-
-    override suspend fun initData(manager: MMAManager) {
-        super.initData(manager)
-
-        val (vid, pid) = manager.request(device, vidPid())
-        this.vid = vid
-        this.pid = pid
-    }
 
     override fun preInitView(preference: ListPreference) {
         super.preInitView(preference)
@@ -37,7 +24,7 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
     override fun postInitView(preference: ListPreference) {
         super.postInitView(preference)
 
-        val supportedModes = getSupportedModes()
+        val supportedModes = model?.equalizerModes ?: DEFAULT_EQUALIZER_MODES
         preference.entries = supportedModes
             .map { modeToString(preference.context, it) }
             .toTypedArray()
@@ -54,15 +41,6 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
 
     override fun preferenceValueToValue(value: String): ConfigData.EqualizerMode {
         return ConfigData.EqualizerMode(Mode.valueOf(value))
-    }
-
-    private fun getSupportedModes(): Set<Mode> {
-        return DEVICE_SUPPORTED_MODES
-            .find { it.vendorId == vid && it.productId == pid }
-            ?.supportedModes
-            ?.mapNotNull { value -> Mode.entries.find { it.value == value.toByte() } }
-            ?.toSet()
-            ?: return setOf(Mode.Default)
     }
 
     private fun modeToString(context: Context, mode: Mode): String {
@@ -85,45 +63,5 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
         }
 
         return context.getString(stringRes)
-    }
-
-    companion object {
-        private val DEVICE_SUPPORTED_MODES = arrayOf(
-            EqualizerDevice(0x2717, 0x5035, setOf(0, 1, 5, 6, 11, 12)),
-            EqualizerDevice(0x2717, 0x503B, setOf(0, 5, 6, 12)),
-            EqualizerDevice(0x2717, 0x506A, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x2717, 0x506B, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x2717, 0x506C, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x506D, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x506F, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x5075, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x2717, 0x507F, setOf(0, 1, 6)),
-            EqualizerDevice(0x2717, 0x5080, setOf(0, 1, 6)),
-            EqualizerDevice(0x2717, 0x5081, setOf(1, 6, 10, 11, 13, 14)),
-            EqualizerDevice(0x2717, 0x5082, setOf(1, 6, 10, 11, 13, 14)),
-            EqualizerDevice(0x2717, 0x5088, setOf(0, 1, 5, 6, 7)),
-            EqualizerDevice(0x2717, 0x5089, setOf(0, 1, 5, 6, 7)),
-            EqualizerDevice(0x2717, 0x508A, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x508B, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x5095, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x2717, 0x509A, setOf(0, 1, 5, 6, 7)),
-            EqualizerDevice(0x2717, 0x509B, setOf(0, 1, 5, 6, 7)),
-            EqualizerDevice(0x2717, 0x509C, setOf(0, 1, 5, 6, 7)),
-            EqualizerDevice(0x2717, 0x509D, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x509E, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x509F, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x50A0, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x50AB, setOf(1, 6, 10, 12, 13, 14, 15)),
-            EqualizerDevice(0x2717, 0x50AC, setOf(1, 6, 10, 12, 13, 14, 15)),
-            EqualizerDevice(0x2717, 0x50AD, setOf(1, 6, 10, 12, 13, 14, 15)),
-            EqualizerDevice(0x2717, 0x50AF, setOf(0, 1, 5, 6, 10)),
-            EqualizerDevice(0x2717, 0x50B4, setOf(1, 6, 10, 12, 13, 14, 15)),
-            EqualizerDevice(0x2717, 0x50B9, setOf(0, 1, 5, 6, 7, 10)),
-            EqualizerDevice(0x5A4D, 0xEA03, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x5A4D, 0xEA0D, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x5A4D, 0xEA0E, setOf(0, 1, 5, 6)),
-            EqualizerDevice(0x5A4D, 0xEA0F, setOf(0, 1, 5, 6))
-        )
-
     }
 }
