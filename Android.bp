@@ -17,7 +17,7 @@ android_app {
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
         "androidx.slice_slice-builders",
-        "com.xiaomi.aivsbluetoothsdk",
+        "xiaomi.bluetoothsdk.auth",
     ],
 
     optimize: {

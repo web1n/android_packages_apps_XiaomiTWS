@@ -54,6 +54,11 @@
     <string name="equalizer_mode_harman">Harman</string>
     <string name="equalizer_mode_harman_master">Harman Master</string>
 
+    <string name="spatializer_audio">Spatializer Audio</string>
+    <string name="spatializer_audio_off">Off</string>
+    <string name="spatializer_audio_on">On</string>
+    <string name="spatializer_audio_head_tracking">Head Tracking</string>
+
     <string name="noise_cancellation_mode">Noise cancellation mode</string>
     <string name="noise_cancellation_mode_off">Off</string>
     <string name="noise_cancellation_mode_on">On</string>

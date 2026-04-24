@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream
 object ByteUtils {
 
     fun Byte.isBitSet(bit: Int) = (toInt() shr bit) and 1 != 0
+    fun Byte.withBitSet(bit: Int): Byte = (toInt() or (1 shl bit)).toByte()
 
     fun bytesToInt(highByte: Byte, lowByte: Byte, bigEndian: Boolean = true): Int {
         val high = highByte.toInt() and 0xFF

@@ -13,6 +13,11 @@
             android:title="@string/equalizer_mode"
             app:controller="org.lineageos.xiaomi_tws.configs.EqualizerModeController" />
 
+        <ListPreference
+            android:key="spatializer_audio"
+            android:title="@string/spatializer_audio"
+            app:controller="org.lineageos.xiaomi_tws.configs.SpatializerAudioController" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

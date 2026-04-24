@@ -17,6 +17,7 @@ abstract class Config<T : ConfigData> {
     }
 
     abstract val configId: Int
+    open val configIdSet: Int? = null
     open val validBytesLength: Int? = null
 
     abstract fun decode(bytes: ByteArray): T
@@ -35,6 +36,7 @@ abstract class Config<T : ConfigData> {
     }
 
     fun set(value: T): RequestBuilder<Boolean> {
+        val configId = configIdSet ?: configId
         val bytes = encode(value)
 
         val requestData = buildList {
@@ -60,11 +62,13 @@ abstract class Config<T : ConfigData> {
             ConfigData.EqualizerMode::class.java to EqualizerMode,
             ConfigData.FindEarbuds::class.java to FindEarbuds,
             ConfigData.Gesture::class.java to Gesture,
+            ConfigData.HeadTracking::class.java to HeadTracking,
             ConfigData.InEarState::class.java to InEarState,
             ConfigData.MultiConnect::class.java to MultiConnect,
             ConfigData.NoiseCancellationList::class.java to NoiseCancellationList,
             ConfigData.NoiseCancellationMode::class.java to NoiseCancellationMode,
             ConfigData.SerialNumber::class.java to SerialNumber,
+            ConfigData.SpatializerAudio::class.java to SpatializerAudio,
         )
         private val CONFIGS_BY_ID = CONFIGS_MAP.values.associateBy { it.configId }
 

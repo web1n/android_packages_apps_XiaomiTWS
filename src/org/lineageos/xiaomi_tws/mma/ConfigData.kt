@@ -48,6 +48,10 @@ sealed interface ConfigData {
         }
     }
 
+    data class HeadTracking(val rotation: Rotation) : ConfigData {
+        data class Rotation(val yaw: Float, val pitch: Float, val roll: Float)
+    }
+
     data class InEarState(val left: State, val right: State) : ConfigData {
         enum class State { InEar, InCase, Outside }
     }
@@ -64,5 +68,9 @@ sealed interface ConfigData {
     }
 
     data class SerialNumber(val value: String) : ConfigData
+
+    data class SpatializerAudio(val mode: Mode, val offload: Boolean) : ConfigData {
+        enum class Mode { Off, On, HeadTracking, }
+    }
 
 }
