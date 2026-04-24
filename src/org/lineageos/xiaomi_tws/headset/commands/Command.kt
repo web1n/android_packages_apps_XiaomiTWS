@@ -4,7 +4,6 @@ import android.util.Log
 import org.lineageos.xiaomi_tws.headset.ATCommand.Frame
 import org.lineageos.xiaomi_tws.headset.ATCommand.Payload
 import org.lineageos.xiaomi_tws.headset.CommandData
-import org.lineageos.xiaomi_tws.headset.CommandData.Notify
 import org.lineageos.xiaomi_tws.headset.HeadsetManager.Companion.DEBUG
 
 abstract class Command<T : CommandData> {
@@ -21,23 +20,38 @@ abstract class Command<T : CommandData> {
     companion object {
         private val TAG = Command::class.java.simpleName
 
-        fun decode(frame: Frame): CommandData {
-            val data = when (frame.commandType) {
-                FastConnectCommand.commandType -> FastConnectCommand.decode(frame.payload)
-                StatusCommand.commandType -> StatusCommand.decode(frame.payload)
-                NotifyCommand.COMMAND_TYPE -> NotifyCommand.decode(frame.payload)
-                else -> throw IllegalArgumentException("Unknown command type: ${frame.commandType}")
-            }
+        private val COMMANDS_MAP = mapOf(
+            CommandData.FastConnect::class.java to FastConnectCommand,
+//            CommandData.Notify::class.java to NotifyCommand,
+            CommandData.Status::class.java to StatusCommand,
+        ) + NotifyCommand.COMMANDS_MAP
+        private val COMMANDS = COMMANDS_MAP.values
 
-            if (DEBUG) Log.d(TAG, "decode: frame=$frame, result=$data")
-            return data
+        fun decode(frame: Frame): CommandData {
+            val config = COMMANDS.find {
+                if (it is NotifyCommand) {
+                    it.commandType == frame.commandType && it.payloadType == frame.payload.type
+                } else {
+                    it.commandType == frame.commandType
+                }
+            } ?: throw IllegalArgumentException("Unknown command type: ${frame.commandType}")
+            val result = config.decode(frame.payload)
+
+            if (DEBUG) Log.d(TAG, "decode: frame=$frame, result=$result")
+            return result
         }
 
-        fun encode(data: CommandData) = when (data) {
-            is Notify -> Frame(NotifyCommand.COMMAND_TYPE, NotifyCommand.encode(data))
-            else -> {
-                throw IllegalArgumentException("Command does not support encode: ${data::class.simpleName}")
+        fun encode(data: CommandData): Frame {
+            val command = COMMANDS_MAP[data::class.java]
+                ?: throw IllegalArgumentException("Unknown config data: $data")
+            if (command !is Encoder<*>) {
+                throw IllegalArgumentException("Command type $command $data is not encodable")
             }
+            @Suppress("UNCHECKED_CAST")
+            val encoder = command as Encoder<CommandData>
+
+            val payload = encoder.encode(data)
+            return Frame(command.commandType, payload)
         }
     }
 }
