@@ -3,6 +3,7 @@ package org.lineageos.xiaomi_tws.nearby
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanRecord
 import android.content.Context
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.UUID_FAST_CONNECT
 import org.lineageos.xiaomi_tws.nearby.NearbyDeviceScanner.Companion.XIAOMI_MANUFACTURER_ID
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
@@ -11,7 +12,13 @@ import org.lineageos.xiaomi_tws.utils.ByteUtils.isBitSet
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
 import org.lineageos.xiaomi_tws.utils.SettingsUtils
 
-data class NearbyDevice(val address: String?, val accountKey: String, val vid: Int, val pid: Int) {
+data class NearbyDevice(
+    val address: String?,
+    val accountKey: String,
+    val vid: Int,
+    val pid: Int,
+    val battery: DeviceBattery?
+) {
 
     val device = address?.let { getBluetoothAdapter().getRemoteDevice(address) }
     val name = getDeviceName(vid, pid)
@@ -96,8 +103,9 @@ data class NearbyDevice(val address: String?, val accountKey: String, val vid: I
             val macAddress = manufacturerData?.let { extractMacAddress(manufacturerData) }
             val accountKey = extractAccountKey(fastConnectData)
             val (vid, pid) = extractVidPid(fastConnectData)
+            val battery = extractBattery(fastConnectData)
 
-            return NearbyDevice(macAddress, accountKey, vid, pid)
+            return NearbyDevice(macAddress, accountKey, vid, pid, battery)
         }
 
         private fun extractMacAddress(manufacturerData: ByteArray): String {
@@ -120,6 +128,10 @@ data class NearbyDevice(val address: String?, val accountKey: String, val vid: I
             val pid = bytesToInt(serviceData[16], serviceData[17], false)
 
             return Pair(vid, pid)
+        }
+
+        private fun extractBattery(serviceData: ByteArray): DeviceBattery? {
+            return DeviceBattery.fromBytes(serviceData[13], serviceData[12], serviceData[14])
         }
 
         private fun extractAccountKey(serviceData: ByteArray): String {
