@@ -15,8 +15,16 @@ sealed interface ConfigData {
             BassBoost(0x05),
             TrebleBoost(0x06),
             VolumeBoost(0x07),
+            Custom(0x0A),
+            Classic(0x0B),
+            Legendary(0x0C),
+            SoothingBoost(0x0D),
             Harman(0x0E),
             HarmanMaster(0x0F),
+            Standard(0x10),
+            Outdoor(0x11),
+            UnderWater(0x12),
+            BalancedListening(0x15),
         }
     }
 

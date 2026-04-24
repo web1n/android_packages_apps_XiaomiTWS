@@ -51,8 +51,16 @@
     <string name="equalizer_mode_bass_boost">Bass boost</string>
     <string name="equalizer_mode_treble_boost">Treble boost</string>
     <string name="equalizer_mode_volume_boost">Volume boost</string>
+    <string name="equalizer_mode_custom">Custom</string>
+    <string name="equalizer_mode_classic">Classic</string>
+    <string name="equalizer_mode_legendary">Legendary</string>
+    <string name="equalizer_mode_soothing_boost">Soothing Boost</string>
     <string name="equalizer_mode_harman">Harman</string>
     <string name="equalizer_mode_harman_master">Harman Master</string>
+    <string name="equalizer_mode_standard">Standard</string>
+    <string name="equalizer_mode_outdoor">Outdoor</string>
+    <string name="equalizer_mode_under_water">Under Water</string>
+    <string name="equalizer_mode_balanced_listening">Balanced Listening</string>
 
     <string name="spatializer_audio">Spatializer Audio</string>
     <string name="spatializer_audio_off">Off</string>

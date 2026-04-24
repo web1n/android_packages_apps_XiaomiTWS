@@ -72,8 +72,16 @@ class EqualizerModeController(preferenceKey: String, device: BluetoothDevice) :
             Mode.BassBoost -> R.string.equalizer_mode_bass_boost
             Mode.TrebleBoost -> R.string.equalizer_mode_treble_boost
             Mode.VolumeBoost -> R.string.equalizer_mode_volume_boost
+            Mode.Custom -> R.string.equalizer_mode_custom
+            Mode.Classic -> R.string.equalizer_mode_classic
+            Mode.Legendary -> R.string.equalizer_mode_legendary
+            Mode.SoothingBoost -> R.string.equalizer_mode_soothing_boost
             Mode.Harman -> R.string.equalizer_mode_harman
             Mode.HarmanMaster -> R.string.equalizer_mode_harman_master
+            Mode.Standard -> R.string.equalizer_mode_standard
+            Mode.Outdoor -> R.string.equalizer_mode_outdoor
+            Mode.UnderWater -> R.string.equalizer_mode_under_water
+            Mode.BalancedListening -> R.string.equalizer_mode_balanced_listening
         }
 
         return context.getString(stringRes)
