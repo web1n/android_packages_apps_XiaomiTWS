@@ -13,7 +13,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.util.Log
 import android.widget.Toast
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.MMAListener
 import org.lineageos.xiaomi_tws.mma.MMAManager
@@ -76,7 +76,7 @@ class EarbudsService : Service() {
             handleParsedCommand(device, value)
         }
 
-        override fun onBatteryChanged(device: BluetoothDevice, battery: Earbuds) =
+        override fun onBatteryChanged(device: BluetoothDevice, battery: DeviceBattery) =
             updateBattery(device, battery)
     }
 
@@ -247,11 +247,11 @@ class EarbudsService : Service() {
         BluetoothUtils.updateDeviceBatteryMetadata(device, null)
     }
 
-    private fun updateBattery(device: BluetoothDevice, earbuds: Earbuds) {
-        BluetoothUtils.updateDeviceBatteryMetadata(device, earbuds)
+    private fun updateBattery(device: BluetoothDevice, battery: DeviceBattery) {
+        BluetoothUtils.updateDeviceBatteryMetadata(device, battery)
 
         if (settingsUtils.enableNotification) {
-            NotificationUtils.updateEarbudsNotification(this, device, earbuds)
+            NotificationUtils.updateEarbudsNotification(this, device, battery)
         }
     }
 

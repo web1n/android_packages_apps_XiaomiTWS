@@ -21,7 +21,7 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_AUTH
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_CONFIG
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_NOTIFY_DEVICE_INFO
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SEND_AUTH
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestNoResponseBuilder
@@ -174,7 +174,8 @@ class MMAManager private constructor(private val context: Context) {
                         Log.w(TAG, "Not valid battery report length: ${value.size}")
                         return@forEach
                     }
-                    val battery = Earbuds.fromBytes(value[0], value[1], value[2])
+                    val battery = DeviceBattery.fromBytes(value[0], value[1], value[2])
+                        ?: return
                     dispatchEvent(DeviceEvent.BatteryChanged(device, battery))
                 }
 

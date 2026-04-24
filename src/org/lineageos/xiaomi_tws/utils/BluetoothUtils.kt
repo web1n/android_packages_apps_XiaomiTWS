@@ -10,7 +10,7 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.BleSliceProvider.Companion.generateSliceUri
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 
 object BluetoothUtils {
 
@@ -82,15 +82,15 @@ object BluetoothUtils {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_PRIVILEGED)
-    fun updateDeviceBatteryMetadata(device: BluetoothDevice, earbuds: Earbuds?) {
+    fun updateDeviceBatteryMetadata(device: BluetoothDevice, battery: DeviceBattery?) {
         mapOf<Int, Any?>(
-            BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING to earbuds?.left?.charging,
-            BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING to earbuds?.right?.charging,
-            BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING to earbuds?.case?.charging,
-            BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY to earbuds?.left?.battery,
-            BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY to earbuds?.right?.battery,
-            BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY to earbuds?.case?.battery,
-        ).forEach { key, value ->
+            BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING to battery?.left?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING to battery?.right?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING to battery?.case?.charging,
+            BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY to battery?.left?.battery,
+            BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY to battery?.right?.battery,
+            BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY to battery?.case?.battery,
+        ).forEach { (key, value) ->
             device.setMetadata(key, value ?: "")
         }
     }

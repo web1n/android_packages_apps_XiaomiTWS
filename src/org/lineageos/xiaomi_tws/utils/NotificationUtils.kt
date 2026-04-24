@@ -10,7 +10,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.RequiresPermission
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.fragments.DeviceConfigFragment.Companion.ACTION_DEVICE_CONFIG
 
 object NotificationUtils {
@@ -39,11 +39,15 @@ object NotificationUtils {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.POST_NOTIFICATIONS]
     )
-    fun updateEarbudsNotification(context: Context, device: BluetoothDevice, earbuds: Earbuds) {
+    fun updateEarbudsNotification(
+        context: Context,
+        device: BluetoothDevice,
+        battery: DeviceBattery
+    ) {
         createEarbudsNotificationChannel(context)
 
-        if (earbuds.case.valid) {
-            createEarbudsNotification(context, device, earbuds)
+        if (battery.case != null) {
+            createEarbudsNotification(context, device, battery)
         } else {
             cancelEarbudsNotification(context, device)
         }
@@ -57,8 +61,8 @@ object NotificationUtils {
     private fun createEarbudsNotification(
         context: Context,
         device: BluetoothDevice,
-        earbuds: Earbuds
-    ) = earbuds.run {
+        battery: DeviceBattery
+    ) = battery.run {
         val pendingIntent = Intent(ACTION_DEVICE_CONFIG).apply {
             putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             setPackage(context.packageName)

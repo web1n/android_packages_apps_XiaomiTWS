@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import org.lineageos.xiaomi_tws.headset.CommandData.Notify.AutoSwitchDevice
 import org.lineageos.xiaomi_tws.R
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.headset.CommandData
 import org.lineageos.xiaomi_tws.headset.HeadsetManager.HeadsetDeviceListener
 
@@ -24,7 +24,7 @@ class AutoConnectDeviceFragment : BaseDeviceListFragment() {
     private val headsetListener = object : HeadsetDeviceListener {
         override fun onDeviceConnected(device: BluetoothDevice) {}
         override fun onDeviceDisconnected(device: BluetoothDevice) {}
-        override fun onBatteryChanged(device: BluetoothDevice, battery: Earbuds) {}
+        override fun onBatteryChanged(device: BluetoothDevice, battery: DeviceBattery) {}
 
         override fun onDeviceChanged(device: BluetoothDevice, value: CommandData) {
             if (value !is AutoSwitchDevice || !isDeviceEnabled(device)) return

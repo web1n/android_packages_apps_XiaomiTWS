@@ -2,7 +2,7 @@ package org.lineageos.xiaomi_tws.configs
 
 import android.bluetooth.BluetoothDevice
 import androidx.preference.TwoStatePreference
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.mma.DeviceEvent
 import org.lineageos.xiaomi_tws.mma.DeviceInfoRequestBuilder.Companion.batteryInfo
 import org.lineageos.xiaomi_tws.mma.MMAManager
@@ -15,12 +15,12 @@ class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
 
     override val config = FindEarbuds()
 
-    private lateinit var earbudsStatus: Earbuds
+    private lateinit var status: DeviceBattery
 
     override suspend fun initData(manager: MMAManager) {
         super.initData(manager)
 
-        earbudsStatus = manager.request(device, batteryInfo())
+        status = manager.request(device, batteryInfo())
     }
 
     override fun postUpdateValue(preference: TwoStatePreference) {
@@ -33,15 +33,15 @@ class FindEarbudsController(preferenceKey: String, device: BluetoothDevice) :
         super.onDeviceEvent(event)
 
         if (event is DeviceEvent.BatteryChanged) {
-            earbudsStatus = event.battery
+            status = event.battery
         }
     }
 
     override fun preferenceValueToValue(value: Boolean): Pair<Boolean, List<Position>> {
         return if (value) {
             val positions = ArrayList<Position>().apply {
-                if (earbudsStatus.left.valid) add(Position.Left)
-                if (earbudsStatus.right.valid) add(Position.Right)
+                if (status.left != null) add(Position.Left)
+                if (status.right != null) add(Position.Right)
             }
 
             true to positions

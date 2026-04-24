@@ -6,7 +6,7 @@ import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_VERSION
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_MASK_GET_VID_PID
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_GET_DEVICE_INFO
 import org.lineageos.xiaomi_tws.EarbudsConstants.XIAOMI_MMA_OPCODE_SET_DEVICE_INFO
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Request
 import org.lineageos.xiaomi_tws.mma.MMAPacket.Response
 import org.lineageos.xiaomi_tws.mma.MMAPacketBuilder.RequestBuilder
@@ -69,9 +69,10 @@ class DeviceInfoRequestBuilder {
             return content
         }
 
-        fun batteryInfo(): RequestBuilder<Earbuds> {
+        fun batteryInfo(): RequestBuilder<DeviceBattery> {
             return createGetDeviceInfoRequest(XIAOMI_MMA_MASK_GET_BATTERY, 3::equals) {
-                Earbuds.fromBytes(it[0], it[1], it[2])
+                DeviceBattery.fromBytes(it[0], it[1], it[2])
+                    ?: throw IllegalArgumentException("Invalid battery data: ${it.joinToString(",")}")
             }
         }
 

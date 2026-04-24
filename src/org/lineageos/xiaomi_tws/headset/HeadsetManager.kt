@@ -15,7 +15,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import org.lineageos.xiaomi_tws.earbuds.Earbuds
+import org.lineageos.xiaomi_tws.features.DeviceBattery
 import org.lineageos.xiaomi_tws.headset.commands.Command
 import org.lineageos.xiaomi_tws.utils.BluetoothUtils.getBluetoothAdapter
 import org.lineageos.xiaomi_tws.utils.ByteUtils.toHexString
@@ -29,7 +29,7 @@ class HeadsetManager private constructor(private val context: Context) {
         fun onDeviceConnected(device: BluetoothDevice)
         fun onDeviceDisconnected(device: BluetoothDevice)
         fun onDeviceChanged(device: BluetoothDevice, value: CommandData)
-        fun onBatteryChanged(device: BluetoothDevice, battery: Earbuds)
+        fun onBatteryChanged(device: BluetoothDevice, battery: DeviceBattery)
     }
 
     private val adapter = context.getBluetoothAdapter()
@@ -205,7 +205,7 @@ class HeadsetManager private constructor(private val context: Context) {
         return runCatching {
             when (args.size) {
                 1 if args[0] is String -> Command.decode(ATCommand.decodeFromHex(args[0] as String))
-                7 if args.all { it is Int } -> Earbuds.fromBytes(
+                7 if args.all { it is Int } -> DeviceBattery.fromBytes(
                     (args[3] as Int).toByte(), (args[4] as Int).toByte(), (args[5] as Int).toByte()
                 )
 
@@ -226,7 +226,7 @@ class HeadsetManager private constructor(private val context: Context) {
         deviceListeners.forEach { listener ->
             listener.runCatching {
                 when (newValue) {
-                    is Earbuds -> onBatteryChanged(device, newValue)
+                    is DeviceBattery -> onBatteryChanged(device, newValue)
                     is CommandData -> onDeviceChanged(device, newValue)
                     else -> Log.w(TAG, "Unknown value type: ${newValue::class.java.simpleName}")
                 }
