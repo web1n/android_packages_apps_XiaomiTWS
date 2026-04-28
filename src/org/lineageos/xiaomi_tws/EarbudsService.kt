@@ -271,13 +271,13 @@ class EarbudsService : Service() {
                 mediaManager.connectDevice(bluetoothDevice)
             }
 
-            if (leftInEar and rightInEar) {
-                if (bluetoothDevice.isSelected()) {
-                    mediaManager.playMedia()
-                } else {
-                    if (DEBUG) Log.d(TAG, "Media device ${bluetoothDevice.name} not selected")
-                }
-            }
+//            if (leftInEar and rightInEar) {
+//                if (bluetoothDevice.isSelected()) {
+//                    mediaManager.playMedia()
+//                } else {
+//                    if (DEBUG) Log.d(TAG, "Media device ${bluetoothDevice.name} not selected")
+//                }
+//            }
         } else {
             if (bluetoothDevice.isSelected()) {
                 mediaManager.pauseMedia()
